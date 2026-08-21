@@ -1,15 +1,13 @@
 import {
   LayoutDashboard,
-  FolderOpen,
-  User,
-  ChartNoAxesCombined,
+  ListTodo,
+  FileSearch,
+  ShieldAlert,
+  CalendarClock,
   Bell,
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Calendar,
-  FileText,
-  Archive,
   Settings,
 } from "lucide-react";
 import { useSidebar } from "@/context/SidebarContext";
@@ -17,19 +15,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const navItems: any[] = [
-  { key: "overview", label: "Ringkasan", icon: LayoutDashboard },
-  { key: "tasks", label: "Tugas", icon: FolderOpen },
-  {
-    key: "items",
-    label: "Barang",
-    icon: FileText,
-  },
-  { key: "calendar", label: "Jatuh Tempo", icon: Calendar },
+  { key: "overview", label: "Tracker (D3)", icon: LayoutDashboard },
+  { key: "next-action", label: "Tindakan", icon: ListTodo },
+  { key: "documents", label: "Dokumen (D1)", icon: FileSearch },
+  { key: "guarantees", label: "Jaminan (D2)", icon: ShieldAlert },
+  { key: "deadlines", label: "Jatuh Tempo (D4)", icon: CalendarClock },
   { key: "notifications", label: "Notifikasi", icon: Bell },
-  { key: "reports", label: "Laporan", icon: ChartNoAxesCombined },
-  { key: "templates", label: "Template", icon: FileText },
-  { key: "audit", label: "Riwayat", icon: Archive },
-  { key: "admin", label: "Pengaturan", icon: Settings },
+  { key: "settings", label: "Pengaturan", icon: Settings },
 ];
 
 import { usePathname } from "next/navigation";
@@ -126,7 +118,7 @@ export function SidebarNav({ onSelect, selectedKey }: { onSelect?: (key: string)
         aria-label="Sidebar navigation"
       >
         {navItems.map((item) => {
-          const Icon = item.icon ?? FolderOpen;
+          const Icon = item.icon ?? LayoutDashboard;
           const isActive = item.key === (selectedKey ?? activeKeyFromPath);
 
           return (

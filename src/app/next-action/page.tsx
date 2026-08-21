@@ -1,5 +1,5 @@
 import { DashboardShell } from '@/components/layout/DashboardShell';
 
-export default function AdminPageRoute() {
+export default function NextActionRoute() {
   return <DashboardShell />;
 }

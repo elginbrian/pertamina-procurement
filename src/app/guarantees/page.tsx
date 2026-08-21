@@ -1,5 +1,5 @@
 import { DashboardShell } from '@/components/layout/DashboardShell';
 
-export default function CalendarPageRoute() {
+export default function GuaranteesRoute() {
   return <DashboardShell />;
 }

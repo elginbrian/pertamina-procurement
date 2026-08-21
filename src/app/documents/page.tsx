@@ -1,5 +1,5 @@
 import { DashboardShell } from '@/components/layout/DashboardShell';
 
-export default function TasksPageRoute() {
+export default function DocumentsRoute() {
   return <DashboardShell />;
 }

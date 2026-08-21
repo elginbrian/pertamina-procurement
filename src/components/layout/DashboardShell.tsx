@@ -4,8 +4,13 @@ import { useState, useEffect } from "react";
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { DashboardToolbar } from "@/components/layout/DashboardToolbar";
 import { SidebarNav } from "@/components/navigation/SidebarNav";
-import OverviewPage from "@/components/pages/overview/OverviewPage";
-import { TasksPage } from "@/components/pages/tasks/TasksPage";
+import TrackerPage from "@/components/pages/tracker/TrackerPage";
+import DocumentsPage from "@/components/pages/documents/DocumentsPage";
+import GuaranteesPage from "@/components/pages/guarantees/GuaranteesPage";
+import DeadlinesPage from "@/components/pages/deadlines/DeadlinesPage";
+import NextActionPage from "@/components/pages/next-action/NextActionPage";
+import NotificationsPage from "@/components/pages/notifications/NotificationsPage";
+
 import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
 
 type ProcurementRow = {
@@ -37,22 +42,18 @@ function DashboardShellInner() {
     const parts = path.split("/").filter(Boolean);
     const first = parts[0] || "";
     switch (first) {
-      case "tasks":
-        return "tasks";
-      case "items":
-        return "items";
-      case "calendar":
-        return "calendar";
+      case "next-action":
+        return "next-action";
+      case "documents":
+        return "documents";
+      case "guarantees":
+        return "guarantees";
+      case "deadlines":
+        return "deadlines";
       case "notifications":
         return "notifications";
-      case "reports":
-        return "reports";
-      case "templates":
-        return "templates";
-      case "audit":
-        return "audit";
-      case "admin":
-        return "admin";
+      case "settings":
+        return "settings";
       default:
         return "overview";
     }
@@ -67,25 +68,21 @@ function DashboardShellInner() {
   const headerForTab = (tab: string) => {
     switch (tab) {
       case "overview":
-        return { title: "Ringkasan Dashboard", subtitle: "Status dan aktivitas pengadaan" };
-      case "tasks":
-        return { title: "Tugas", subtitle: "Daftar tugas yang perlu ditangani" };
-      case "items":
-        return { title: "Barang", subtitle: "Master data barang pengadaan" };
-      case "calendar":
-        return { title: "Jatuh Tempo", subtitle: "Jadwal dan tenggat penting" };
+        return { title: "Tracker Dokumen & Item", subtitle: "Status keseluruhan pengadaan (D3)" };
+      case "next-action":
+        return { title: "Tindakan (Next Action)", subtitle: "Daftar tindakan yang perlu ditangani" };
+      case "documents":
+        return { title: "Pemeriksaan Dokumen", subtitle: "Review, kelengkapan, dan draft (D1)" };
+      case "guarantees":
+        return { title: "Pantau Jaminan", subtitle: "Status dan masa berlaku jaminan (D2)" };
+      case "deadlines":
+        return { title: "Jatuh Tempo", subtitle: "SLA timer dan pengingat batas waktu (D4)" };
       case "notifications":
         return { title: "Notifikasi", subtitle: "Pemberitahuan dan update sistem" };
-      case "reports":
-        return { title: "Laporan", subtitle: "Ringkasan performa dan analitik" };
-      case "templates":
-        return { title: "Template", subtitle: "Dokumen dan formulir standar" };
-      case "audit":
-        return { title: "Riwayat", subtitle: "Jejak aktivitas dan perubahan" };
-      case "admin":
+      case "settings":
         return { title: "Pengaturan", subtitle: "Akses dan pengaturan sistem" };
       default:
-        return { title: "Ringkasan Dashboard", subtitle: "Status dan aktivitas pengadaan" };
+        return { title: "Tracker Dokumen & Item", subtitle: "Status keseluruhan pengadaan (D3)" };
     }
   };
 
@@ -103,20 +100,25 @@ function DashboardShellInner() {
       <SidebarNav onSelect={(k) => setSelectedTab(k)} />
 
         <div className={`flex min-w-0 flex-1 flex-col transition-all duration-300`}>
-        <DashboardHeader
-          title={header.title}
-          subtitle={header.subtitle}
-          userLabel="AR"
-          onOpenSidebar={() => setMobileOpen(true)}
-          onCloseSidebar={() => setMobileOpen(false)}
-        />
+        <div className={["overview", "documents", "guarantees", "deadlines", "next-action", "notifications"].includes(selectedTab) ? "lg:hidden" : "block"}>
+          <DashboardHeader
+            title={header.title}
+            subtitle={header.subtitle}
+            userLabel="AR"
+            onOpenSidebar={() => setMobileOpen(true)}
+            onCloseSidebar={() => setMobileOpen(false)}
+          />
+        </div>
 
         <main className="scrollbar-thin flex-1 overflow-y-auto px-4 py-3 sm:px-6 sm:py-4 lg:px-7 lg:py-5">
           <div key={pathname ?? selectedTab} className="animate-page-enter">
-            <DashboardToolbar />
 
-            {selectedTab === "overview" && <OverviewPage />}
-            {selectedTab === "tasks" && <TasksPage />}
+            {selectedTab === "overview" && <TrackerPage />}
+            {selectedTab === "next-action" && <NextActionPage />}
+            {selectedTab === "documents" && <DocumentsPage />}
+            {selectedTab === "guarantees" && <GuaranteesPage />}
+            {selectedTab === "deadlines" && <DeadlinesPage />}
+            {selectedTab === "notifications" && <NotificationsPage />}
           </div>
         </main>
       </div>
