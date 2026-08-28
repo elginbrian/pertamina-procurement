@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Shield, AlertTriangle, ShieldCheck, ShieldAlert, Clock, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
-import { GuaranteeItem, GuaranteeStatus } from "@/components/pages/guarantees/types";
+import { GuaranteeItem, GuaranteeStatus } from "@/lib/types";
 
 export function GuaranteeCard({ guarantee }: { guarantee: GuaranteeItem }) {
   const [isExpanded, setIsExpanded] = useState(false);

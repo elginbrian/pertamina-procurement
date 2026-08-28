@@ -1,5 +1,6 @@
 import { Search, Filter, Upload } from "lucide-react";
-import { DocumentStatus } from "@/components/pages/documents/types";
+import { DocumentStatus } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 interface DocumentFilterBarProps {
   searchQuery: string;
@@ -11,6 +12,7 @@ interface DocumentFilterBarProps {
 }
 
 export function DocumentFilterBar({ searchQuery, setSearchQuery, statusFilter, setStatusFilter, typeFilter, setTypeFilter }: DocumentFilterBarProps) {
+  const router = useRouter();
   return (
     <div className="flex flex-col xl:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
       <div className="relative w-full flex-1">
@@ -33,10 +35,10 @@ export function DocumentFilterBar({ searchQuery, setSearchQuery, statusFilter, s
               className="w-full sm:w-[130px] lg:w-[150px] border border-slate-200 rounded-lg text-[13px] px-3 py-2 focus:outline-none focus:border-[#0a4d8c] bg-white truncate"
             >
               <option value="All">Semua Tipe</option>
-              <option value="Pakta Integritas">Pakta Integritas</option>
-              <option value="OE & BoQ">OE & BoQ</option>
-              <option value="Form TKDN">Form TKDN</option>
-              <option value="RKS">RKS</option>
+              <option value="Wajib">Wajib</option>
+              <option value="Kondisional">Kondisional</option>
+              <option value="Best Practice">Best Practice</option>
+              <option value="Dokumentasi">Dokumentasi</option>
             </select>
             <select 
               value={statusFilter}
@@ -44,14 +46,17 @@ export function DocumentFilterBar({ searchQuery, setSearchQuery, statusFilter, s
               className="w-full sm:w-[130px] lg:w-[150px] border border-slate-200 rounded-lg text-[13px] px-3 py-2 focus:outline-none focus:border-[#0a4d8c] bg-white truncate"
             >
               <option value="All">Semua Status</option>
-              <option value="Ready">Ready</option>
-              <option value="Needs Attention">Needs Attn</option>
-              <option value="Not Ready">Not Ready</option>
+              <option value="Lulus Verifikasi">Lulus Verifikasi</option>
+              <option value="Catatan Procurement">Catatan Procurement</option>
+              <option value="Tindak Lanjut FPP">Tindak Lanjut FPP</option>
             </select>
           </div>
         </div>
         
-        <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap shrink-0">
+        <button 
+          onClick={() => router.push('/documents/upload')}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap shrink-0"
+        >
           <Upload size={16} />
           <span className="hidden sm:inline">Upload Dokumen</span>
           <span className="sm:hidden">Upload</span>

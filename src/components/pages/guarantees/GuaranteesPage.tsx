@@ -2,63 +2,15 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { Inbox } from "lucide-react";
-import { GuaranteeItem, GuaranteeStatus } from "./types";
+import { GuaranteeItem, GuaranteeStatus } from "@/lib/types";
 import { GuaranteeFilterBar } from "@/components/widgets/guarantees/GuaranteeFilterBar";
 import { GuaranteeRow } from "@/components/widgets/guarantees/GuaranteeRow";
 import { TablePagination } from "@/components/widgets/TablePagination";
-
-const mockGuarantees: GuaranteeItem[] = [
-  {
-    id: "GUAR-001",
-    referenceNo: "BG-2026-089912",
-    type: "Jaminan Pelaksanaan",
-    value: "Rp 150.000.000",
-    issueDate: "2026-01-10",
-    expiryDate: "2026-12-31",
-    remainingDays: 134,
-    pic: "Budi Santoso",
-    status: "Aktif",
-  },
-  {
-    id: "GUAR-002",
-    referenceNo: "BG-2026-078122",
-    type: "Jaminan Masa Pemeliharaan",
-    value: "Rp 45.000.000",
-    issueDate: "2025-08-20",
-    expiryDate: "2026-08-25",
-    remainingDays: 6,
-    pic: "Andi Wijaya",
-    status: "Mendekati Expiry",
-    nextAction: "Jaminan Masa Pemeliharaan akan berakhir dalam 6 hari. Koordinasikan perpanjangan atau pencairan dengan pihak vendor terkait."
-  },
-  {
-    id: "GUAR-003",
-    referenceNo: "BG-2025-011234",
-    type: "Jaminan Uang Muka",
-    value: "Rp 300.000.000",
-    issueDate: "2025-02-15",
-    expiryDate: "2026-08-15",
-    remainingDays: -4,
-    pic: "Citra Dewi",
-    status: "Expired",
-    nextAction: "Jaminan telah kedaluwarsa. Segera hubungi bank penerbit dan vendor untuk tindak lanjut penyelesaian."
-  },
-  ...Array.from({ length: 12 }).map((_, i) => ({
-    id: `GUAR-00${i + 4}`,
-    referenceNo: `BG-2026-10${100 + i}`,
-    type: i % 2 === 0 ? "Jaminan Pelaksanaan" : "Jaminan Uang Muka",
-    value: `Rp ${(i + 1) * 20}.000.000`,
-    issueDate: `2026-01-0${(i % 9) + 1}`,
-    expiryDate: `2026-12-${10 + i}`,
-    remainingDays: 90 + i,
-    pic: `Staff ${i + 1}`,
-    status: (i % 5 === 0 ? "Expired" : i % 3 === 0 ? "Mendekati Expiry" : "Aktif") as GuaranteeStatus,
-    nextAction: i % 5 === 0 ? "Tindaklanjuti jaminan expired" : i % 3 === 0 ? "Koordinasikan perpanjangan" : ""
-  }))
-];
+import { useProcurement } from "@/context/ProcurementContext";
 
 export default function GuaranteesPage() {
-  const [guarantees] = useState<GuaranteeItem[]>(mockGuarantees);
+  const { state } = useProcurement();
+  const guarantees = state.guarantees;
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<GuaranteeStatus | "All">("All");
   const [typeFilter, setTypeFilter] = useState("All");
@@ -109,7 +61,7 @@ export default function GuaranteesPage() {
             <div className="text-[11px] text-slate-400 mt-1 font-medium">Tercatat dalam sistem</div>
           </div>
           <div className="w-14 h-14 rounded-full relative shadow-[inset_0_2px_8px_rgba(0,0,0,0.06)]" style={{
-            background: `conic-gradient(#10b981 0% ${aktifPct}%, #f59e0b ${aktifPct}% ${aktifPct + mendekatiPct}%, #ef4444 ${aktifPct + mendekatiPct}% 100%)`
+            background: `conic-gradient(#10b981 0% ${aktifPct}%, #0a4d8c ${aktifPct}% ${aktifPct + mendekatiPct}%, #ef4444 ${aktifPct + mendekatiPct}% 100%)`
           }}>
             <div className="absolute inset-2 bg-white rounded-full"></div>
           </div>
@@ -125,7 +77,7 @@ export default function GuaranteesPage() {
               </div>
               <div className="text-2xl font-bold text-slate-800 mt-2">{aktifCount}</div>
             </div>
-            <div className="bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-1 rounded-md border border-emerald-100">
+            <div className="bg-emerald-50 text-emerald-700 text-xs font-medium px-2.5 py-0.5 rounded-full border border-emerald-100">
               {aktifPct.toFixed(0)}%
             </div>
           </div>
@@ -137,12 +89,12 @@ export default function GuaranteesPage() {
           <div className="flex justify-between items-start">
             <div>
               <div className="text-[13px] font-medium text-slate-500 mb-1 flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#0a4d8c]"></div>
                 Mendekati Expiry
               </div>
               <div className="text-2xl font-bold text-slate-800 mt-2">{mendekatiCount}</div>
             </div>
-            <div className="bg-amber-50 text-amber-700 text-xs font-bold px-2 py-1 rounded-md border border-amber-100">
+            <div className="bg-blue-50 text-[#0a4d8c] text-xs font-medium px-2.5 py-0.5 rounded-full border border-blue-100">
               {mendekatiPct.toFixed(0)}%
             </div>
           </div>
@@ -159,7 +111,7 @@ export default function GuaranteesPage() {
               </div>
               <div className="text-2xl font-bold text-slate-800 mt-2">{expiredCount}</div>
             </div>
-            <div className="bg-red-50 text-red-700 text-xs font-bold px-2 py-1 rounded-md border border-red-100">
+            <div className="bg-red-50 text-red-700 text-xs font-medium px-2.5 py-0.5 rounded-full border border-red-100">
               {(100 - aktifPct - mendekatiPct).toFixed(0)}%
             </div>
           </div>

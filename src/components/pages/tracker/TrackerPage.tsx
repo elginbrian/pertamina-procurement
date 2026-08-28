@@ -1,31 +1,52 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, Filter, AlertCircle, Clock, CheckCircle2, ChevronRight, GripVertical } from "lucide-react";
+import { Search, Filter, AlertCircle, Clock, CheckCircle2, ChevronRight, GripVertical, XCircle, FileText, LayoutList, CalendarClock, ShieldCheck, PlusCircle } from "lucide-react";
 import { TrackerItem, TrackerStage } from "./types";
-
-const mockTrackerData: TrackerItem[] = [
-  { id: "REQ-2026-101", title: "Pengadaan Server Rack 42U", pic: "Budi Santoso", amount: "Rp 120.000.000", stage: "PR", department: "IT Infrastructure", daysInStage: 2 },
-  { id: "REQ-2026-102", title: "Lisensi Software Design 1 Tahun", pic: "Andi Wijaya", amount: "Rp 45.000.000", stage: "PR", department: "Creative", daysInStage: 5, isUrgent: true },
-  { id: "REQ-2026-103", title: "Renovasi Ruang Meeting Lt. 4", pic: "Citra Dewi", amount: "Rp 85.500.000", stage: "CS30", department: "General Affairs", daysInStage: 12, isUrgent: true },
-  { id: "REQ-2026-104", title: "Pengadaan Laptop Karyawan Baru (10 Unit)", pic: "Budi Santoso", amount: "Rp 150.000.000", stage: "CS30", department: "IT Infrastructure", daysInStage: 4 },
-  { id: "REQ-2026-105", title: "Catering Event Tahunan", pic: "Diana Putri", amount: "Rp 35.000.000", stage: "PO", department: "HR", daysInStage: 1 },
-  { id: "REQ-2026-106", title: "Kendaraan Operasional Cabang", pic: "Andi Wijaya", amount: "Rp 320.000.000", stage: "PO", department: "Operations", daysInStage: 7, isUrgent: true },
-  { id: "REQ-2026-107", title: "Seragam Karyawan 2026", pic: "Citra Dewi", amount: "Rp 65.000.000", stage: "DONE", department: "HR", daysInStage: 20 },
-  { id: "REQ-2026-108", title: "Upgrade Bandwidth Internet HO", pic: "Budi Santoso", amount: "Rp 15.000.000", stage: "PR", department: "IT Infrastructure", daysInStage: 1 },
-];
+import { useProcurement } from "@/context/ProcurementContext";
+import { useRouter } from "next/navigation";
 
 const COLUMNS: { id: TrackerStage; title: string; color: string; bg: string; border: string; headerBg: string }[] = [
-  { id: "PR", title: "Menunggu PR", color: "text-white", bg: "bg-white", border: "border-slate-200", headerBg: "bg-[#0a4d8c]" },
-  { id: "CS30", title: "Proses CS30 / Sourcing", color: "text-white", bg: "bg-white", border: "border-slate-200", headerBg: "bg-[#0a4d8c]" },
-  { id: "PO", title: "Pembuatan PO", color: "text-white", bg: "bg-white", border: "border-slate-200", headerBg: "bg-[#0a4d8c]" },
-  { id: "DONE", title: "Selesai", color: "text-white", bg: "bg-white", border: "border-slate-200", headerBg: "bg-[#0a4d8c]" },
+  { id: "Persiapan", title: "Persiapan", color: "text-white", bg: "bg-white", border: "border-slate-200", headerBg: "bg-[#0a4d8c]" },
+  { id: "Sourcing", title: "Sourcing", color: "text-white", bg: "bg-white", border: "border-slate-200", headerBg: "bg-[#0a4d8c]" },
+  { id: "Evaluasi", title: "Evaluasi", color: "text-white", bg: "bg-white", border: "border-slate-200", headerBg: "bg-[#0a4d8c]" },
+  { id: "Contracting", title: "Contracting / PO", color: "text-white", bg: "bg-white", border: "border-slate-200", headerBg: "bg-[#0a4d8c]" },
+  { id: "Selesai", title: "Selesai", color: "text-white", bg: "bg-white", border: "border-slate-200", headerBg: "bg-[#0a4d8c]" },
 ];
 
 export default function TrackerPage() {
-  const [items, setItems] = useState<TrackerItem[]>(mockTrackerData);
+  const { state, moveRequest, addRequest } = useProcurement();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("All");
+  const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [showAddModal, setShowAddModal] = useState(false);
+
+  // Compute Time Status per request from D4 deadlines
+  const timeStatusMap = useMemo(() => {
+    const map: Record<string, "On Track" | "At Risk" | "Overdue" | "Selesai"> = {};
+    state.deadlines.forEach(d => {
+      const prev = map[d.requestId];
+      // Worse status wins: Overdue > At Risk > On Track > Selesai
+      const rank = { "Overdue": 3, "At Risk": 2, "On Track": 1, "Selesai": 0 } as const;
+      if (!prev || rank[d.status] > rank[prev]) {
+        map[d.requestId] = d.status;
+      }
+    });
+    return map;
+  }, [state.deadlines]);
+
+  // Map context requests to TrackerItem shape
+  const items: TrackerItem[] = useMemo(() => state.requests.map(r => ({
+    id: r.id,
+    title: r.title,
+    pic: r.pic,
+    amount: r.amount,
+    stage: r.stage as TrackerStage,
+    department: r.department,
+    daysInStage: r.daysInStage,
+    isUrgent: r.isUrgent,
+  })), [state.requests]);
 
   const filteredItems = useMemo(() => {
     return items.filter(item => {
@@ -41,23 +62,25 @@ export default function TrackerPage() {
 
   // Group items by stage
   const itemsByStage = useMemo(() => {
-    const grouped = { PR: [], CS30: [], PO: [], DONE: [] } as Record<TrackerStage, TrackerItem[]>;
+    const grouped = { Persiapan: [], Sourcing: [], Evaluasi: [], Contracting: [], Selesai: [] } as Record<TrackerStage, TrackerItem[]>;
     filteredItems.forEach(item => grouped[item.stage].push(item));
     return grouped;
   }, [filteredItems]);
 
   const totalItemsCount = filteredItems.length;
-  const prPct = totalItemsCount ? (itemsByStage["PR"].length / totalItemsCount) * 100 : 0;
-  const cs30Pct = totalItemsCount ? (itemsByStage["CS30"].length / totalItemsCount) * 100 : 0;
-  const poPct = totalItemsCount ? (itemsByStage["PO"].length / totalItemsCount) * 100 : 0;
+  const persPct = totalItemsCount ? (itemsByStage["Persiapan"].length / totalItemsCount) * 100 : 0;
+  const srcPct = totalItemsCount ? (itemsByStage["Sourcing"].length / totalItemsCount) * 100 : 0;
+  const evlPct = totalItemsCount ? (itemsByStage["Evaluasi"].length / totalItemsCount) * 100 : 0;
+  const ctrPct = totalItemsCount ? (itemsByStage["Contracting"].length / totalItemsCount) * 100 : 0;
   
   const pieChartStyle = totalItemsCount === 0 
     ? { background: 'conic-gradient(#f1f5f9 0% 100%)' }
     : { background: `conic-gradient(
-        #cbd5e1 0% ${prPct}%, 
-        #3b82f6 ${prPct}% ${prPct + cs30Pct}%, 
-        #f59e0b ${prPct + cs30Pct}% ${prPct + cs30Pct + poPct}%, 
-        #10b981 ${prPct + cs30Pct + poPct}% 100%
+        #64748b 0% ${persPct}%, 
+        #f59e0b ${persPct}% ${persPct + srcPct}%, 
+        #0a4d8c ${persPct + srcPct}% ${persPct + srcPct + evlPct}%, 
+        #ef4444 ${persPct + srcPct + evlPct}% ${persPct + srcPct + evlPct + ctrPct}%, 
+        #10b981 ${persPct + srcPct + evlPct + ctrPct}% 100%
       )`};
 
   // Drag and drop handlers
@@ -73,7 +96,7 @@ export default function TrackerPage() {
   const handleDrop = (e: React.DragEvent, stage: TrackerStage) => {
     e.preventDefault();
     const id = e.dataTransfer.getData("itemId");
-    setItems(prev => prev.map(item => item.id === id ? { ...item, stage } : item));
+    moveRequest(id, stage);
   };
 
   return (
@@ -106,6 +129,12 @@ export default function TrackerPage() {
               <option value="General Affairs">General Affairs</option>
             </select>
           </div>
+          <button 
+            onClick={() => setShowAddModal(true)}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
+          >
+            + Tambah Request
+          </button>
         </div>
       </div>
       {/* Kanban Board Container */}
@@ -135,31 +164,38 @@ export default function TrackerPage() {
               <div className="space-y-3.5 bg-slate-50 p-4 rounded-xl border border-slate-100">
                 <div className="flex items-center justify-between text-[12px]">
                   <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-slate-300"></div>
-                    <span className="text-slate-600 font-medium">Menunggu PR</span>
+                    <div className="w-2.5 h-2.5 rounded-full bg-slate-500"></div>
+                    <span className="text-slate-600 font-medium">Persiapan</span>
                   </div>
-                  <span className="font-bold text-slate-700">{itemsByStage["PR"].length}</span>
-                </div>
-                <div className="flex items-center justify-between text-[12px]">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500"></div>
-                    <span className="text-slate-600 font-medium">Proses CS30</span>
-                  </div>
-                  <span className="font-bold text-slate-700">{itemsByStage["CS30"].length}</span>
+                  <span className="font-bold text-slate-700">{itemsByStage["Persiapan"].length}</span>
                 </div>
                 <div className="flex items-center justify-between text-[12px]">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-                    <span className="text-slate-600 font-medium">Pembuatan PO</span>
+                    <span className="text-slate-600 font-medium">Sourcing</span>
                   </div>
-                  <span className="font-bold text-slate-700">{itemsByStage["PO"].length}</span>
+                  <span className="font-bold text-slate-700">{itemsByStage["Sourcing"].length}</span>
+                </div>
+                <div className="flex items-center justify-between text-[12px]">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#0a4d8c]"></div>
+                    <span className="text-slate-600 font-medium">Evaluasi</span>
+                  </div>
+                  <span className="font-bold text-slate-700">{itemsByStage["Evaluasi"].length}</span>
+                </div>
+                <div className="flex items-center justify-between text-[12px]">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
+                    <span className="text-slate-600 font-medium">Contracting / PO</span>
+                  </div>
+                  <span className="font-bold text-slate-700">{itemsByStage["Contracting"].length}</span>
                 </div>
                 <div className="flex items-center justify-between text-[12px]">
                   <div className="flex items-center gap-2">
                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
                     <span className="text-slate-600 font-medium">Selesai</span>
                   </div>
-                  <span className="font-bold text-slate-700">{itemsByStage["DONE"].length}</span>
+                  <span className="font-bold text-slate-700">{itemsByStage["Selesai"].length}</span>
                 </div>
               </div>
             </div>
@@ -212,13 +248,13 @@ export default function TrackerPage() {
                     </div>
                     
                     <div className="pt-3 border-t border-slate-100 flex items-center justify-between mt-auto">
-                      {col.id === "DONE" ? (
+                      {col.id === "Selesai" ? (
                         <div className="flex items-center gap-1.5 text-emerald-600 text-[11px] font-semibold">
                           <CheckCircle2 size={14} />
                           <span>Selesai</span>
                         </div>
                       ) : item.isUrgent ? (
-                        <div className="flex items-center gap-1.5 text-red-600 text-[11px] font-semibold bg-red-50 px-2 py-1 rounded-md border border-red-100">
+                        <div className="flex items-center gap-1.5 text-red-700 text-[11px] font-medium bg-red-50 px-2.5 py-0.5 rounded-full border border-red-200">
                           <AlertCircle size={14} />
                           <span>Urgent ({item.daysInStage} hr)</span>
                         </div>
@@ -229,7 +265,25 @@ export default function TrackerPage() {
                         </div>
                       )}
                       
-                      <button className="w-6 h-6 flex items-center justify-center rounded-full bg-slate-50 hover:bg-[#0a4d8c] text-slate-400 hover:text-white transition-colors border border-slate-200 hover:border-transparent">
+                      {/* Time Status from D4 */}
+                      {timeStatusMap[item.id] && col.id !== "Selesai" && (
+                        <div className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
+                          timeStatusMap[item.id] === 'Overdue'
+                            ? 'bg-red-50 text-red-600 border-red-200'
+                            : timeStatusMap[item.id] === 'At Risk'
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        }`}>
+                          <Clock size={10} />
+                          {timeStatusMap[item.id]}
+                        </div>
+                      )}
+                      
+                      <button 
+                        onClick={() => setSelectedRequestId(item.id)}
+                        title="Lihat Detail"
+                        className="w-6 h-6 flex items-center justify-center rounded-full bg-slate-50 hover:bg-[#0a4d8c] text-slate-400 hover:text-white transition-colors border border-slate-200 hover:border-transparent"
+                      >
                         <ChevronRight size={14} />
                       </button>
                     </div>
@@ -246,6 +300,215 @@ export default function TrackerPage() {
           ))}
         </div>
       </div>
+
+      {/* DETAIL MODAL (Helicopter View) */}
+      {selectedRequestId && (() => {
+        const docs = state.documents.filter(d => d.requestId === selectedRequestId);
+        const guars = state.guarantees.filter(d => d.requestId === selectedRequestId);
+        const slas = state.deadlines.filter(d => d.requestId === selectedRequestId);
+        
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-transparent pointer-events-none">
+            <div className="bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh] pointer-events-auto animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+              <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-[#0a4d8c]">
+                <div className="flex items-center gap-2">
+                  <LayoutList size={18} className="text-white" />
+                  <h3 className="font-bold text-white text-sm">{selectedRequestId}</h3>
+                </div>
+                <button onClick={() => setSelectedRequestId(null)} className="text-blue-200 hover:text-white transition-colors">
+                  <XCircle size={20} />
+                </button>
+              </div>
+              <div className="p-6 flex-1 overflow-y-auto space-y-6">
+                
+                {/* Documents Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                    <div className="flex items-center gap-2 text-[#0a4d8c] font-semibold text-sm">
+                      <FileText size={16} />
+                      Dokumen (D1)
+                    </div>
+                    <button onClick={() => router.push('/documents')} className="text-[11px] font-medium text-slate-500 hover:text-[#0a4d8c] transition-colors flex items-center gap-1">
+                      Ke Modul Dokumen <ChevronRight size={12} />
+                    </button>
+                  </div>
+                  {docs.length > 0 ? (
+                    <div className="space-y-2">
+                      {docs.map(d => (
+                        <div key={d.id} className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-lg p-2.5">
+                          <div>
+                            <div className="text-[13px] font-semibold text-slate-800">{d.name}</div>
+                            <div className="text-[11px] text-slate-500">{d.type} • {d.uploadDate}</div>
+                          </div>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${d.status === 'Lulus Verifikasi' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                            {d.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-slate-500 italic py-2 text-center bg-slate-50 rounded-lg border border-dashed border-slate-200">Tidak ada dokumen tertaut.</div>
+                  )}
+                </div>
+
+                {/* Guarantees Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                    <div className="flex items-center gap-2 text-[#0a4d8c] font-semibold text-sm">
+                      <ShieldCheck size={16} />
+                      Jaminan (D2)
+                    </div>
+                    <button onClick={() => router.push('/guarantees')} className="text-[11px] font-medium text-slate-500 hover:text-[#0a4d8c] transition-colors flex items-center gap-1">
+                      Ke Modul Jaminan <ChevronRight size={12} />
+                    </button>
+                  </div>
+                  {guars.length > 0 ? (
+                    <div className="space-y-2">
+                      {guars.map(g => (
+                        <div key={g.id} className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-lg p-2.5">
+                          <div>
+                            <div className="text-[13px] font-semibold text-slate-800">{g.vendor}</div>
+                            <div className="text-[11px] text-slate-500">{g.type} • Jatuh tempo: {g.expiryDate}</div>
+                          </div>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${g.status === 'Aktif' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                            {g.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-slate-500 italic py-2 text-center bg-slate-50 rounded-lg border border-dashed border-slate-200">Tidak ada jaminan tertaut.</div>
+                  )}
+                </div>
+
+                {/* Deadlines Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
+                    <div className="flex items-center gap-2 text-[#0a4d8c] font-semibold text-sm">
+                      <CalendarClock size={16} />
+                      SLA & Jatuh Tempo (D4)
+                    </div>
+                    <button onClick={() => router.push('/deadlines')} className="text-[11px] font-medium text-slate-500 hover:text-[#0a4d8c] transition-colors flex items-center gap-1">
+                      Ke Modul SLA <ChevronRight size={12} />
+                    </button>
+                  </div>
+                  {slas.length > 0 ? (
+                    <div className="space-y-2">
+                      {slas.map(s => (
+                        <div key={s.id} className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-lg p-2.5">
+                          <div>
+                            <div className="text-[13px] font-semibold text-slate-800">{s.taskName}</div>
+                            <div className="text-[11px] text-slate-500">PIC: {s.pic} • Target: {s.targetDate}</div>
+                          </div>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${s.status === 'On Track' || s.status === 'Selesai' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : s.status === 'At Risk' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                            {s.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-slate-500 italic py-2 text-center bg-slate-50 rounded-lg border border-dashed border-slate-200">Tidak ada SLA tertaut.</div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+      {/* ADD REQUEST MODAL */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-transparent pointer-events-none">
+          <div className="bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col pointer-events-auto animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-[#0a4d8c]">
+              <div className="flex items-center gap-2">
+                <PlusCircle size={18} className="text-white" />
+                <h3 className="font-bold text-white text-sm">Tambah Request Baru</h3>
+              </div>
+              <button onClick={() => setShowAddModal(false)} className="text-blue-200 hover:text-white transition-colors">
+                <XCircle size={20} />
+              </button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              
+              if (addRequest) {
+                addRequest({
+                  id: `REQ-${Date.now().toString().slice(-4)}`,
+                  title: formData.get('title') as string,
+                  pic: formData.get('pic') as string,
+                  amount: formData.get('amount') as string,
+                  amountRaw: 50000000,
+                  stage: "Persiapan",
+                  department: formData.get('department') as string,
+                  fpp: formData.get('fpp') as string || `FPP-${Date.now().toString().slice(-4)}`,
+                  daysInStage: 0,
+                  isUrgent: formData.get('priority') === 'Urgent',
+                  createdAt: new Date().toISOString().split('T')[0],
+                  updatedAt: new Date().toISOString().split('T')[0]
+                });
+                alert('Request baru berhasil ditambahkan!');
+                setShowAddModal(false);
+              }
+            }}>
+              <div className="p-6">
+                <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 mb-5 flex items-start gap-3">
+                  <AlertCircle size={16} className="text-blue-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-blue-800 leading-relaxed">
+                    Pastikan informasi yang dimasukkan sudah sesuai dengan dokumen pendukung (FPP). Request baru akan otomatis masuk ke tahap <strong>Persiapan</strong>.
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-5 mb-5">
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Judul Pengadaan <span className="text-red-500">*</span></label>
+                    <input required name="title" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c]" placeholder="Contoh: Pengadaan Perangkat Jaringan (Router/Switch)" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Nomor FPP <span className="text-red-500">*</span></label>
+                    <input required name="fpp" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c]" placeholder="Contoh: FPP-2026-0801" />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">PIC Procurement <span className="text-red-500">*</span></label>
+                    <input required name="pic" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c]" placeholder="Contoh: Budi Santoso" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Nilai Pengadaan <span className="text-red-500">*</span></label>
+                    <input required name="amount" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c]" placeholder="Contoh: Rp 150.0 Jt" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Fungsi / Departemen <span className="text-red-500">*</span></label>
+                    <select required name="department" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c] bg-white">
+                      <option value="IT Infrastructure">IT Infrastructure</option>
+                      <option value="Operations">Operations</option>
+                      <option value="HR">Human Resources</option>
+                      <option value="Creative">Creative</option>
+                      <option value="General Affairs">General Affairs</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Tingkat Prioritas <span className="text-red-500">*</span></label>
+                    <select required name="priority" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c] bg-white">
+                      <option value="Normal">Normal</option>
+                      <option value="Urgent">Urgent (Prioritas Tinggi)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end">
+                <button type="submit" className="px-6 py-2.5 bg-[#0a4d8c] hover:bg-[#093e6f] text-white text-sm font-bold rounded-lg transition-all shadow-sm hover:shadow flex items-center gap-2">
+                  <PlusCircle size={16} />
+                  Buat Request Baru
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

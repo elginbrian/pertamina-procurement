@@ -1,5 +1,6 @@
-import { Search, Filter, Plus } from "lucide-react";
-import { GuaranteeStatus } from "@/components/pages/guarantees/types";
+import { Search, Filter, Plus, Upload } from "lucide-react";
+import { GuaranteeStatus } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 interface GuaranteeFilterBarProps {
   searchQuery: string;
@@ -11,6 +12,7 @@ interface GuaranteeFilterBarProps {
 }
 
 export function GuaranteeFilterBar({ searchQuery, setSearchQuery, statusFilter, setStatusFilter, typeFilter, setTypeFilter }: GuaranteeFilterBarProps) {
+  const router = useRouter();
   return (
     <div className="flex flex-col xl:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
       <div className="relative w-full flex-1">
@@ -50,10 +52,13 @@ export function GuaranteeFilterBar({ searchQuery, setSearchQuery, statusFilter, 
           </div>
         </div>
         
-        <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap shrink-0">
-          <Plus size={16} />
-          <span className="hidden sm:inline">Input Jaminan</span>
-          <span className="sm:hidden">Input</span>
+        <button 
+          onClick={() => router.push('/guarantees/upload')}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap shrink-0"
+        >
+          <Upload size={16} />
+          <span className="hidden sm:inline">Upload Jaminan</span>
+          <span className="sm:hidden">Upload</span>
         </button>
       </div>
     </div>

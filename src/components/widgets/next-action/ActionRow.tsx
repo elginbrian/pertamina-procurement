@@ -1,6 +1,8 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, AlertCircle, ArrowRight, CheckCircle2 } from "lucide-react";
-import { ActionItem } from "@/components/pages/next-action/types";
+import { ChevronDown, ChevronUp, AlertCircle, ArrowRight, CheckCircle2, ExternalLink } from "lucide-react";
+import { ActionItem } from "@/lib/types";
+import { useProcurement } from "@/context/ProcurementContext";
+import { useRouter } from "next/navigation";
 
 interface ActionRowProps {
   item: ActionItem;
@@ -8,27 +10,42 @@ interface ActionRowProps {
 
 export function ActionRow({ item }: ActionRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { updateActionStatus } = useProcurement();
+  const router = useRouter();
 
-  const getPriorityBadge = (priority: ActionItem["priority"]) => {
-    switch (priority) {
-      case "High":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 border border-red-200 uppercase tracking-wider">HIGH</span>;
-      case "Medium":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200 uppercase tracking-wider">MEDIUM</span>;
-      case "Low":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200 uppercase tracking-wider">LOW</span>;
+  const navigateToSource = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    switch (item.source) {
+      case "Dokumen": router.push('/documents'); break;
+      case "Jaminan": router.push('/guarantees'); break;
+      case "Deadline": case "SLA/Jatuh Tempo": router.push('/deadlines'); break;
+      case "Proses Pengadaan": router.push('/'); break;
+      default: break;
     }
   };
 
   const getStatusBadge = (status: ActionItem["status"]) => {
     switch (status) {
-      case "Completed":
+      case "Done":
         return "bg-emerald-50 text-emerald-700 border-emerald-200";
       case "In Progress":
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return "bg-blue-50 text-[#0a4d8c] border-blue-200";
+      case "Cancelled":
+        return "bg-red-50 text-red-700 border-red-200";
       case "Pending":
       default:
         return "bg-slate-50 text-slate-700 border-slate-200";
+    }
+  };
+
+  const getPriorityBadge = (priority: ActionItem["priority"]) => {
+    switch (priority) {
+      case "High":
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-red-50 text-red-700 border border-red-200 uppercase tracking-wider">HIGH</span>;
+      case "Medium":
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-[#0a4d8c] border border-blue-200 uppercase tracking-wider">MEDIUM</span>;
+      case "Low":
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wider">LOW</span>;
     }
   };
 
@@ -40,7 +57,13 @@ export function ActionRow({ item }: ActionRowProps) {
       >
         <td className="px-4 py-3 whitespace-nowrap">
           <div className="font-medium text-slate-800 text-[13px]">{item.title}</div>
-          <div className="text-[11px] text-slate-500 mt-0.5">{item.referenceId}</div>
+          <button
+            onClick={navigateToSource}
+            className="flex items-center gap-1 text-[11px] text-[#0a4d8c] hover:underline mt-0.5 w-fit"
+          >
+            <ExternalLink size={10} />
+            {item.referenceId}
+          </button>
         </td>
         <td className="px-4 py-3 whitespace-nowrap">
           <div className="text-[13px] text-slate-600">{item.source}</div>
@@ -55,7 +78,7 @@ export function ActionRow({ item }: ActionRowProps) {
         </td>
         <td className="px-4 py-3 whitespace-nowrap">
           <div className="flex items-center justify-between gap-4">
-            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadge(item.status)}`}>
+            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium border ${getStatusBadge(item.status)}`}>
               {item.status}
             </span>
             <div className="text-slate-400">
@@ -69,7 +92,7 @@ export function ActionRow({ item }: ActionRowProps) {
       {isExpanded && (
         <tr>
           <td colSpan={5} className="p-0 border-b border-slate-200 whitespace-normal">
-            <div className={`px-5 py-4 bg-slate-50/50 inner-shadow-sm border-l-4 ${item.priority === 'High' ? 'border-l-red-500' : item.priority === 'Medium' ? 'border-l-amber-500' : 'border-l-blue-500'}`}>
+            <div className={`px-5 py-4 bg-slate-50/50 inner-shadow-sm border-l-4 ${item.priority === 'High' ? 'border-l-red-500' : item.priority === 'Medium' ? 'border-l-[#0a4d8c]' : 'border-l-emerald-500'}`}>
               <div className="flex flex-col xl:flex-row gap-8 max-w-5xl">
                 
                 {/* Information Block */}
@@ -86,14 +109,24 @@ export function ActionRow({ item }: ActionRowProps) {
                 {/* Actions Block */}
                 <div className="w-full xl:w-[220px] shrink-0 xl:pt-1">
                   <div className="space-y-2">
-                    <button className="w-full flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm">
-                      <ArrowRight size={14} />
-                      Kerjakan Sekarang
-                    </button>
-                    <button className="w-full flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm">
-                      <CheckCircle2 size={14} />
-                      Tandai Selesai
-                    </button>
+                    {item.status === 'Pending' && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); updateActionStatus(item.id, "In Progress"); }}
+                        className="w-full flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm"
+                      >
+                        <ArrowRight size={14} />
+                        Kerjakan Sekarang
+                      </button>
+                    )}
+                    {item.status !== 'Done' && (
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); updateActionStatus(item.id, "Done"); }}
+                        className={`w-full flex items-center justify-center gap-2 ${item.status === 'In Progress' ? 'bg-emerald-600 hover:bg-emerald-700 text-white border-transparent' : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-300'} px-3 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm`}
+                      >
+                        <CheckCircle2 size={14} />
+                        Tandai Selesai
+                      </button>
+                    )}
                   </div>
                 </div>
 

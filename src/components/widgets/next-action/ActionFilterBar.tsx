@@ -1,5 +1,5 @@
 import { Search, Filter, CheckSquare } from "lucide-react";
-import { ActionPriority, ActionSource } from "@/components/pages/next-action/types";
+import { ActionPriority, ActionSource } from "@/lib/types";
 
 interface ActionFilterBarProps {
   searchQuery: string;
@@ -8,6 +8,7 @@ interface ActionFilterBarProps {
   setSourceFilter: (val: ActionSource | "All") => void;
   priorityFilter: ActionPriority | "All";
   setPriorityFilter: (val: ActionPriority | "All") => void;
+  onMarkAllDone: () => void;
 }
 
 export function ActionFilterBar({ 
@@ -16,7 +17,8 @@ export function ActionFilterBar({
   sourceFilter, 
   setSourceFilter, 
   priorityFilter, 
-  setPriorityFilter 
+  setPriorityFilter,
+  onMarkAllDone
 }: ActionFilterBarProps) {
   return (
     <div className="flex flex-col xl:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -58,7 +60,10 @@ export function ActionFilterBar({
           </div>
         </div>
         
-        <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap shrink-0">
+        <button 
+          onClick={onMarkAllDone}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap shrink-0"
+        >
           <CheckSquare size={16} />
           <span className="hidden sm:inline">Tandai Selesai</span>
           <span className="sm:hidden">Selesai</span>

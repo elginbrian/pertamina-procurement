@@ -1,5 +1,5 @@
 import DashboardShell from "@/components/layout/DashboardShell";
 
-export default function SettingsRoute() {
+export default function GuaranteesUploadRoute() {
   return <DashboardShell />;
 }

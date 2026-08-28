@@ -1,4 +1,4 @@
-export type TrackerStage = "PR" | "CS30" | "PO" | "DONE";
+export type TrackerStage = "Persiapan" | "Sourcing" | "Evaluasi" | "Contracting" | "Selesai";
 
 export interface TrackerItem {
   id: string;

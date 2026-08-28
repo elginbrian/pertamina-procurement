@@ -10,6 +10,11 @@ import GuaranteesPage from "@/components/pages/guarantees/GuaranteesPage";
 import DeadlinesPage from "@/components/pages/deadlines/DeadlinesPage";
 import NextActionPage from "@/components/pages/next-action/NextActionPage";
 import NotificationsPage from "@/components/pages/notifications/NotificationsPage";
+import DocumentUploadPage from "@/components/pages/documents/DocumentUploadPage";
+import DocumentResultPage from "@/components/pages/documents/DocumentResultPage";
+import GuaranteeUploadPage from "@/components/pages/guarantees/GuaranteeUploadPage";
+import SettingsPage from "@/components/pages/settings/SettingsPage";
+import { ProcurementProvider } from "@/context/ProcurementContext";
 
 import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
 
@@ -45,8 +50,11 @@ function DashboardShellInner() {
       case "next-action":
         return "next-action";
       case "documents":
+        if (path.includes("upload")) return "documents/upload";
+        if (path.includes("result")) return "documents/result";
         return "documents";
       case "guarantees":
+        if (path.includes("upload")) return "guarantees/upload";
         return "guarantees";
       case "deadlines":
         return "deadlines";
@@ -73,8 +81,14 @@ function DashboardShellInner() {
         return { title: "Tindakan (Next Action)", subtitle: "Daftar tindakan yang perlu ditangani" };
       case "documents":
         return { title: "Pemeriksaan Dokumen", subtitle: "Review, kelengkapan, dan draft (D1)" };
+      case "documents/upload":
+        return { title: "Upload Dokumen (D1)", subtitle: "Pemeriksaan cerdas dengan sistem PRIMA AI" };
+      case "documents/result":
+        return { title: "Hasil Pemeriksaan (D1)", subtitle: "Laporan otomatis verifikasi dokumen" };
       case "guarantees":
         return { title: "Pantau Jaminan", subtitle: "Status dan masa berlaku jaminan (D2)" };
+      case "guarantees/upload":
+        return { title: "Upload Jaminan (D2)", subtitle: "Ekstraksi data jaminan cerdas via OCR PRIMA" };
       case "deadlines":
         return { title: "Jatuh Tempo", subtitle: "SLA timer dan pengingat batas waktu (D4)" };
       case "notifications":
@@ -100,7 +114,7 @@ function DashboardShellInner() {
       <SidebarNav onSelect={(k) => setSelectedTab(k)} />
 
         <div className={`flex min-w-0 flex-1 flex-col transition-all duration-300`}>
-        <div className={["overview", "documents", "guarantees", "deadlines", "next-action", "notifications"].includes(selectedTab) ? "lg:hidden" : "block"}>
+        <div className={["overview", "documents", "documents/upload", "documents/result", "guarantees", "guarantees/upload", "deadlines", "next-action", "notifications"].includes(selectedTab) ? "lg:hidden" : "block"}>
           <DashboardHeader
             title={header.title}
             subtitle={header.subtitle}
@@ -116,9 +130,13 @@ function DashboardShellInner() {
             {selectedTab === "overview" && <TrackerPage />}
             {selectedTab === "next-action" && <NextActionPage />}
             {selectedTab === "documents" && <DocumentsPage />}
+            {selectedTab === "documents/upload" && <DocumentUploadPage />}
+            {selectedTab === "documents/result" && <DocumentResultPage />}
             {selectedTab === "guarantees" && <GuaranteesPage />}
+            {selectedTab === "guarantees/upload" && <GuaranteeUploadPage />}
             {selectedTab === "deadlines" && <DeadlinesPage />}
             {selectedTab === "notifications" && <NotificationsPage />}
+            {selectedTab === "settings" && <SettingsPage />}
           </div>
         </main>
       </div>
@@ -128,9 +146,11 @@ function DashboardShellInner() {
 
 export function DashboardShell() {
   return (
-    <SidebarProvider>
-      <DashboardShellInner />
-    </SidebarProvider>
+    <ProcurementProvider>
+      <SidebarProvider>
+        <DashboardShellInner />
+      </SidebarProvider>
+    </ProcurementProvider>
   );
 }
 

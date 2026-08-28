@@ -1,74 +1,22 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import { Clock } from "lucide-react";
-import { DeadlineItem, DeadlineStatus } from "./types";
+import { Clock, XCircle, PlusCircle, AlertCircle } from "lucide-react";
+import { DeadlineItem, DeadlineStatus } from "@/lib/types";
 import { DeadlineFilterBar } from "@/components/widgets/deadlines/DeadlineFilterBar";
 import { DeadlineRow } from "@/components/widgets/deadlines/DeadlineRow";
 import { TablePagination } from "@/components/widgets/TablePagination";
-
-const mockDeadlines: DeadlineItem[] = [
-  {
-    id: "DL-001",
-    taskName: "Klarifikasi Teknis Vendor",
-    relatedId: "REQ-2026-101",
-    pic: "Budi Santoso",
-    department: "IT Infrastructure",
-    targetDate: "2026-08-25",
-    daysRemaining: 5,
-    status: "On Track",
-    urgencyLevel: "Low",
-    milestone: "Evaluasi Teknis",
-    nextAction: "Hubungi vendor terkait untuk memastikan kelengkapan dokumen teknis server.",
-  },
-  {
-    id: "DL-002",
-    taskName: "Persetujuan RAB",
-    relatedId: "REQ-2026-103",
-    pic: "Citra Dewi",
-    department: "General Affairs",
-    targetDate: "2026-08-21",
-    daysRemaining: 1,
-    status: "At Risk",
-    urgencyLevel: "High",
-    milestone: "Proses CS30",
-    nextAction: "SLA persetujuan hampir habis. Segera minta *approval* dari VP General Affairs.",
-  },
-  {
-    id: "DL-003",
-    taskName: "Negosiasi Harga",
-    relatedId: "REQ-2026-102",
-    pic: "Andi Wijaya",
-    department: "Creative",
-    targetDate: "2026-08-15",
-    daysRemaining: -5,
-    status: "Overdue",
-    urgencyLevel: "Critical",
-    milestone: "Negosiasi & Klarifikasi",
-    nextAction: "Negosiasi melewati batas SLA 5 hari. Lakukan eskalasi atau jadwalkan ulang *meeting* negosiasi final secepatnya.",
-  },
-  ...Array.from({ length: 15 }).map((_, i) => ({
-    id: `DL-2026-00${i + 4}`,
-    taskName: i % 2 === 0 ? "Review Legal" : "Penerbitan PO",
-    relatedId: `REQ-2026-20${i}`,
-    pic: `Staff ${i + 1}`,
-    department: i % 3 === 0 ? "HR" : "Operations",
-    targetDate: `2026-08-${(10 + i * 2) % 30 + 1}`,
-    daysRemaining: (i % 4 === 0 ? -2 : i % 3 === 0 ? 2 : 10 + i),
-    status: (i % 4 === 0 ? "Overdue" : i % 3 === 0 ? "At Risk" : "On Track") as DeadlineStatus,
-    urgencyLevel: (i % 4 === 0 ? "Critical" : i % 3 === 0 ? "High" : "Medium") as "Low" | "Medium" | "High" | "Critical",
-    milestone: i % 2 === 0 ? "Legal Drafting" : "Pembuatan PO",
-    nextAction: i % 4 === 0 ? "SLA terlewati. Lakukan percepatan." : "Pantau progres secara berkala."
-  }))
-];
+import { useProcurement } from "@/context/ProcurementContext";
 
 export default function DeadlinesPage() {
-  const [deadlines] = useState<DeadlineItem[]>(mockDeadlines);
+  const { state, addDeadline } = useProcurement();
+  const deadlines = state.deadlines;
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<DeadlineStatus | "All">("All");
   const [urgencyFilter, setUrgencyFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const onTrackCount = deadlines.filter(d => d.status === "On Track").length;
   const atRiskCount = deadlines.filter(d => d.status === "At Risk").length;
@@ -85,7 +33,7 @@ export default function DeadlinesPage() {
 
   const filteredDeadlines = useMemo(() => {
     return deadlines.filter((item) => {
-      const matchesSearch = item.relatedId.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      const matchesSearch = item.requestId.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             item.pic.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             item.taskName.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === "All" || item.status === statusFilter;
@@ -114,7 +62,7 @@ export default function DeadlinesPage() {
             <div className="text-[11px] text-slate-400 mt-1 font-medium">Tugas dalam pemantauan</div>
           </div>
           <div className="w-14 h-14 rounded-full relative shadow-[inset_0_2px_8px_rgba(0,0,0,0.06)]" style={{
-            background: `conic-gradient(#10b981 0% ${onTrackPct}%, #f59e0b ${onTrackPct}% ${onTrackPct + atRiskPct}%, #ef4444 ${onTrackPct + atRiskPct}% 100%)`
+            background: `conic-gradient(#10b981 0% ${onTrackPct}%, #0a4d8c ${onTrackPct}% ${onTrackPct + atRiskPct}%, #ef4444 ${onTrackPct + atRiskPct}% 100%)`
           }}>
             <div className="absolute inset-2 bg-white rounded-full"></div>
           </div>
@@ -130,7 +78,7 @@ export default function DeadlinesPage() {
               </div>
               <div className="text-2xl font-bold text-slate-800 mt-2">{onTrackCount}</div>
             </div>
-            <div className="bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-1 rounded-md border border-emerald-100">
+            <div className="bg-emerald-50 text-emerald-700 text-xs font-medium px-2.5 py-0.5 rounded-full border border-emerald-100">
               {onTrackPct.toFixed(0)}%
             </div>
           </div>
@@ -142,12 +90,12 @@ export default function DeadlinesPage() {
           <div className="flex justify-between items-start">
             <div>
               <div className="text-[13px] font-medium text-slate-500 mb-1 flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-[#0a4d8c]"></div>
                 Berisiko (At Risk)
               </div>
               <div className="text-2xl font-bold text-slate-800 mt-2">{atRiskCount}</div>
             </div>
-            <div className="bg-amber-50 text-amber-700 text-xs font-bold px-2 py-1 rounded-md border border-amber-100">
+            <div className="bg-blue-50 text-[#0a4d8c] text-xs font-medium px-2.5 py-0.5 rounded-full border border-blue-100">
               {atRiskPct.toFixed(0)}%
             </div>
           </div>
@@ -164,7 +112,7 @@ export default function DeadlinesPage() {
               </div>
               <div className="text-2xl font-bold text-slate-800 mt-2">{overdueCount}</div>
             </div>
-            <div className="bg-red-50 text-red-700 text-xs font-bold px-2 py-1 rounded-md border border-red-100">
+            <div className="bg-red-50 text-red-700 text-xs font-medium px-2.5 py-0.5 rounded-full border border-red-100">
               {(100 - onTrackPct - atRiskPct).toFixed(0)}%
             </div>
           </div>
@@ -180,6 +128,7 @@ export default function DeadlinesPage() {
         setStatusFilter={setStatusFilter}
         urgencyFilter={urgencyFilter}
         setUrgencyFilter={setUrgencyFilter}
+        onAddDeadline={() => setShowAddModal(true)}
       />
 
       {/* Deadlines List (Table Layout) */}
@@ -225,6 +174,118 @@ export default function DeadlinesPage() {
           />
         </div>
       </div>
+      {/* ADD SLA MODAL */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-transparent pointer-events-none">
+          <div className="bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col pointer-events-auto animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-[#0a4d8c]">
+              <div className="flex items-center gap-2">
+                <PlusCircle size={18} className="text-white" />
+                <h3 className="font-bold text-white text-sm">Tambah SLA & Target Baru</h3>
+              </div>
+              <button onClick={() => setShowAddModal(false)} className="text-blue-200 hover:text-white transition-colors">
+                <XCircle size={20} />
+              </button>
+            </div>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              
+              if (addDeadline) {
+                const targetDateRaw = formData.get('targetDate') as string;
+                // Calculate days remaining roughly
+                const targetTime = new Date(targetDateRaw).getTime();
+                const nowTime = new Date().getTime();
+                const diffDays = Math.ceil((targetTime - nowTime) / (1000 * 60 * 60 * 24));
+                
+                addDeadline({
+                  id: `SLA-${Date.now()}`,
+                  requestId: formData.get('requestId') as string,
+                  taskName: formData.get('taskName') as string,
+                  milestone: formData.get('milestone') as string,
+                  pic: formData.get('pic') as string,
+                  department: formData.get('department') as string,
+                  targetDate: targetDateRaw,
+                  daysRemaining: diffDays,
+                  status: "On Track",
+                  urgencyLevel: formData.get('urgencyLevel') as any,
+                  nextAction: "Selesaikan tugas sesuai prosedur",
+                });
+                alert('SLA baru berhasil ditambahkan!');
+                setShowAddModal(false);
+              }
+            }}>
+              <div className="p-6">
+                <div className="bg-blue-50/50 border border-blue-100 rounded-lg p-3 mb-5 flex items-start gap-3">
+                  <AlertCircle size={16} className="text-blue-500 shrink-0 mt-0.5" />
+                  <p className="text-xs text-blue-800 leading-relaxed">
+                    SLA (Service Level Agreement) baru akan dimasukkan ke tracker dan membantu notifikasi peringatan. Pastikan <strong className="font-bold">Request ID</strong> sesuai (contoh: REQ-2026-101).
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-5">
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Nama Tugas / Aktivitas <span className="text-red-500">*</span></label>
+                    <input required name="taskName" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c]" placeholder="Contoh: Approval Direksi" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Request ID (Pengadaan) <span className="text-red-500">*</span></label>
+                    <input required name="requestId" defaultValue="REQ-2026-101" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c]" placeholder="Contoh: REQ-2026-101" />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">PIC <span className="text-red-500">*</span></label>
+                    <input required name="pic" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c]" placeholder="Contoh: Budi Santoso" />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Target Tanggal Selesai <span className="text-red-500">*</span></label>
+                    <input required type="date" name="targetDate" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c]" defaultValue={new Date(Date.now() + 86400000 * 3).toISOString().split('T')[0]} />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Milestone Tahapan <span className="text-red-500">*</span></label>
+                    <select required name="milestone" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c] bg-white">
+                      <option value="Evaluasi Teknis">Evaluasi Teknis</option>
+                      <option value="Prakualifikasi">Prakualifikasi</option>
+                      <option value="Contracting">Contracting</option>
+                      <option value="Tender / Sourcing">Tender / Sourcing</option>
+                      <option value="Administrasi">Administrasi</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Fungsi / Departemen PIC <span className="text-red-500">*</span></label>
+                    <select required name="department" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c] bg-white">
+                      <option value="Procurement">Procurement</option>
+                      <option value="User/Peminta">User/Peminta</option>
+                      <option value="Legal">Legal</option>
+                      <option value="Finance">Finance</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Tingkat Urgensi <span className="text-red-500">*</span></label>
+                    <select required name="urgencyLevel" defaultValue="Medium" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c] bg-white">
+                      <option value="Low">Low</option>
+                      <option value="Medium">Medium</option>
+                      <option value="High">High</option>
+                      <option value="Critical">Critical</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end">
+                <button type="submit" className="px-6 py-2.5 bg-[#0a4d8c] hover:bg-[#093e6f] text-white text-sm font-bold rounded-lg transition-all shadow-sm hover:shadow flex items-center gap-2">
+                  <PlusCircle size={16} />
+                  Simpan SLA Baru
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

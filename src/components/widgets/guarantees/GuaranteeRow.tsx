@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AlertTriangle, ShieldCheck, ShieldAlert, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
-import { GuaranteeItem, GuaranteeStatus } from "@/components/pages/guarantees/types";
+import { GuaranteeItem, GuaranteeStatus } from "@/lib/types";
 
 export function GuaranteeRow({ guarantee }: { guarantee: GuaranteeItem }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -11,7 +11,7 @@ export function GuaranteeRow({ guarantee }: { guarantee: GuaranteeItem }) {
       case "Aktif": 
         return { color: "bg-emerald-50 text-emerald-700 border-emerald-200", icon: <ShieldCheck size={14} /> };
       case "Mendekati Expiry": 
-        return { color: "bg-amber-50 text-amber-700 border-amber-200", icon: <AlertTriangle size={14} /> };
+        return { color: "bg-blue-50 text-[#0a4d8c] border-blue-200", icon: <AlertTriangle size={14} /> };
       case "Expired": 
         return { color: "bg-red-50 text-red-700 border-red-200", icon: <ShieldAlert size={14} /> };
     }
@@ -39,7 +39,7 @@ export function GuaranteeRow({ guarantee }: { guarantee: GuaranteeItem }) {
           <div className="text-[13px] font-medium text-slate-700">{guarantee.expiryDate}</div>
           <div className={`text-xs mt-0.5 font-medium ${
             guarantee.status === 'Expired' ? 'text-red-600' : 
-            guarantee.status === 'Mendekati Expiry' ? 'text-amber-600' : 'text-emerald-600'
+            guarantee.status === 'Mendekati Expiry' ? 'text-[#0a4d8c]' : 'text-emerald-600'
           }`}>
             {guarantee.remainingDays < 0 ? `Terlewat ${Math.abs(guarantee.remainingDays)} hari` : `${guarantee.remainingDays} hari lagi`}
           </div>
@@ -61,14 +61,14 @@ export function GuaranteeRow({ guarantee }: { guarantee: GuaranteeItem }) {
       {isExpanded && (
         <tr>
           <td colSpan={5} className="p-0 border-b border-slate-200 whitespace-normal">
-            <div className={`px-5 py-4 bg-slate-50/50 inner-shadow-sm border-l-4 ${hasAction ? 'border-l-amber-500' : 'border-l-emerald-500'}`}>
+            <div className={`px-5 py-4 bg-slate-50/50 inner-shadow-sm border-l-4 ${hasAction ? 'border-l-[#0a4d8c]' : 'border-l-emerald-500'}`}>
               <div className="max-w-5xl">
                 {hasAction ? (
                   <div className="flex flex-col xl:flex-row gap-8">
                     {/* Expiry Details */}
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <AlertTriangle size={16} className={guarantee.status === 'Expired' ? 'text-red-500' : 'text-amber-500'} />
+                        <AlertTriangle size={16} className={guarantee.status === 'Expired' ? 'text-red-500' : 'text-[#0a4d8c]'} />
                         <h4 className="text-[13px] font-semibold text-slate-800">Status Jaminan</h4>
                       </div>
                       <p className="text-[13px] text-slate-600 ml-6">
@@ -80,18 +80,33 @@ export function GuaranteeRow({ guarantee }: { guarantee: GuaranteeItem }) {
                     {/* Next Action Box (Flat) */}
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <AlertTriangle size={16} className="text-orange-500" />
-                        <h4 className="text-[13px] font-semibold text-orange-600">Next Action</h4>
+                        <AlertTriangle size={16} className="text-[#0a4d8c]" />
+                        <h4 className="text-[13px] font-semibold text-[#0a4d8c]">Next Action</h4>
                       </div>
                       <p className="text-[13px] text-slate-700 leading-relaxed">{guarantee.nextAction}</p>
                       
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); }}
-                        className="mt-3 flex items-center gap-2 bg-white border border-slate-300 hover:border-orange-500 hover:text-orange-600 text-slate-700 px-3 py-1.5 rounded-md text-xs font-medium transition-all shadow-sm"
-                      >
-                        <ArrowRight size={14} />
-                        <span>Tandai Sudah Dikoordinasikan</span>
-                      </button>
+                      <div className="mt-4 flex flex-wrap items-center gap-2">
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); alert('Form Perpanjang Jaminan akan muncul di sini'); }}
+                          className="flex items-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-3 py-1.5 rounded-md text-xs font-medium transition-all shadow-sm"
+                        >
+                          <ArrowRight size={14} />
+                          <span>Perpanjang Jaminan</span>
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); alert('Proses pencairan jaminan akan dijalankan'); }}
+                          className="flex items-center gap-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 px-3 py-1.5 rounded-md text-xs font-medium transition-all shadow-sm"
+                        >
+                          <AlertTriangle size={14} />
+                          <span>Cairkan Jaminan</span>
+                        </button>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); alert('Form Edit Jaminan akan muncul di sini'); }}
+                          className="flex items-center gap-2 bg-white border border-slate-300 hover:border-[#0a4d8c] hover:text-[#0a4d8c] text-slate-700 px-3 py-1.5 rounded-md text-xs font-medium transition-all shadow-sm"
+                        >
+                          <span>Edit Data OCR</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : (
@@ -102,6 +117,15 @@ export function GuaranteeRow({ guarantee }: { guarantee: GuaranteeItem }) {
                         <h4 className="text-[13px] font-semibold text-emerald-800">Jaminan dalam Status Aman</h4>
                         <p className="text-[12px] text-emerald-600/80 mt-0.5">Masa berlaku masih panjang. Sistem akan memberikan notifikasi otomatis saat mendekati masa kedaluwarsa.</p>
                       </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={(e) => { e.stopPropagation(); alert('Form Edit Jaminan akan muncul di sini'); }}
+                        className="flex items-center gap-2 bg-white border border-slate-300 hover:border-[#0a4d8c] hover:text-[#0a4d8c] text-slate-700 px-3 py-1.5 rounded-md text-xs font-medium transition-all shadow-sm"
+                      >
+                        <span>Edit Data OCR</span>
+                      </button>
                     </div>
                   </div>
                 )}

@@ -2,88 +2,22 @@
 
 import { useState } from "react";
 import { Bell, CheckCircle2, AlertCircle, FileText, Clock, Settings, Search, CheckSquare } from "lucide-react";
-
-type NotificationType = "success" | "alert" | "system" | "document" | "deadline";
-
-interface NotificationItem {
-  id: string;
-  title: string;
-  description: string;
-  time: string;
-  isRead: boolean;
-  type: NotificationType;
-  category: "Hari Ini" | "Kemarin" | "Lebih Lama";
-}
-
-const mockNotifications: NotificationItem[] = [
-  {
-    id: "NOTIF-1",
-    title: "Dokumen Berhasil Divalidasi",
-    description: "Pakta Integritas Vendor A (DOC-001) telah berhasil divalidasi dan ditandai siap.",
-    time: "10 menit yang lalu",
-    isRead: false,
-    type: "success",
-    category: "Hari Ini"
-  },
-  {
-    id: "NOTIF-2",
-    title: "SLA Hampir Habis: Negosiasi Harga",
-    description: "Tugas 'Negosiasi Harga' untuk REQ-2026-102 akan jatuh tempo dalam 1 hari.",
-    time: "2 jam yang lalu",
-    isRead: false,
-    type: "alert",
-    category: "Hari Ini"
-  },
-  {
-    id: "NOTIF-3",
-    title: "Jaminan Mendekati Kedaluwarsa",
-    description: "Jaminan Masa Pemeliharaan (BG-2026-078122) akan berakhir dalam 6 hari.",
-    time: "4 jam yang lalu",
-    isRead: true,
-    type: "deadline",
-    category: "Hari Ini"
-  },
-  {
-    id: "NOTIF-4",
-    title: "Komentar Baru pada Dokumen",
-    description: "Andi Wijaya menambahkan komentar pada dokumen 'Surat Penawaran & BoQ'.",
-    time: "Kemarin, 14:30",
-    isRead: true,
-    type: "document",
-    category: "Kemarin"
-  },
-  {
-    id: "NOTIF-5",
-    title: "Pembaruan Sistem Berhasil",
-    description: "Pertamina Procurement Dashboard telah diperbarui ke versi 2.4.1.",
-    time: "Kemarin, 09:00",
-    isRead: true,
-    type: "system",
-    category: "Kemarin"
-  },
-  {
-    id: "NOTIF-6",
-    title: "Tindakan Selesai: Review Legal",
-    description: "Budi Santoso telah menyelesaikan tugas 'Review Legal' untuk REQ-2026-200.",
-    time: "18 Agustus, 11:20",
-    isRead: true,
-    type: "success",
-    category: "Lebih Lama"
-  }
-];
+import { useProcurement } from "@/context/ProcurementContext";
+import type { NotificationType, NotificationItem } from "@/lib/types";
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<NotificationItem[]>(mockNotifications);
+  const { state, markNotificationRead, markAllRead } = useProcurement();
+  const notifications = state.notifications;
   const [activeTab, setActiveTab] = useState<"All" | "Unread">("All");
 
   const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const markAllAsRead = () => {
-    setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+    markAllRead();
   };
 
   const markAsRead = (id: string) => {
-    setNotifications(notifications.map(n => n.id === id ? { ...n, isRead: true } : n));
+    markNotificationRead(id);
   };
 
   const getIcon = (type: NotificationType) => {

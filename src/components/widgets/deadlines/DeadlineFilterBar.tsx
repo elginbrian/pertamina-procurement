@@ -1,5 +1,5 @@
 import { Search, Filter, BellRing } from "lucide-react";
-import { DeadlineStatus } from "@/components/pages/deadlines/types";
+import { DeadlineStatus } from "@/lib/types";
 
 interface DeadlineFilterBarProps {
   searchQuery: string;
@@ -8,6 +8,7 @@ interface DeadlineFilterBarProps {
   setStatusFilter: (val: DeadlineStatus | "All") => void;
   urgencyFilter: string;
   setUrgencyFilter: (val: string) => void;
+  onAddDeadline: () => void;
 }
 
 export function DeadlineFilterBar({ 
@@ -16,7 +17,8 @@ export function DeadlineFilterBar({
   statusFilter, 
   setStatusFilter, 
   urgencyFilter, 
-  setUrgencyFilter 
+  setUrgencyFilter,
+  onAddDeadline
 }: DeadlineFilterBarProps) {
   return (
     <div className="flex flex-col xl:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -58,11 +60,20 @@ export function DeadlineFilterBar({
           </div>
         </div>
         
-        <button className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap shrink-0">
-          <BellRing size={16} />
-          <span className="hidden sm:inline">Kirim Reminder Manual</span>
-          <span className="sm:hidden">Reminder</span>
-        </button>
+        <div className="flex gap-2 w-full sm:w-auto">
+          <button 
+            onClick={onAddDeadline}
+            className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap shrink-0"
+          >
+            <span className="hidden sm:inline">+ Tambah SLA</span>
+            <span className="sm:hidden">+ SLA</span>
+          </button>
+          <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap shrink-0">
+            <BellRing size={16} />
+            <span className="hidden sm:inline">Reminder Manual</span>
+            <span className="sm:hidden">Reminder</span>
+          </button>
+        </div>
       </div>
     </div>
   );

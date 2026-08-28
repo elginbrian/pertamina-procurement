@@ -1,24 +1,26 @@
 import { useState } from "react";
 import { AlertCircle, CheckCircle2, XCircle, Sparkles, Eye, ChevronDown, ChevronUp } from "lucide-react";
-import { DocumentItem, DocumentStatus } from "@/components/pages/documents/types";
+import { DocumentItem, DocumentStatus } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 export function DocumentRow({ doc }: { doc: DocumentItem }) {
+  const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);
   const hasIssues = doc.issues && doc.issues.length > 0;
   
   const getStatusColor = (status: DocumentStatus) => {
     switch (status) {
-      case "Ready": return "bg-emerald-50 text-emerald-700 border-emerald-200";
-      case "Needs Attention": return "bg-amber-50 text-amber-700 border-amber-200";
-      case "Not Ready": return "bg-red-50 text-red-700 border-red-200";
+      case "Lulus Verifikasi": return "bg-emerald-50 text-emerald-700 border-emerald-200";
+      case "Catatan Procurement": return "bg-blue-50 text-[#0a4d8c] border-blue-200";
+      case "Tindak Lanjut FPP": return "bg-red-50 text-red-700 border-red-200";
     }
   };
 
   const getStatusIcon = (status: DocumentStatus) => {
     switch (status) {
-      case "Ready": return <CheckCircle2 size={14} />;
-      case "Needs Attention": return <AlertCircle size={14} />;
-      case "Not Ready": return <XCircle size={14} />;
+      case "Lulus Verifikasi": return <CheckCircle2 size={14} />;
+      case "Catatan Procurement": return <AlertCircle size={14} />;
+      case "Tindak Lanjut FPP": return <XCircle size={14} />;
     }
   };
 
@@ -58,14 +60,14 @@ export function DocumentRow({ doc }: { doc: DocumentItem }) {
       {isExpanded && (
         <tr>
           <td colSpan={5} className="p-0 border-b border-slate-200 whitespace-normal">
-            <div className={`px-5 py-4 bg-slate-50/50 inner-shadow-sm border-l-4 ${hasIssues ? 'border-l-amber-500' : 'border-l-emerald-500'}`}>
+            <div className={`px-5 py-4 bg-slate-50/50 inner-shadow-sm border-l-4 ${hasIssues ? 'border-l-[#0a4d8c]' : 'border-l-emerald-500'}`}>
               <div className="max-w-5xl">
                 {hasIssues ? (
                   <div className="flex flex-col xl:flex-row gap-8">
                     {/* Issues List */}
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <AlertCircle size={16} className={doc.status === 'Not Ready' ? 'text-red-500' : 'text-amber-500'} />
+                        <AlertCircle size={16} className={doc.status === 'Tindak Lanjut FPP' ? 'text-red-500' : 'text-[#0a4d8c]'} />
                         <h4 className="text-[13px] font-semibold text-slate-800">Temuan Pemeriksaan</h4>
                       </div>
                       <ul className="list-disc list-outside text-[13px] text-slate-600 space-y-1.5 ml-5 mb-4">
@@ -75,7 +77,7 @@ export function DocumentRow({ doc }: { doc: DocumentItem }) {
                       </ul>
                       
                       <button 
-                        onClick={(e) => { e.stopPropagation(); }}
+                        onClick={(e) => { e.stopPropagation(); router.push('/documents/result'); }}
                         className="flex items-center gap-2 text-slate-600 hover:text-[#0a4d8c] transition-colors text-[13px] font-medium w-fit"
                       >
                         <Eye size={16} />
@@ -113,7 +115,7 @@ export function DocumentRow({ doc }: { doc: DocumentItem }) {
                     <p className="text-[13px] text-slate-600 ml-6 mb-4">Semua persyaratan lengkap dan tervalidasi. Tidak ada tindakan lanjutan yang diperlukan.</p>
                     
                     <button 
-                      onClick={(e) => { e.stopPropagation(); }}
+                      onClick={(e) => { e.stopPropagation(); router.push('/documents/result'); }}
                       className="flex items-center gap-2 text-slate-600 hover:text-[#0a4d8c] transition-colors text-[13px] font-medium w-fit ml-6"
                     >
                       <Eye size={16} />

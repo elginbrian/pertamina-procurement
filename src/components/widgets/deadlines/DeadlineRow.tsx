@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Clock, CalendarDays, ArrowRight, Sparkles } from "lucide-react";
-import { DeadlineItem } from "@/components/pages/deadlines/types";
+import { DeadlineItem } from "@/lib/types";
+import { useProcurement } from "@/context/ProcurementContext";
 
 interface DeadlineRowProps {
   item: DeadlineItem;
@@ -8,13 +9,14 @@ interface DeadlineRowProps {
 
 export function DeadlineRow({ item }: DeadlineRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { updateDeadlineStatus } = useProcurement();
 
   const getStatusStyle = (status: DeadlineItem["status"]) => {
     switch (status) {
       case "On Track":
         return "bg-emerald-50 text-emerald-700 border-emerald-200";
       case "At Risk":
-        return "bg-amber-50 text-amber-700 border-amber-200";
+        return "bg-blue-50 text-[#0a4d8c] border-blue-200";
       case "Overdue":
         return "bg-red-50 text-red-700 border-red-200";
       default:
@@ -38,20 +40,20 @@ export function DeadlineRow({ item }: DeadlineRowProps) {
   const getUrgencyBadge = (urgency: string) => {
     switch (urgency) {
       case "Critical":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-600 text-white shadow-sm uppercase tracking-wider">CRITICAL</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-red-50 text-red-700 border border-red-200 uppercase tracking-wider">CRITICAL</span>;
       case "High":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-white shadow-sm uppercase tracking-wider">HIGH</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-50 text-[#0a4d8c] border border-blue-200 uppercase tracking-wider">HIGH</span>;
       case "Medium":
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-blue-500 text-white shadow-sm uppercase tracking-wider">MEDIUM</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 uppercase tracking-wider">MEDIUM</span>;
       case "Low":
       default:
-        return <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-400 text-white shadow-sm uppercase tracking-wider">LOW</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-slate-50 text-slate-700 border border-slate-200 uppercase tracking-wider">LOW</span>;
     }
   };
 
   const isOverdue = item.daysRemaining < 0;
   const daysText = isOverdue ? `Terlambat ${Math.abs(item.daysRemaining)} Hari` : `${item.daysRemaining} Hari Lagi`;
-  const daysColor = isOverdue ? "text-red-600 font-bold" : item.daysRemaining <= 7 ? "text-amber-600 font-bold" : "text-emerald-600 font-medium";
+  const daysColor = isOverdue ? "text-red-600 font-bold" : item.daysRemaining <= 7 ? "text-[#0a4d8c] font-bold" : "text-emerald-600 font-medium";
 
   return (
     <>
@@ -99,13 +101,13 @@ export function DeadlineRow({ item }: DeadlineRowProps) {
       {isExpanded && (
         <tr>
           <td colSpan={5} className="p-0 border-b border-slate-200 whitespace-normal">
-            <div className={`px-5 py-4 bg-slate-50/50 inner-shadow-sm border-l-4 ${isOverdue ? 'border-l-red-500' : 'border-l-amber-500'}`}>
+            <div className={`px-5 py-4 bg-slate-50/50 inner-shadow-sm border-l-4 ${isOverdue ? 'border-l-red-500' : 'border-l-[#0a4d8c]'}`}>
               <div className="flex flex-col xl:flex-row gap-8 max-w-5xl">
                 
                 {/* Information Block */}
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <AlertCircle size={16} className={isOverdue ? 'text-red-500' : 'text-amber-500'} />
+                    <AlertCircle size={14} className={item.status === 'Overdue' ? 'text-red-500' : 'text-amber-500'} />
                     <h4 className="text-[13px] font-semibold text-slate-800">Detail Tugas</h4>
                   </div>
                   <div className="text-[13px] text-slate-600 ml-6 mb-4">
@@ -125,11 +127,14 @@ export function DeadlineRow({ item }: DeadlineRowProps) {
                 {/* Actions Block */}
                 <div className="w-full xl:w-[220px] shrink-0 xl:pt-1">
                   <div className="space-y-2">
-                    <button className="w-full flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm">
-                      <ArrowRight size={14} />
-                      Tindak Lanjut SLA
+                    <button 
+                      onClick={(e) => { e.stopPropagation(); updateDeadlineStatus(item.id, "Selesai"); }}
+                      className="w-full flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm"
+                    >
+                      <CheckCircle2 size={14} />
+                      Tandai Selesai
                     </button>
-                    {isOverdue && (
+                    {item.status === 'Overdue' && (
                       <button className="w-full flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm">
                         Kirim Surat Eskalasi
                       </button>

@@ -2,66 +2,26 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { Inbox } from "lucide-react";
-import { DocumentItem, DocumentStatus } from "./types";
+import { useRouter } from "next/navigation";
+import { DocumentItem, DocumentStatus } from "@/lib/types";
 import { DocumentFilterBar } from "@/components/widgets/documents/DocumentFilterBar";
 import { DocumentRow } from "@/components/widgets/documents/DocumentRow";
 import { TablePagination } from "@/components/widgets/TablePagination";
-
-const mockDocuments: DocumentItem[] = [
-  {
-    id: "DOC-001",
-    name: "Pakta Integritas Vendor A",
-    type: "Pakta Integritas",
-    status: "Ready",
-    uploadDate: "2026-08-18",
-    pic: "Budi Santoso",
-    issues: [],
-  },
-  {
-    id: "DOC-002",
-    name: "Surat Penawaran & BoQ",
-    type: "OE & BoQ",
-    status: "Needs Attention",
-    uploadDate: "2026-08-19",
-    pic: "Andi Wijaya",
-    issues: ["Nilai pada Surat Penawaran tidak konsisten dengan BoQ"],
-    nextAction: "Periksa kembali nilai yang digunakan sebelum dokumen diproses lebih lanjut.",
-  },
-  {
-    id: "DOC-003",
-    name: "Form TKDN Proyek X",
-    type: "Form TKDN",
-    status: "Not Ready",
-    uploadDate: "2026-08-19",
-    pic: "Citra Dewi",
-    issues: ["Form TKDN belum lengkap", "Dokumen pendukung (sertifikat) belum dilampirkan"],
-    nextAction: "Lengkapi nilai TKDN dan unggah dokumen pendukung.",
-    canGenerateAiDraft: true,
-  },
-  ...Array.from({ length: 12 }).map((_, i) => ({
-    id: `DOC-2026-00${i + 4}`,
-    name: `Dokumen Pengadaan Tambahan ${i + 1}`,
-    type: i % 2 === 0 ? "Form TKDN" : "RKS",
-    status: (i % 4 === 0 ? "Not Ready" : i % 3 === 0 ? "Needs Attention" : "Ready") as DocumentStatus,
-    uploadDate: `2026-08-1${i}`,
-    pic: `Staff ${i + 1}`,
-    issues: i % 4 === 0 ? ["Halaman 3 tidak terbaca"] : i % 3 === 0 ? ["Masa berlaku hampir habis"] : [],
-    nextAction: i % 4 === 0 ? "Minta resubmit dokumen" : i % 3 === 0 ? "Periksa tanggal" : "",
-    canGenerateAiDraft: i % 4 === 0
-  }))
-];
+import { useProcurement } from "@/context/ProcurementContext";
 
 export default function DocumentsPage() {
-  const [documents] = useState<DocumentItem[]>(mockDocuments);
+  const router = useRouter();
+  const { state } = useProcurement();
+  const documents = state.documents;
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<DocumentStatus | "All">("All");
   const [typeFilter, setTypeFilter] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const readyCount = documents.filter(d => d.status === "Ready").length;
-  const attnCount = documents.filter(d => d.status === "Needs Attention").length;
-  const notReadyCount = documents.filter(d => d.status === "Not Ready").length;
+  const readyCount = documents.filter(d => d.status === "Lulus Verifikasi").length;
+  const attnCount = documents.filter(d => d.status === "Catatan Procurement").length;
+  const notReadyCount = documents.filter(d => d.status === "Tindak Lanjut FPP").length;
   const totalCount = documents.length;
   
   const readyPct = totalCount ? (readyCount / totalCount) * 100 : 0;
@@ -103,7 +63,7 @@ export default function DocumentsPage() {
             <div className="text-[11px] text-slate-400 mt-1 font-medium">Tercatat dalam sistem</div>
           </div>
           <div className="w-14 h-14 rounded-full relative shadow-[inset_0_2px_8px_rgba(0,0,0,0.06)]" style={{
-            background: `conic-gradient(#10b981 0% ${readyPct}%, #f59e0b ${readyPct}% ${readyPct + attnPct}%, #ef4444 ${readyPct + attnPct}% 100%)`
+            background: `conic-gradient(#10b981 0% ${readyPct}%, #0a4d8c ${readyPct}% ${readyPct + attnPct}%, #ef4444 ${readyPct + attnPct}% 100%)`
           }}>
             <div className="absolute inset-2 bg-white rounded-full"></div>
           </div>
@@ -115,15 +75,15 @@ export default function DocumentsPage() {
             <div>
               <div className="text-[13px] font-medium text-slate-500 mb-1 flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                Aman (Ready)
+                Aman (Lulus)
               </div>
               <div className="text-2xl font-bold text-slate-800 mt-2">{readyCount}</div>
             </div>
-            <div className="bg-emerald-50 text-emerald-700 text-xs font-bold px-2 py-1 rounded-md border border-emerald-100">
+            <div className="bg-emerald-50 text-emerald-700 text-xs font-medium px-2.5 py-0.5 rounded-full border border-emerald-100">
               {readyPct.toFixed(0)}%
             </div>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1 font-medium">Dokumen valid & siap pakai</div>
+          <div className="text-[11px] text-slate-400 mt-1 font-medium">Lulus verifikasi DP3</div>
         </div>
 
         {/* Needs Attention */}
@@ -131,16 +91,16 @@ export default function DocumentsPage() {
           <div className="flex justify-between items-start">
             <div>
               <div className="text-[13px] font-medium text-slate-500 mb-1 flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-                Perlu Perhatian
+                <div className="w-2.5 h-2.5 rounded-full bg-[#0a4d8c]"></div>
+                Perhatian (P3)
               </div>
               <div className="text-2xl font-bold text-slate-800 mt-2">{attnCount}</div>
             </div>
-            <div className="bg-amber-50 text-amber-700 text-xs font-bold px-2 py-1 rounded-md border border-amber-100">
+            <div className="bg-blue-50 text-[#0a4d8c] text-xs font-medium px-2.5 py-0.5 rounded-full border border-blue-100">
               {attnPct.toFixed(0)}%
             </div>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1 font-medium">Ada peringatan / isu</div>
+          <div className="text-[11px] text-slate-400 mt-1 font-medium">Catatan Procurement</div>
         </div>
 
         {/* Not Ready */}
@@ -149,15 +109,15 @@ export default function DocumentsPage() {
             <div>
               <div className="text-[13px] font-medium text-slate-500 mb-1 flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-                Belum Siap
+                Pending (FPP)
               </div>
               <div className="text-2xl font-bold text-slate-800 mt-2">{notReadyCount}</div>
             </div>
-            <div className="bg-red-50 text-red-700 text-xs font-bold px-2 py-1 rounded-md border border-red-100">
+            <div className="bg-red-50 text-red-700 text-xs font-medium px-2.5 py-0.5 rounded-full border border-red-100">
               {(100 - readyPct - attnPct).toFixed(0)}%
             </div>
           </div>
-          <div className="text-[11px] text-slate-400 mt-1 font-medium">Draft tidak lengkap</div>
+          <div className="text-[11px] text-slate-400 mt-1 font-medium">Tindak lanjut kembali ke FPP</div>
         </div>
       </div>
 

@@ -11,15 +11,16 @@ import {
   Settings,
 } from "lucide-react";
 import { useSidebar } from "@/context/SidebarContext";
+import { useProcurement } from "@/context/ProcurementContext";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const navItems: any[] = [
-  { key: "overview", label: "Tracker (D3)", icon: LayoutDashboard },
+  { key: "overview", label: "D3 - Tracker", icon: LayoutDashboard },
   { key: "next-action", label: "Tindakan", icon: ListTodo },
-  { key: "documents", label: "Dokumen (D1)", icon: FileSearch },
-  { key: "guarantees", label: "Jaminan (D2)", icon: ShieldAlert },
-  { key: "deadlines", label: "Jatuh Tempo (D4)", icon: CalendarClock },
+  { key: "documents", label: "D1 - Dokumen", icon: FileSearch },
+  { key: "guarantees", label: "D2 - Jaminan", icon: ShieldAlert },
+  { key: "deadlines", label: "D4 - Jatuh Tempo", icon: CalendarClock },
   { key: "notifications", label: "Notifikasi", icon: Bell },
   { key: "settings", label: "Pengaturan", icon: Settings },
 ];
@@ -28,8 +29,12 @@ import { usePathname } from "next/navigation";
 
 export function SidebarNav({ onSelect, selectedKey }: { onSelect?: (key: string) => void; selectedKey?: string }) {
   const { collapsed, toggleCollapsed, mobileOpen, setMobileOpen } = useSidebar();
+  const { state } = useProcurement();
   const pathname = usePathname();
   const [isMobileViewport, setIsMobileViewport] = useState(false);
+  
+  const unreadCount = state.notifications.filter(n => !n.isRead).length;
+  const pendingActionsCount = state.actions.filter(a => a.status === 'Pending').length;
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -136,7 +141,25 @@ export function SidebarNav({ onSelect, selectedKey }: { onSelect?: (key: string)
               >
                 <Icon size={18} className="transition-colors" />
                 {!effectiveCollapsed && (
-                  <span className={`ml-2 transition-all duration-200`}>{item.label}</span>
+                  <span className={`ml-2 transition-all duration-200 flex-1 flex items-center justify-between`}>
+                    {item.label}
+                    {item.key === "notifications" && unreadCount > 0 && (
+                      <span className="bg-[#0a4d8c] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                        {unreadCount > 99 ? '99+' : unreadCount}
+                      </span>
+                    )}
+                    {item.key === "next-action" && pendingActionsCount > 0 && (
+                      <span className="bg-[#0a4d8c] text-white text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0">
+                        {pendingActionsCount > 99 ? '99+' : pendingActionsCount}
+                      </span>
+                    )}
+                  </span>
+                )}
+                {effectiveCollapsed && item.key === "notifications" && unreadCount > 0 && (
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#0a4d8c] rounded-full"></span>
+                )}
+                {effectiveCollapsed && item.key === "next-action" && pendingActionsCount > 0 && (
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-[#0a4d8c] rounded-full"></span>
                 )}
               </Link>
 
