@@ -2,11 +2,14 @@
 
 import { CheckCircle2, AlertTriangle, FileText, ArrowLeft, Download } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useProcurement } from "@/context/ProcurementContext";
 
 export default function DocumentResultPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { state, updateDocumentStatus } = useProcurement();
+  const selectedDocument = state.documents.find(doc => doc.id === searchParams.get("id")) ?? state.documents[0];
 
   return (
     <div className="space-y-6 pt-4 pb-12 min-h-[calc(100vh-140px)] flex flex-col">
@@ -27,9 +30,8 @@ export default function DocumentResultPage() {
           </button>
           <button 
             onClick={() => {
-              const latestDoc = state.documents[0];
-              if (latestDoc) {
-                updateDocumentStatus(latestDoc.id, "Tindak Lanjut FPP");
+              if (selectedDocument) {
+                updateDocumentStatus(selectedDocument.id, "Tindak Lanjut FPP");
               }
               router.push('/documents');
             }}
@@ -47,7 +49,7 @@ export default function DocumentResultPage() {
           <div className="flex-1 border-2 border-slate-200 rounded-xl flex flex-col bg-white overflow-hidden shadow-sm">
             {/* Mock PDF Viewer Header */}
             <div className="bg-slate-100 border-b border-slate-200 px-4 py-2 flex items-center justify-between shrink-0">
-              <span className="text-xs font-semibold text-slate-600 truncate mr-4">{state.documents[0]?.fileName || "Dokumen_Evaluasi_Terbaru.pdf"}</span>
+              <span className="text-xs font-semibold text-slate-600 truncate mr-4">{selectedDocument?.fileName || "Dokumen_Evaluasi_Terbaru.pdf"}</span>
               <span className="text-xs text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">1 / 15</span>
             </div>
             {/* Mock PDF Content */}
@@ -81,8 +83,8 @@ export default function DocumentResultPage() {
               <AlertTriangle size={24} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-[#0a4d8c]">Catatan Procurement (Perlu Perhatian)</h2>
-              <p className="text-sm text-blue-700/80 mt-1">Pemeriksaan otomatis mendeteksi 2 potensi anomali pada dokumen yang diunggah.</p>
+              <h2 className="text-lg font-bold text-[#0a4d8c]">{selectedDocument?.status ?? "Menunggu Pemeriksaan"}</h2>
+              <p className="text-sm text-blue-700/80 mt-1">{selectedDocument?.issues.length ?? 0} temuan tercatat pada pemeriksaan mock dokumen ini.</p>
             </div>
           </div>
 
@@ -94,7 +96,7 @@ export default function DocumentResultPage() {
                   <FileText size={20} />
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-800 text-sm">{state.documents[0]?.fileName || "Dokumen_Evaluasi_Terbaru.pdf"}</div>
+                  <div className="font-semibold text-slate-800 text-sm">{selectedDocument?.fileName || "Dokumen_Evaluasi_Terbaru.pdf"}</div>
                   <div className="text-[11px] text-slate-500 mt-0.5">Diupload hari ini • 2.4 MB</div>
                 </div>
               </div>
@@ -113,50 +115,28 @@ export default function DocumentResultPage() {
             <h3 className="font-bold text-slate-800 mb-4">Rincian Temuan Pemeriksaan</h3>
             
             <div className="space-y-4">
-              {/* Finding 1 */}
-              <div className="bg-white border border-red-100 rounded-xl p-5 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-red-500"></div>
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 text-red-500"><AlertTriangle size={18} /></div>
-                  <div>
-                    <h4 className="font-semibold text-slate-800 text-sm">Ketidaksesuaian Nilai Total (Anomali Kritis)</h4>
-                    <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
-                      Nilai total pada halaman 3 tidak sesuai dengan rekapitulasi pada halaman lampiran terakhir. Harap pastikan nilai yang benar sebelum melanjutkan ke tahapan Sourcing.
-                    </p>
-                    <button className="mt-3 text-xs font-medium text-[#0a4d8c] hover:underline flex items-center gap-1">
-                      Lihat halaman 3
-                    </button>
+              {selectedDocument?.issues.length ? selectedDocument.issues.map((issue, index) => (
+                <div key={`${selectedDocument.id}-issue-${index}`} className="bg-white border border-blue-100 rounded-xl p-5 shadow-sm relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-1 h-full bg-[#0a4d8c]"></div>
+                  <div className="flex items-start gap-3">
+                    <div className="mt-0.5 text-[#0a4d8c]"><AlertTriangle size={18} /></div>
+                    <div>
+                      <h4 className="font-semibold text-slate-800 text-sm">Temuan Pemeriksaan {index + 1}</h4>
+                      <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">{issue}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              {/* Finding 2 */}
-              <div className="bg-white border border-blue-100 rounded-xl p-5 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-[#0a4d8c]"></div>
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 text-[#0a4d8c]"><AlertTriangle size={18} /></div>
-                  <div>
-                    <h4 className="font-semibold text-slate-800 text-sm">Masa Berlaku Referensi Harga (Kondisional)</h4>
-                    <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
-                      Referensi harga yang dilampirkan berpotensi kedaluwarsa menurut aturan standar pengadaan. Disarankan menggunakan referensi maksimal 3 bulan terakhir.
-                    </p>
+              )) : (
+                <div className="bg-white border border-emerald-100 rounded-xl p-5 shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="mt-0.5 text-emerald-500" size={18} />
+                    <div>
+                      <h4 className="font-semibold text-slate-800 text-sm">Tidak Ada Temuan</h4>
+                      <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">Dokumen mock ini belum memiliki catatan pemeriksaan.</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              {/* Finding 3 (Passed) */}
-              <div className="bg-white border border-emerald-100 rounded-xl p-5 shadow-sm relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
-                <div className="flex items-start gap-3">
-                  <div className="mt-0.5 text-emerald-500"><CheckCircle2 size={18} /></div>
-                  <div>
-                    <h4 className="font-semibold text-slate-800 text-sm">Kelengkapan Tanda Tangan</h4>
-                    <p className="text-sm text-slate-600 mt-1.5 leading-relaxed">
-                      Semua kolom persetujuan (Manager, VP) telah diverifikasi dan ditandatangani secara digital dengan valid.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

@@ -16,9 +16,9 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const navItems: any[] = [
+  { key: "documents", label: "D1 - Dokumen", icon: FileSearch },
   { key: "overview", label: "D3 - Tracker", icon: LayoutDashboard },
   { key: "next-action", label: "Tindakan", icon: ListTodo },
-  { key: "documents", label: "D1 - Dokumen", icon: FileSearch },
   { key: "guarantees", label: "D2 - Jaminan", icon: ShieldAlert },
   { key: "deadlines", label: "D4 - Jatuh Tempo", icon: CalendarClock },
   { key: "notifications", label: "Notifikasi", icon: Bell },
@@ -52,9 +52,9 @@ export function SidebarNav({ onSelect, selectedKey }: { onSelect?: (key: string)
   const effectiveCollapsed = isMobileViewport ? false : collapsed;
 
   const activeKeyFromPath = (() => {
-    if (!pathname) return "overview";
+    if (!pathname) return "documents";
     const parts = pathname.split("/").filter(Boolean);
-    return parts[0] || "overview";
+    return parts[0] || "documents";
   })();
 
   const containerClasses = [
@@ -129,7 +129,7 @@ export function SidebarNav({ onSelect, selectedKey }: { onSelect?: (key: string)
           return (
             <div key={item.key}>
               <Link
-                href={item.key === "overview" ? "/" : `/${item.key}`}
+                href={item.key === "overview" ? "/overview" : `/${item.key}`}
                 className={navItemClasses(isActive)}
                 onClick={() => {
                   // close mobile overlay; do not mutate external selectedKey here — URL is source of truth

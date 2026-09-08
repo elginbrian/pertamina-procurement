@@ -8,10 +8,20 @@ import type { GuaranteeItem } from "@/lib/types";
 
 export default function GuaranteeUploadPage() {
   const router = useRouter();
-  const { addGuarantee } = useProcurement();
+  const { state, addGuarantee } = useProcurement();
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [requestId, setRequestId] = useState("");
+  const [formData, setFormData] = useState({
+    type: "Jaminan Pelaksanaan" as GuaranteeItem["type"],
+    vendor: "",
+    issuer: "",
+    referenceNo: "",
+    value: "",
+    issueDate: "",
+    submissionDate: "",
+    expiryDate: "",
+  });
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
@@ -127,6 +137,18 @@ export default function GuaranteeUploadPage() {
               </div>
             </div>
 
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Terkait Pengadaan <span className="text-red-500">*</span></label>
+              <select
+                value={requestId}
+                onChange={(event) => setRequestId(event.target.value)}
+                className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2.5 bg-white focus:outline-none focus:border-[#0a4d8c]"
+              >
+                <option value="">Pilih nomor pengadaan...</option>
+                {state.requests.map(request => <option key={request.id} value={request.id}>{request.id} - {request.title}</option>)}
+              </select>
+            </div>
+
             {/* AI Extracted Fields (Mock) */}
             {file && (
               <div className="space-y-4 pt-4 border-t border-slate-100 animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -138,33 +160,48 @@ export default function GuaranteeUploadPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1">Jenis Jaminan</label>
-                    <input type="text" defaultValue="Jaminan Pelaksanaan" className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]" />
+                    <select value={formData.type} onChange={(event) => setFormData(prev => ({ ...prev, type: event.target.value as GuaranteeItem["type"] }))} className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]">
+                      <option>Jaminan Pelaksanaan</option>
+                      <option>Jaminan Masa Pemeliharaan</option>
+                      <option>Jaminan Uang Muka</option>
+                    </select>
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1">Nama Vendor / Principal</label>
-                    <input type="text" defaultValue="PT Vendor Maju Jaya" className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]" />
+                    <input type="text" value={formData.vendor} onChange={(event) => setFormData(prev => ({ ...prev, vendor: event.target.value }))} placeholder="Nama vendor / principal" className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1">Bank / Asuransi Penerbit</label>
-                    <input type="text" defaultValue="Bank Mandiri" className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]" />
+                    <input type="text" value={formData.issuer} onChange={(event) => setFormData(prev => ({ ...prev, issuer: event.target.value }))} placeholder="Bank / asuransi penerbit" className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1">Nomor Referensi</label>
-                    <input type="text" defaultValue="BG/123/2026" className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]" />
+                    <input type="text" value={formData.referenceNo} onChange={(event) => setFormData(prev => ({ ...prev, referenceNo: event.target.value }))} placeholder="Nomor referensi" className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1">Nilai Jaminan</label>
-                    <input type="text" defaultValue="Rp 5.000.000.000" className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]" />
+                    <input type="text" value={formData.value} onChange={(event) => setFormData(prev => ({ ...prev, value: event.target.value }))} placeholder="Rp 5.000.000.000" className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]" />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1">Berlaku Sampai (Jatuh Tempo)</label>
-                    <input type="date" defaultValue="2026-12-31" className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]" />
+                    <input type="date" value={formData.expiryDate} onChange={(event) => setFormData(prev => ({ ...prev, expiryDate: event.target.value }))} className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Tanggal Terbit</label>
+                    <input type="date" value={formData.issueDate} onChange={(event) => setFormData(prev => ({ ...prev, issueDate: event.target.value }))} className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1">Tanggal Penyerahan</label>
+                    <input type="date" value={formData.submissionDate} onChange={(event) => setFormData(prev => ({ ...prev, submissionDate: event.target.value }))} className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2 bg-slate-50 focus:outline-none focus:border-[#0a4d8c]" />
                   </div>
                 </div>
               </div>
@@ -182,27 +219,34 @@ export default function GuaranteeUploadPage() {
             <button 
               onClick={() => {
                 if (!file) return;
+                const expiryTime = new Date(formData.expiryDate).getTime();
+                const remainingDays = Number.isNaN(expiryTime) ? 0 : Math.ceil((expiryTime - Date.now()) / 86400000);
+                const status: GuaranteeItem["status"] = remainingDays < 0 ? "Expired" : remainingDays <= state.settings.slaWarningDays ? "Mendekati Expiry" : "Aktif";
+                const valueRaw = Number(formData.value.replace(/[^0-9]/g, "")) || 0;
                 const newGuarantee: GuaranteeItem = {
                   id: `GUAR-${Date.now()}`,
-                  requestId: requestId || "REQ-2026-101",
-                  referenceNo: `BG/NEW/${Date.now().toString().slice(-6)}`,
-                  type: "Jaminan Pelaksanaan",
-                  value: "Rp 5.000.000.000",
-                  valueRaw: 5_000_000_000,
-                  issuer: "Bank Mandiri",
-                  vendor: "PT Vendor Maju Jaya",
-                  issueDate: new Date().toISOString().split("T")[0],
-                  expiryDate: "2026-12-31",
-                  remainingDays: 134,
+                  requestId,
+                  referenceNo: formData.referenceNo,
+                  type: formData.type,
+                  value: formData.value,
+                  valueRaw,
+                  issuer: formData.issuer,
+                  vendor: formData.vendor,
+                  issueDate: formData.issueDate,
+                  submissionDate: formData.submissionDate,
+                  expiryDate: formData.expiryDate,
+                  remainingDays,
                   pic: "P3 - Admin",
-                  status: "Aktif",
+                  status,
+                  fileName: file.name,
+                  fileSize: file.size,
                 };
                 addGuarantee(newGuarantee);
                 router.push('/guarantees');
               }}
-              disabled={!file}
+              disabled={!file || !requestId || !formData.vendor || !formData.issuer || !formData.referenceNo || !formData.value || !formData.issueDate || !formData.expiryDate}
               className={`px-5 py-2.5 flex items-center gap-2 rounded-lg text-sm font-medium shadow-sm transition-all ${
-                file ? 'bg-[#0a4d8c] hover:bg-[#093e6f] text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                file && requestId && formData.vendor && formData.issuer && formData.referenceNo && formData.value && formData.issueDate && formData.expiryDate ? 'bg-[#0a4d8c] hover:bg-[#093e6f] text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >
               <span>Simpan & Verifikasi</span>

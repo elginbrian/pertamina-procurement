@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { UploadCloud, FileText, ArrowRight, X } from "lucide-react";
+import { ArrowLeft, UploadCloud, FileText, ArrowRight, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useProcurement } from "@/context/ProcurementContext";
 import type { DocumentItem, DocumentType } from "@/lib/types";
 
 export default function DocumentUploadPage() {
   const router = useRouter();
-  const { addDocument } = useProcurement();
+  const { state, addDocument } = useProcurement();
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [docType, setDocType] = useState<DocumentType | "">("");
@@ -41,6 +41,14 @@ export default function DocumentUploadPage() {
 
   return (
     <div className="space-y-6 pt-4 pb-12 min-h-[calc(100vh-140px)] flex flex-col">
+      <button
+        type="button"
+        onClick={() => router.push("/documents")}
+        className="inline-flex w-fit items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-[#0a4d8c]"
+      >
+        <ArrowLeft size={16} />
+        Kembali ke Pemeriksaan Dokumen
+      </button>
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden flex flex-col md:flex-row flex-1">
         
         <div className="w-full md:w-1/2 bg-slate-50 border-r border-slate-200 p-6 flex flex-col">
@@ -175,10 +183,10 @@ export default function DocumentUploadPage() {
             </button>
             <button 
               onClick={() => {
-                if (!file || !docType) return;
+                if (!file || !docType || !requestId) return;
                 const newDoc: DocumentItem = {
                   id: `DOC-${Date.now()}`,
-                  requestId: requestId || "REQ-2026-101",
+                  requestId,
                   name: file.name.replace(/\.[^/.]+$/, ""),
                   type: docType as DocumentType,
                   status: "Catatan Procurement",
@@ -186,16 +194,18 @@ export default function DocumentUploadPage() {
                   pic: "P3 - Admin",
                   issues: ["Dokumen baru diupload, menunggu pemeriksaan lengkap."],
                   nextAction: notes || "Periksa kelengkapan dokumen sesuai checklist Pra-Tender.",
+                  procurementStep: state.requests.find(request => request.id === requestId)?.currentStep,
+                  documentDate: new Date().toISOString().split("T")[0],
                   canGenerateAiDraft: true,
                   fileName: file.name,
                   fileSize: file.size,
                 };
                 addDocument(newDoc);
-                router.push('/documents/result');
+                router.push(`/documents/result?id=${newDoc.id}`);
               }}
-              disabled={!file || !docType}
+              disabled={!file || !docType || !requestId}
               className={`px-5 py-2.5 flex items-center gap-2 rounded-lg text-sm font-medium shadow-sm transition-all ${
-                (file && docType) ? 'bg-[#0a4d8c] hover:bg-[#093e6f] text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                (file && docType && requestId) ? 'bg-[#0a4d8c] hover:bg-[#093e6f] text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >
               <span>Mulai Pemeriksaan AI</span>

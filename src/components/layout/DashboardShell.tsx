@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
 import { DashboardToolbar } from "@/components/layout/DashboardToolbar";
 import { SidebarNav } from "@/components/navigation/SidebarNav";
@@ -43,10 +43,12 @@ function DashboardShellInner() {
   const pathname = usePathname();
 
   const deriveTabFromPath = (path?: string) => {
-    if (!path) return "overview";
+    if (!path) return "documents";
     const parts = path.split("/").filter(Boolean);
     const first = parts[0] || "";
     switch (first) {
+      case "overview":
+        return "overview";
       case "next-action":
         return "next-action";
       case "documents":
@@ -63,7 +65,7 @@ function DashboardShellInner() {
       case "settings":
         return "settings";
       default:
-        return "overview";
+        return "documents";
     }
   };
 
@@ -96,7 +98,7 @@ function DashboardShellInner() {
       case "settings":
         return { title: "Pengaturan", subtitle: "Akses dan pengaturan sistem" };
       default:
-        return { title: "Tracker Dokumen & Item", subtitle: "Status keseluruhan pengadaan (D3)" };
+        return { title: "Pemeriksaan Dokumen", subtitle: "Kesiapan dokumen dan antrean review (D1)" };
     }
   };
 
@@ -131,7 +133,11 @@ function DashboardShellInner() {
             {selectedTab === "next-action" && <NextActionPage />}
             {selectedTab === "documents" && <DocumentsPage />}
             {selectedTab === "documents/upload" && <DocumentUploadPage />}
-            {selectedTab === "documents/result" && <DocumentResultPage />}
+            {selectedTab === "documents/result" && (
+              <Suspense fallback={<div className="rounded-xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Memuat hasil pemeriksaan...</div>}>
+                <DocumentResultPage />
+              </Suspense>
+            )}
             {selectedTab === "guarantees" && <GuaranteesPage />}
             {selectedTab === "guarantees/upload" && <GuaranteeUploadPage />}
             {selectedTab === "deadlines" && <DeadlinesPage />}

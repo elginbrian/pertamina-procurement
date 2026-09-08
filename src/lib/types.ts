@@ -15,6 +15,34 @@ export type ProcurementStage =
   | "Contracting"  // Contracting / Pembuatan PO
   | "Selesai";     // Kontrak ditandatangani, PO diterbitkan
 
+/** Tahapan Berita Acara dan deliverable utama pada proses pemilihan. */
+export type ProcurementStep =
+  | "Rapat Pra-Tender"
+  | "Pengumuman Pengadaan"
+  | "Prebid Meeting"
+  | "Pemasukan Dokumen Penawaran"
+  | "Pembukaan Penawaran"
+  | "Evaluasi Dokumen Penawaran"
+  | "Sosialisasi e-Auction"
+  | "Negosiasi e-Auction"
+  | "Negosiasi Manual"
+  | "Laporan Hasil Pemilihan"
+  | "Pengumuman Pemenang"
+  | "Penunjukan Pemenang";
+
+export type ProcurementMilestoneStatus = "Pending" | "In Progress" | "Done";
+
+export interface ProcurementMilestone {
+  id: string;
+  requestId: string;
+  step: ProcurementStep;
+  status: ProcurementMilestoneStatus;
+  documentId?: string;
+  date?: string;
+  pic?: string;
+  notes?: string;
+}
+
 export interface ProcurementRequest {
   id: string;               // e.g. "REQ-2026-101"
   title: string;            // Judul pengadaan
@@ -23,6 +51,7 @@ export interface ProcurementRequest {
   amount: string;           // Nilai (formatted)
   amountRaw: number;        // Nilai numerik (untuk sorting/filter)
   stage: ProcurementStage;
+  currentStep: ProcurementStep;
   department: string;       // Fungsi/Departemen peminta
   daysInStage: number;      // Berapa hari di stage ini
   isUrgent?: boolean;
@@ -55,6 +84,9 @@ export interface DocumentItem {
   pic: string;              // PIC yang upload
   issues: string[];         // Daftar temuan AI/manual
   nextAction?: string;      // Rekomendasi tindak lanjut
+  procurementStep?: ProcurementStep;
+  documentDate?: string;
+  documentNumber?: string;
   canGenerateAiDraft?: boolean;
   fileName?: string;        // Nama file yang diupload
   fileSize?: number;        // Byte
@@ -82,11 +114,14 @@ export interface GuaranteeItem {
   issuer: string;           // Bank / Asuransi penerbit
   vendor: string;           // Nama vendor / principal
   issueDate: string;
+  submissionDate?: string;
   expiryDate: string;
   remainingDays: number;
   pic: string;
   status: GuaranteeStatus;
   nextAction?: string;
+  fileName?: string;
+  fileSize?: number;
 }
 
 // ─── DOMAIN: D4 - DEADLINES / SLA ─────────────────────────────────────────
@@ -161,6 +196,7 @@ export interface SystemSettings {
 
 export interface ProcurementState {
   requests: ProcurementRequest[];
+  milestones: ProcurementMilestone[];
   documents: DocumentItem[];
   guarantees: GuaranteeItem[];
   deadlines: DeadlineItem[];

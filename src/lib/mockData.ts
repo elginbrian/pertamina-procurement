@@ -11,6 +11,8 @@
 
 import type {
   ProcurementState,
+  ProcurementStep,
+  ProcurementMilestone,
   ProcurementRequest,
   DocumentItem,
   GuaranteeItem,
@@ -30,6 +32,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 120.000.000",
     amountRaw: 120_000_000,
     stage: "Persiapan",
+    currentStep: "Rapat Pra-Tender",
     department: "IT Infrastructure",
     daysInStage: 2,
     createdAt: "2026-08-10",
@@ -43,6 +46,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 45.000.000",
     amountRaw: 45_000_000,
     stage: "Persiapan",
+    currentStep: "Rapat Pra-Tender",
     department: "Creative",
     daysInStage: 5,
     isUrgent: true,
@@ -57,6 +61,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 85.500.000",
     amountRaw: 85_500_000,
     stage: "Sourcing",
+    currentStep: "Prebid Meeting",
     department: "General Affairs",
     daysInStage: 12,
     isUrgent: true,
@@ -71,6 +76,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 150.000.000",
     amountRaw: 150_000_000,
     stage: "Evaluasi",
+    currentStep: "Evaluasi Dokumen Penawaran",
     department: "IT Infrastructure",
     daysInStage: 4,
     createdAt: "2026-08-01",
@@ -84,6 +90,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 35.000.000",
     amountRaw: 35_000_000,
     stage: "Contracting",
+    currentStep: "Penunjukan Pemenang",
     department: "HR",
     daysInStage: 1,
     createdAt: "2026-07-15",
@@ -97,6 +104,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 320.000.000",
     amountRaw: 320_000_000,
     stage: "Contracting",
+    currentStep: "Negosiasi Manual",
     department: "Operations",
     daysInStage: 7,
     isUrgent: true,
@@ -111,6 +119,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 65.000.000",
     amountRaw: 65_000_000,
     stage: "Selesai",
+    currentStep: "Penunjukan Pemenang",
     department: "HR",
     daysInStage: 20,
     createdAt: "2026-06-01",
@@ -124,12 +133,40 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 15.000.000",
     amountRaw: 15_000_000,
     stage: "Persiapan",
+    currentStep: "Rapat Pra-Tender",
     department: "IT Infrastructure",
     daysInStage: 1,
     createdAt: "2026-08-19",
     updatedAt: "2026-08-20",
   },
 ];
+
+const procurementSteps: ProcurementStep[] = [
+  "Rapat Pra-Tender",
+  "Pengumuman Pengadaan",
+  "Prebid Meeting",
+  "Pemasukan Dokumen Penawaran",
+  "Pembukaan Penawaran",
+  "Evaluasi Dokumen Penawaran",
+  "Sosialisasi e-Auction",
+  "Negosiasi e-Auction",
+  "Negosiasi Manual",
+  "Laporan Hasil Pemilihan",
+  "Pengumuman Pemenang",
+  "Penunjukan Pemenang",
+];
+
+const mockMilestones: ProcurementMilestone[] = mockRequests.flatMap(request => {
+  const currentIndex = procurementSteps.indexOf(request.currentStep);
+  return procurementSteps.map((step, index) => ({
+    id: `${request.id}-${String(index + 1).padStart(2, "0")}`,
+    requestId: request.id,
+    step,
+    status: index < currentIndex ? "Done" : index === currentIndex ? "In Progress" : "Pending",
+    date: index <= currentIndex ? request.updatedAt : undefined,
+    pic: request.pic,
+  }));
+});
 
 // ─── D1: DOKUMEN PRA-TENDER ────────────────────────────────────────────────
 // Dokumen-dokumen ini terkait langsung ke request. Stage "Persiapan" berarti
@@ -377,7 +414,7 @@ const mockDeadlines: DeadlineItem[] = [
     daysRemaining: 5,
     status: "On Track",
     urgencyLevel: "Low",
-    milestone: "Evaluasi Teknis",
+    milestone: "Evaluasi Dokumen Penawaran",
     nextAction: "Hubungi vendor untuk memastikan kelengkapan dokumen teknis server rack 42U.",
   },
   {
@@ -390,7 +427,7 @@ const mockDeadlines: DeadlineItem[] = [
     daysRemaining: 1,
     status: "At Risk",
     urgencyLevel: "High",
-    milestone: "Proses Sourcing",
+    milestone: "Rapat Pra-Tender",
     nextAction: "SLA persetujuan hampir habis. Segera minta approval dari VP General Affairs.",
   },
   {
@@ -403,7 +440,7 @@ const mockDeadlines: DeadlineItem[] = [
     daysRemaining: -5,
     status: "Overdue",
     urgencyLevel: "Critical",
-    milestone: "Negosiasi & Klarifikasi",
+    milestone: "Negosiasi Manual",
     nextAction: "Negosiasi melewati batas SLA 5 hari. Eskalasi ke Manager Procurement atau jadwal ulang meeting secepatnya.",
   },
   {
@@ -416,7 +453,7 @@ const mockDeadlines: DeadlineItem[] = [
     daysRemaining: 8,
     status: "On Track",
     urgencyLevel: "Medium",
-    milestone: "Evaluasi Teknis",
+    milestone: "Evaluasi Dokumen Penawaran",
     nextAction: "Lanjutkan evaluasi dan siapkan Berita Acara Evaluasi Teknis.",
   },
   {
@@ -429,7 +466,7 @@ const mockDeadlines: DeadlineItem[] = [
     daysRemaining: 2,
     status: "At Risk",
     urgencyLevel: "High",
-    milestone: "Contracting",
+    milestone: "Penunjukan Pemenang",
     nextAction: "Koordinasikan jadwal penandatanganan kontrak dengan PT Armada Transport secepatnya.",
   },
   {
@@ -442,7 +479,7 @@ const mockDeadlines: DeadlineItem[] = [
     daysRemaining: 12,
     status: "On Track",
     urgencyLevel: "Low",
-    milestone: "Penerbitan PO",
+    milestone: "Penunjukan Pemenang",
     nextAction: "Proses penerbitan PO sesuai jadwal.",
   },
 ];
@@ -603,6 +640,7 @@ const mockNotifications: NotificationItem[] = [
 // ─── INITIAL STATE (Single Source of Truth) ────────────────────────────────
 export const initialProcurementState: ProcurementState = {
   requests: mockRequests,
+  milestones: mockMilestones,
   documents: mockDocuments,
   guarantees: mockGuarantees,
   deadlines: mockDeadlines,

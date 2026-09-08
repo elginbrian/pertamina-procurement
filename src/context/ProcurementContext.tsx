@@ -1,8 +1,9 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, useCallback } from "react";
-import type { ProcurementState, ProcurementStage, ProcurementRequest, DocumentItem, GuaranteeItem, ActionItem, NotificationItem, DeadlineItem } from "@/lib/types";
+import type { ProcurementState, ProcurementStage, ProcurementStep, ProcurementRequest, DocumentItem, GuaranteeItem, ActionItem, NotificationItem, DeadlineItem } from "@/lib/types";
 import { initialProcurementState } from "@/lib/mockData";
+import { getDeadlineTiming } from "@/lib/deadlineUtils";
 
 // ─── ACTIONS ────────────────────────────────────────────────────────────────
 
@@ -10,6 +11,7 @@ type ProcurementAction =
   // Tracker
   | { type: "ADD_REQUEST"; request: ProcurementRequest }
   | { type: "MOVE_REQUEST"; id: string; stage: ProcurementStage }
+  | { type: "MOVE_REQUEST_STEP"; id: string; step: ProcurementStep }
   // D1 Documents
   | { type: "ADD_DOCUMENT"; document: DocumentItem }
   | { type: "UPDATE_DOCUMENT_STATUS"; id: string; status: DocumentItem["status"] }
@@ -27,6 +29,60 @@ type ProcurementAction =
   | { type: "ADD_NOTIFICATION"; notification: NotificationItem }
   // Settings
   | { type: "UPDATE_SETTINGS"; settings: Partial<ProcurementState["settings"]> };
+
+const stageForStep: Record<ProcurementStep, ProcurementStage> = {
+  "Rapat Pra-Tender": "Sourcing",
+  "Pengumuman Pengadaan": "Sourcing",
+  "Prebid Meeting": "Sourcing",
+  "Pemasukan Dokumen Penawaran": "Sourcing",
+  "Pembukaan Penawaran": "Evaluasi",
+  "Evaluasi Dokumen Penawaran": "Evaluasi",
+  "Sosialisasi e-Auction": "Evaluasi",
+  "Negosiasi e-Auction": "Evaluasi",
+  "Negosiasi Manual": "Evaluasi",
+  "Laporan Hasil Pemilihan": "Contracting",
+  "Pengumuman Pemenang": "Contracting",
+  "Penunjukan Pemenang": "Selesai",
+};
+
+function actionForGuarantee(guarantee: GuaranteeItem): ActionItem | null {
+  if (guarantee.status === "Aktif" && !guarantee.nextAction) return null;
+
+  const isExpired = guarantee.status === "Expired";
+  return {
+    id: `ACT-GUAR-${Date.now()}`,
+    requestId: guarantee.requestId,
+    referenceId: guarantee.id,
+    title: isExpired ? `Eskalasi Jaminan Expired: ${guarantee.referenceNo}` : `Tindak Lanjut Jaminan: ${guarantee.referenceNo}`,
+    source: "Jaminan",
+    priority: isExpired ? "High" : "Medium",
+    dateAdded: new Date().toISOString().split("T")[0],
+    dueDate: new Date(Date.now() + (isExpired ? 86400000 : 3 * 86400000)).toISOString().split("T")[0],
+    description: guarantee.nextAction ?? `Pantau jaminan ${guarantee.referenceNo} dan koordinasikan tindak lanjut sebelum expiry.`,
+    assignee: guarantee.pic,
+    status: "Pending",
+    actionType: isExpired ? "Eskalasi" : "Follow Up",
+  };
+}
+
+function actionForDeadline(deadline: DeadlineItem): ActionItem | null {
+  if (deadline.status === "Selesai") return null;
+
+  return {
+    id: `ACT-DL-${Date.now()}`,
+    requestId: deadline.requestId,
+    referenceId: deadline.id,
+    title: deadline.nextAction ?? `Tindak Lanjut SLA: ${deadline.taskName}`,
+    source: "Deadline",
+    priority: deadline.urgencyLevel === "Critical" || deadline.status === "Overdue" ? "High" : "Medium",
+    dateAdded: new Date().toISOString().split("T")[0],
+    dueDate: deadline.targetDate,
+    description: `SLA "${deadline.taskName}" pada milestone ${deadline.milestone} perlu dipantau oleh ${deadline.pic}.`,
+    assignee: deadline.pic,
+    status: "Pending",
+    actionType: deadline.status === "Overdue" ? "Eskalasi" : "Follow Up",
+  };
+}
 
 // ─── REDUCER ────────────────────────────────────────────────────────────────
 
@@ -67,6 +123,41 @@ function procurementReducer(state: ProcurementState, action: ProcurementAction):
       };
     }
 
+    case "MOVE_REQUEST_STEP": {
+      const request = state.requests.find(r => r.id === action.id);
+      if (!request) return state;
+
+      const notification: NotificationItem = {
+        id: `NOTIF-${Date.now()}`,
+        requestId: action.id,
+        title: `Tahap Procurement Diperbarui: ${request.id}`,
+        description: `${request.title} sekarang berada pada tahap "${action.step}".`,
+        time: "Baru saja",
+        isRead: false,
+        type: "success",
+        category: "Hari Ini",
+      };
+
+      return {
+        ...state,
+        requests: state.requests.map(r => r.id === action.id
+          ? { ...r, stage: stageForStep[action.step], currentStep: action.step, updatedAt: new Date().toISOString().split("T")[0] }
+          : r
+        ),
+        milestones: state.milestones.map(m => {
+          if (m.requestId !== action.id) return m;
+          const currentIndex = Object.keys(stageForStep).indexOf(action.step);
+          const milestoneIndex = Object.keys(stageForStep).indexOf(m.step);
+          return {
+            ...m,
+            status: milestoneIndex < currentIndex ? "Done" : milestoneIndex === currentIndex ? "In Progress" : "Pending",
+            date: milestoneIndex <= currentIndex ? new Date().toISOString().split("T")[0] : m.date,
+          };
+        }),
+        notifications: [notification, ...state.notifications],
+      };
+    }
+
     case "ADD_DOCUMENT": {
       // When a new document is uploaded, also auto-create an action for review
       const request = state.requests.find(r => r.id === action.document.requestId);
@@ -97,6 +188,12 @@ function procurementReducer(state: ProcurementState, action: ProcurementAction):
       return {
         ...state,
         documents: [action.document, ...state.documents],
+        milestones: action.document.procurementStep
+          ? state.milestones.map(m => m.requestId === action.document.requestId && m.step === action.document.procurementStep
+            ? { ...m, documentId: action.document.id }
+            : m
+          )
+          : state.milestones,
         actions: [newAction, ...state.actions],
         notifications: [newNotif, ...state.notifications],
       };
@@ -136,6 +233,7 @@ function procurementReducer(state: ProcurementState, action: ProcurementAction):
 
     case "ADD_GUARANTEE": {
       const request = state.requests.find(r => r.id === action.guarantee.requestId);
+      const newAction = actionForGuarantee(action.guarantee);
       const newNotif: NotificationItem = {
         id: `NOTIF-${Date.now()}`,
         requestId: action.guarantee.requestId,
@@ -149,15 +247,21 @@ function procurementReducer(state: ProcurementState, action: ProcurementAction):
       return {
         ...state,
         guarantees: [action.guarantee, ...state.guarantees],
+        actions: newAction ? [newAction, ...state.actions] : state.actions,
         notifications: [newNotif, ...state.notifications],
       };
     }
 
-    case "ADD_DEADLINE":
+    case "ADD_DEADLINE": {
+      const timing = getDeadlineTiming(action.deadline.targetDate, state.settings.slaWarningDays, action.deadline.status);
+      const deadline = { ...action.deadline, ...timing };
+      const newAction = actionForDeadline(deadline);
       return {
         ...state,
-        deadlines: [action.deadline, ...state.deadlines],
+        deadlines: [deadline, ...state.deadlines],
+        actions: newAction ? [newAction, ...state.actions] : state.actions,
       };
+    }
 
     case "UPDATE_DEADLINE_STATUS": {
       const dl = state.deadlines.find(d => d.id === action.id);
@@ -260,6 +364,7 @@ interface ProcurementContextValue {
   // Convenience helpers
   addRequest: (request: ProcurementRequest) => void;
   moveRequest: (id: string, stage: ProcurementStage) => void;
+  moveRequestStep: (id: string, step: ProcurementStep) => void;
   addDocument: (doc: DocumentItem) => void;
   updateDocumentStatus: (id: string, status: DocumentItem["status"]) => void;
   addGuarantee: (guarantee: GuaranteeItem) => void;
@@ -283,6 +388,9 @@ export function ProcurementProvider({ children }: { children: React.ReactNode })
 
   const moveRequest = useCallback((id: string, stage: ProcurementStage) =>
     dispatch({ type: "MOVE_REQUEST", id, stage }), []);
+
+  const moveRequestStep = useCallback((id: string, step: ProcurementStep) =>
+    dispatch({ type: "MOVE_REQUEST_STEP", id, step }), []);
 
   const addDocument = useCallback((document: DocumentItem) =>
     dispatch({ type: "ADD_DOCUMENT", document }), []);
@@ -314,7 +422,7 @@ export function ProcurementProvider({ children }: { children: React.ReactNode })
   return (
     <ProcurementContext.Provider value={{
       state, dispatch,
-      addRequest, moveRequest, addDocument, updateDocumentStatus,
+      addRequest, moveRequest, moveRequestStep, addDocument, updateDocumentStatus,
       addGuarantee, addDeadline, updateDeadlineStatus, updateActionStatus,
       markNotificationRead, markAllRead, updateSettings,
     }}>

@@ -1,13 +1,15 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, AlertCircle, CheckCircle2, Clock, CalendarDays, ArrowRight, Sparkles } from "lucide-react";
-import { DeadlineItem } from "@/lib/types";
+import { DeadlineItem, ProcurementMilestone } from "@/lib/types";
 import { useProcurement } from "@/context/ProcurementContext";
 
 interface DeadlineRowProps {
   item: DeadlineItem;
+  requestTitle?: string;
+  milestones: ProcurementMilestone[];
 }
 
-export function DeadlineRow({ item }: DeadlineRowProps) {
+export function DeadlineRow({ item, requestTitle, milestones }: DeadlineRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const { updateDeadlineStatus } = useProcurement();
 
@@ -16,7 +18,7 @@ export function DeadlineRow({ item }: DeadlineRowProps) {
       case "On Track":
         return "bg-emerald-50 text-emerald-700 border-emerald-200";
       case "At Risk":
-        return "bg-blue-50 text-[#0a4d8c] border-blue-200";
+        return "bg-amber-50 text-amber-700 border-amber-200";
       case "Overdue":
         return "bg-red-50 text-red-700 border-red-200";
       default:
@@ -32,6 +34,8 @@ export function DeadlineRow({ item }: DeadlineRowProps) {
         return <Clock size={14} className="mr-1.5" />;
       case "Overdue":
         return <AlertCircle size={14} className="mr-1.5" />;
+      case "Selesai":
+        return <CheckCircle2 size={14} className="mr-1.5" />;
       default:
         return null;
     }
@@ -51,9 +55,13 @@ export function DeadlineRow({ item }: DeadlineRowProps) {
     }
   };
 
-  const isOverdue = item.daysRemaining < 0;
-  const daysText = isOverdue ? `Terlambat ${Math.abs(item.daysRemaining)} Hari` : `${item.daysRemaining} Hari Lagi`;
-  const daysColor = isOverdue ? "text-red-600 font-bold" : item.daysRemaining <= 7 ? "text-[#0a4d8c] font-bold" : "text-emerald-600 font-medium";
+  const isOverdue = item.status === "Overdue" || item.daysRemaining < 0;
+  const daysText = item.status === "Selesai" ? "Selesai" : isOverdue ? `Terlambat ${Math.abs(item.daysRemaining)} Hari` : `${item.daysRemaining} Hari Lagi`;
+  const daysColor = item.status === "Selesai" ? "text-emerald-600 font-semibold" : isOverdue ? "text-red-600 font-bold" : item.status === "At Risk" ? "text-amber-700 font-bold" : "text-emerald-600 font-medium";
+  const currentMilestoneIndex = milestones.findIndex(milestone => milestone.status === "In Progress");
+  const timelineStart = Math.max(0, currentMilestoneIndex > -1 ? currentMilestoneIndex - 1 : 0);
+  const visibleMilestones = milestones.slice(timelineStart, timelineStart + 3);
+  const otherMilestones = milestones.filter((_, index) => index < timelineStart || index >= timelineStart + 3);
 
   return (
     <>
@@ -62,8 +70,8 @@ export function DeadlineRow({ item }: DeadlineRowProps) {
         className={`transition-colors hover:bg-slate-50 cursor-pointer ${isExpanded ? 'bg-slate-50' : ''}`}
       >
         <td className="px-4 py-3 whitespace-nowrap">
-          <div className="font-medium text-slate-800 text-[13px]">{item.relatedId}</div>
-          <div className="text-[11px] text-slate-500 mt-0.5 max-w-[200px] truncate">{item.taskName}</div>
+          <div className="max-w-[240px] truncate text-sm font-medium text-slate-800">{requestTitle || item.taskName}</div>
+          <div className="mt-1 text-[11px] text-slate-500">{item.requestId}</div>
         </td>
         <td className="px-4 py-3 whitespace-nowrap">
           <div className="text-[13px] text-slate-600">{item.milestone}</div>
@@ -102,10 +110,11 @@ export function DeadlineRow({ item }: DeadlineRowProps) {
         <tr>
           <td colSpan={5} className="p-0 border-b border-slate-200 whitespace-normal">
             <div className={`px-5 py-4 bg-slate-50/50 inner-shadow-sm border-l-4 ${isOverdue ? 'border-l-red-500' : 'border-l-[#0a4d8c]'}`}>
-              <div className="flex flex-col xl:flex-row gap-8 max-w-5xl">
+              <div className="grid w-full grid-cols-1 gap-8 xl:grid-cols-[0.9fr_1.1fr]">
                 
-                {/* Information Block */}
-                <div className="flex-1">
+                <div className="min-w-0 space-y-6">
+                  {/* Information Block */}
+                  <div>
                   <div className="flex items-center gap-2 mb-2">
                     <AlertCircle size={14} className={item.status === 'Overdue' ? 'text-red-500' : 'text-amber-500'} />
                     <h4 className="text-[13px] font-semibold text-slate-800">Detail Tugas</h4>
@@ -122,24 +131,43 @@ export function DeadlineRow({ item }: DeadlineRowProps) {
                     </div>
                     <p className="text-[13px] text-slate-700 leading-relaxed">{item.nextAction}</p>
                   </div>
-                </div>
+                  </div>
 
                 {/* Actions Block */}
-                <div className="w-full xl:w-[220px] shrink-0 xl:pt-1">
+                  <div className="w-full shrink-0">
                   <div className="space-y-2">
-                    <button 
+                    {item.status !== "Selesai" && <button 
                       onClick={(e) => { e.stopPropagation(); updateDeadlineStatus(item.id, "Selesai"); }}
                       className="w-full flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-3 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm"
                     >
                       <CheckCircle2 size={14} />
                       Tandai Selesai
-                    </button>
+                    </button>}
                     {item.status === 'Overdue' && (
                       <button className="w-full flex items-center justify-center gap-2 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 px-3 py-1.5 rounded-md text-xs font-medium transition-colors shadow-sm">
                         Kirim Surat Eskalasi
                       </button>
                     )}
                   </div>
+                  </div>
+                </div>
+
+                <div className="min-w-0">
+                  <div className="flex items-end justify-between gap-3 border-b border-slate-200 pb-2">
+                    <div><h4 className="text-[13px] font-semibold text-slate-800">Timeline milestone proyek</h4><p className="mt-1 text-[11px] text-slate-500">Posisi SLA ini terhadap tahapan procurement request.</p></div>
+                    <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-[#0a4d8c]">{item.milestone}</span>
+                  </div>
+                  <div className="relative mt-4 space-y-1">
+                    <div className="absolute bottom-4 left-[13px] top-4 w-px bg-slate-200" />
+                    {visibleMilestones.map((milestone, index) => {
+                      const milestoneIndex = timelineStart + index;
+                      const isDone = milestone.status === "Done";
+                      const isCurrent = milestone.status === "In Progress";
+                      const isTarget = milestone.step === item.milestone;
+                      return <div key={milestone.id} className="relative flex gap-3 py-1.5"><div className={`z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-4 border-slate-50 text-[10px] font-bold ${isDone ? "bg-emerald-500 text-white" : isCurrent ? "bg-[#0a4d8c] text-white ring-2 ring-blue-100" : isTarget ? "bg-blue-100 text-[#0a4d8c] ring-2 ring-blue-100" : "bg-slate-200 text-slate-500"}`}>{isDone ? <CheckCircle2 size={13} /> : milestoneIndex + 1}</div><div className={`flex-1 rounded-md border px-3 py-2 ${isCurrent ? "border-blue-200 bg-blue-50/60" : isTarget ? "border-blue-200 bg-blue-50/30" : "border-slate-100 bg-white"}`}><div className="flex flex-wrap items-center justify-between gap-2"><span className="text-xs font-medium text-slate-700">{milestone.step}</span><span className={`text-[10px] font-semibold uppercase tracking-wider ${isDone ? "text-emerald-600" : isCurrent ? "text-[#0a4d8c]" : isTarget ? "text-blue-600" : "text-slate-400"}`}>{isDone ? "Selesai" : isCurrent ? "Berjalan" : isTarget ? "Target SLA" : "Pending"}</span></div></div></div>;
+                    })}
+                  </div>
+                  {otherMilestones.length > 0 && <details className="mt-2 rounded-md border border-slate-200 bg-white"><summary className="cursor-pointer px-3 py-2 text-[11px] font-semibold text-slate-500 hover:text-[#0a4d8c]">Lihat {otherMilestones.length} milestone lainnya</summary><div className="space-y-1 border-t border-slate-100 p-2">{otherMilestones.map(milestone => <div key={milestone.id} className="flex items-center justify-between rounded bg-slate-50 px-2 py-1.5 text-[11px] text-slate-600"><span>{milestone.step}</span><span className={milestone.step === item.milestone ? "font-semibold text-blue-600" : ""}>{milestone.status === "Done" ? "Selesai" : milestone.step === item.milestone ? "Target SLA" : "Pending"}</span></div>)}</div></details>}
                 </div>
 
               </div>

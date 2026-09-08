@@ -7,10 +7,14 @@ import { DeadlineFilterBar } from "@/components/widgets/deadlines/DeadlineFilter
 import { DeadlineRow } from "@/components/widgets/deadlines/DeadlineRow";
 import { TablePagination } from "@/components/widgets/TablePagination";
 import { useProcurement } from "@/context/ProcurementContext";
+import { getDeadlineTiming } from "@/lib/deadlineUtils";
 
 export default function DeadlinesPage() {
   const { state, addDeadline } = useProcurement();
-  const deadlines = state.deadlines;
+  const deadlines = useMemo(() => state.deadlines.map(deadline => ({
+    ...deadline,
+    ...getDeadlineTiming(deadline.targetDate, state.settings.slaWarningDays, deadline.status),
+  })), [state.deadlines, state.settings.slaWarningDays]);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<DeadlineStatus | "All">("All");
   const [urgencyFilter, setUrgencyFilter] = useState("All");
@@ -137,7 +141,7 @@ export default function DeadlinesPage() {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="px-4 py-3">Tugas & ID Ref</th>
+                <th className="px-4 py-3">Pengadaan & ID Ref</th>
                 <th className="px-4 py-3">Milestone & Urgensi</th>
                 <th className="px-4 py-3">PIC / Dept</th>
                 <th className="px-4 py-3">Jatuh Tempo</th>
@@ -147,7 +151,7 @@ export default function DeadlinesPage() {
             <tbody className="divide-y divide-slate-200">
               {paginatedDeadlines.length > 0 ? (
                 paginatedDeadlines.map((item) => (
-                  <DeadlineRow key={item.id} item={item} />
+                  <DeadlineRow key={item.id} item={item} requestTitle={state.requests.find(request => request.id === item.requestId)?.title} milestones={state.milestones.filter(milestone => milestone.requestId === item.requestId)} />
                 ))
               ) : (
                 <tr>
@@ -209,7 +213,7 @@ export default function DeadlinesPage() {
                   daysRemaining: diffDays,
                   status: "On Track",
                   urgencyLevel: formData.get('urgencyLevel') as any,
-                  nextAction: "Selesaikan tugas sesuai prosedur",
+                  nextAction: formData.get('nextAction') as string,
                 });
                 alert('SLA baru berhasil ditambahkan!');
                 setShowAddModal(false);
@@ -230,13 +234,21 @@ export default function DeadlinesPage() {
                   </div>
                   
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Request ID (Pengadaan) <span className="text-red-500">*</span></label>
-                    <input required name="requestId" defaultValue="REQ-2026-101" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c]" placeholder="Contoh: REQ-2026-101" />
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Pengadaan <span className="text-red-500">*</span></label>
+                    <select required name="requestId" defaultValue="" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c] bg-white">
+                      <option value="" disabled>Pilih pengadaan...</option>
+                      {state.requests.map(request => <option key={request.id} value={request.id}>{request.id} - {request.title}</option>)}
+                    </select>
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">PIC <span className="text-red-500">*</span></label>
                     <input required name="pic" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c]" placeholder="Contoh: Budi Santoso" />
+                  </div>
+
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Next Action <span className="text-red-500">*</span></label>
+                    <textarea required name="nextAction" rows={2} className="w-full resize-none px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c]" placeholder="Contoh: Minta approval VP General Affairs sebelum batas SLA." />
                   </div>
                   
                   <div>
@@ -247,11 +259,18 @@ export default function DeadlinesPage() {
                   <div>
                     <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">Milestone Tahapan <span className="text-red-500">*</span></label>
                     <select required name="milestone" className="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c] bg-white">
-                      <option value="Evaluasi Teknis">Evaluasi Teknis</option>
-                      <option value="Prakualifikasi">Prakualifikasi</option>
-                      <option value="Contracting">Contracting</option>
-                      <option value="Tender / Sourcing">Tender / Sourcing</option>
-                      <option value="Administrasi">Administrasi</option>
+                      <option value="Rapat Pra-Tender">Rapat Pra-Tender</option>
+                      <option value="Pengumuman Pengadaan">Pengumuman Pengadaan</option>
+                      <option value="Prebid Meeting">Prebid Meeting</option>
+                      <option value="Pemasukan Dokumen Penawaran">Pemasukan Dokumen Penawaran</option>
+                      <option value="Pembukaan Penawaran">Pembukaan Penawaran</option>
+                      <option value="Evaluasi Dokumen Penawaran">Evaluasi Dokumen Penawaran</option>
+                      <option value="Sosialisasi e-Auction">Sosialisasi e-Auction</option>
+                      <option value="Negosiasi e-Auction">Negosiasi e-Auction</option>
+                      <option value="Negosiasi Manual">Negosiasi Manual</option>
+                      <option value="Laporan Hasil Pemilihan">Laporan Hasil Pemilihan</option>
+                      <option value="Pengumuman Pemenang">Pengumuman Pemenang</option>
+                      <option value="Penunjukan Pemenang">Penunjukan Pemenang</option>
                     </select>
                   </div>
 

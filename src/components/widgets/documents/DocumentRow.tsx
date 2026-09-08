@@ -77,7 +77,7 @@ export function DocumentRow({ doc }: { doc: DocumentItem }) {
                       </ul>
                       
                       <button 
-                        onClick={(e) => { e.stopPropagation(); router.push('/documents/result'); }}
+                        onClick={(e) => { e.stopPropagation(); router.push(`/documents/result?id=${doc.id}`); }}
                         className="flex items-center gap-2 text-slate-600 hover:text-[#0a4d8c] transition-colors text-[13px] font-medium w-fit"
                       >
                         <Eye size={16} />
@@ -115,7 +115,7 @@ export function DocumentRow({ doc }: { doc: DocumentItem }) {
                     <p className="text-[13px] text-slate-600 ml-6 mb-4">Semua persyaratan lengkap dan tervalidasi. Tidak ada tindakan lanjutan yang diperlukan.</p>
                     
                     <button 
-                      onClick={(e) => { e.stopPropagation(); router.push('/documents/result'); }}
+                      onClick={(e) => { e.stopPropagation(); router.push(`/documents/result?id=${doc.id}`); }}
                       className="flex items-center gap-2 text-slate-600 hover:text-[#0a4d8c] transition-colors text-[13px] font-medium w-fit ml-6"
                     >
                       <Eye size={16} />

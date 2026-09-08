@@ -1,10 +1,27 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { Search, Filter, AlertCircle, Clock, CheckCircle2, ChevronRight, GripVertical, XCircle, FileText, LayoutList, CalendarClock, ShieldCheck, PlusCircle } from "lucide-react";
+import { Search, Filter, AlertCircle, Clock, CheckCircle2, ChevronDown, ChevronRight, GripVertical, XCircle, FileText, LayoutList, CalendarClock, ShieldCheck, PlusCircle } from "lucide-react";
 import { TrackerItem, TrackerStage } from "./types";
 import { useProcurement } from "@/context/ProcurementContext";
 import { useRouter } from "next/navigation";
+import type { ProcurementStep } from "@/lib/types";
+import { getDeadlineTiming } from "@/lib/deadlineUtils";
+
+const PROCUREMENT_STEPS: ProcurementStep[] = [
+  "Rapat Pra-Tender",
+  "Pengumuman Pengadaan",
+  "Prebid Meeting",
+  "Pemasukan Dokumen Penawaran",
+  "Pembukaan Penawaran",
+  "Evaluasi Dokumen Penawaran",
+  "Sosialisasi e-Auction",
+  "Negosiasi e-Auction",
+  "Negosiasi Manual",
+  "Laporan Hasil Pemilihan",
+  "Pengumuman Pemenang",
+  "Penunjukan Pemenang",
+];
 
 const COLUMNS: { id: TrackerStage; title: string; color: string; bg: string; border: string; headerBg: string }[] = [
   { id: "Persiapan", title: "Persiapan", color: "text-white", bg: "bg-white", border: "border-slate-200", headerBg: "bg-[#0a4d8c]" },
@@ -15,11 +32,12 @@ const COLUMNS: { id: TrackerStage; title: string; color: string; bg: string; bor
 ];
 
 export default function TrackerPage() {
-  const { state, moveRequest, addRequest } = useProcurement();
+  const { state, moveRequest, moveRequestStep, addRequest } = useProcurement();
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("All");
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
+  const [expandedRelatedId, setExpandedRelatedId] = useState<string | null>(null);
   const [showAddModal, setShowAddModal] = useState(false);
 
   // Compute Time Status per request from D4 deadlines
@@ -27,14 +45,15 @@ export default function TrackerPage() {
     const map: Record<string, "On Track" | "At Risk" | "Overdue" | "Selesai"> = {};
     state.deadlines.forEach(d => {
       const prev = map[d.requestId];
+      const timing = getDeadlineTiming(d.targetDate, state.settings.slaWarningDays, d.status);
       // Worse status wins: Overdue > At Risk > On Track > Selesai
       const rank = { "Overdue": 3, "At Risk": 2, "On Track": 1, "Selesai": 0 } as const;
-      if (!prev || rank[d.status] > rank[prev]) {
-        map[d.requestId] = d.status;
+      if (!prev || rank[timing.status] > rank[prev]) {
+        map[d.requestId] = timing.status;
       }
     });
     return map;
-  }, [state.deadlines]);
+  }, [state.deadlines, state.settings.slaWarningDays]);
 
   // Map context requests to TrackerItem shape
   const items: TrackerItem[] = useMemo(() => state.requests.map(r => ({
@@ -43,6 +62,7 @@ export default function TrackerPage() {
     pic: r.pic,
     amount: r.amount,
     stage: r.stage as TrackerStage,
+    currentStep: r.currentStep,
     department: r.department,
     daysInStage: r.daysInStage,
     isUrgent: r.isUrgent,
@@ -241,6 +261,11 @@ export default function TrackerPage() {
                         <span className="text-slate-500">PIC</span>
                         <span className="font-medium text-slate-700 truncate max-w-[120px] text-right">{item.pic}</span>
                       </div>
+
+                    <div className="mb-3 rounded-lg border border-blue-100 bg-blue-50/60 px-2.5 py-2">
+                      <div className="text-[10px] font-semibold uppercase tracking-wider text-[#0a4d8c]">Tahap Berita Acara</div>
+                      <div className="mt-0.5 text-[11px] font-medium leading-snug text-slate-700">{item.currentStep}</div>
+                    </div>
                       <div className="flex items-center justify-between text-[11px]">
                         <span className="text-slate-500">Nilai</span>
                         <span className="font-semibold text-[#0a4d8c]">{item.amount}</span>
@@ -306,20 +331,107 @@ export default function TrackerPage() {
         const docs = state.documents.filter(d => d.requestId === selectedRequestId);
         const guars = state.guarantees.filter(d => d.requestId === selectedRequestId);
         const slas = state.deadlines.filter(d => d.requestId === selectedRequestId);
+        const request = state.requests.find(r => r.id === selectedRequestId);
+        const milestones = state.milestones.filter(m => m.requestId === selectedRequestId);
+        const currentMilestoneIndex = milestones.findIndex(m => m.status === "In Progress");
+        const nextMilestone = milestones.find(m => m.status === "Pending");
+        const completedMilestones = milestones.filter(m => m.status === "Done").length;
+        const timelineStart = Math.max(0, currentMilestoneIndex > -1 ? currentMilestoneIndex - 1 : 0);
+        const visibleMilestones = milestones.slice(timelineStart, timelineStart + 3);
+        const otherMilestones = milestones.filter((_, index) => index < timelineStart || index >= timelineStart + 3);
         
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-transparent pointer-events-none">
-            <div className="bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[85vh] pointer-events-auto animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-              <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-[#0a4d8c]">
-                <div className="flex items-center gap-2">
-                  <LayoutList size={18} className="text-white" />
-                  <h3 className="font-bold text-white text-sm">{selectedRequestId}</h3>
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4" onClick={() => setSelectedRequestId(null)}>
+            <div role="dialog" aria-modal="true" aria-labelledby="tracker-detail-title" className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
+              <div className="flex items-start justify-between gap-4 bg-[#0a4d8c] px-5 py-4 sm:px-7">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 text-blue-100">
+                    <LayoutList size={18} />
+                    <span className="text-[11px] font-bold uppercase tracking-[0.16em]">Helicopter View D3</span>
+                  </div>
+                  <h3 id="tracker-detail-title" className="mt-2 truncate text-base font-bold text-white">{request?.title ?? selectedRequestId}</h3>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-blue-100">
+                    <span>{selectedRequestId}</span>
+                    {request && <span>PIC: {request.pic}</span>}
+                    {request && <span>{request.amount}</span>}
+                  </div>
                 </div>
-                <button onClick={() => setSelectedRequestId(null)} className="text-blue-200 hover:text-white transition-colors">
+                <button aria-label="Tutup detail request" onClick={() => setSelectedRequestId(null)} className="shrink-0 rounded-lg p-1 text-blue-200 transition hover:bg-white/10 hover:text-white">
                   <XCircle size={20} />
                 </button>
               </div>
-              <div className="p-6 flex-1 overflow-y-auto space-y-6">
+              <div className="flex-1 space-y-7 overflow-y-auto p-5 sm:p-7">
+                {request && (
+                  <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-5">
+                    <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+                      <div>
+                        <div className="text-[10px] font-bold uppercase tracking-wider text-[#0a4d8c]">Posisi proses saat ini</div>
+                        <div className="mt-1 text-lg font-bold text-slate-800">{request.currentStep}</div>
+                        <div className="mt-1 text-xs text-slate-500">Stage ringkas: {request.stage} · {completedMilestones} dari {milestones.length} tahap selesai</div>
+                      </div>
+                      <label className="w-full lg:w-72">
+                        <span className="mb-1 block text-[10px] font-bold uppercase tracking-wider text-slate-500">Update tahap manual</span>
+                        <select
+                          value={request.currentStep}
+                          onChange={(event) => moveRequestStep(selectedRequestId, event.target.value as ProcurementStep)}
+                          className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 focus:border-[#0a4d8c] focus:outline-none"
+                        >
+                          {PROCUREMENT_STEPS.map(step => <option key={step} value={step}>{step}</option>)}
+                        </select>
+                      </label>
+                    </div>
+                    <div className="mt-5 h-2 overflow-hidden rounded-full bg-white/80"><div className="h-full rounded-full bg-[#0a4d8c] transition-all" style={{ width: `${milestones.length ? ((completedMilestones + (currentMilestoneIndex >= 0 ? 1 : 0)) / milestones.length) * 100 : 0}%` }} /></div>
+                    {nextMilestone && <div className="mt-2 text-[11px] font-medium text-slate-500">Berikutnya: <span className="font-semibold text-slate-700">{nextMilestone.step}</span></div>}
+                  </div>
+                )}
+
+                <section>
+                  <div className="flex items-end justify-between gap-3 border-b border-slate-200 pb-3">
+                    <div><h4 className="text-sm font-bold text-slate-800">Timeline proses procurement</h4><p className="mt-1 text-xs text-slate-500">Status setiap tahap Berita Acara dan deliverable terkait.</p></div>
+                    <span className="shrink-0 rounded-full bg-blue-50 px-2.5 py-1 text-[11px] font-bold text-[#0a4d8c]">{request?.stage ?? "-"}</span>
+                  </div>
+                  <div className="relative mt-5 space-y-1">
+                    <div className="absolute bottom-5 left-[15px] top-5 w-px bg-slate-200" />
+                    {visibleMilestones.map((milestone, index) => {
+                      const milestoneIndex = timelineStart + index;
+                      const isDone = milestone.status === "Done";
+                      const isCurrent = milestone.status === "In Progress";
+                      return (
+                        <div key={milestone.id} className="relative flex gap-4 py-2">
+                          <div className={`z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-4 border-white text-[11px] font-bold ${isDone ? "bg-emerald-500 text-white" : isCurrent ? "bg-[#0a4d8c] text-white ring-4 ring-blue-100" : "bg-slate-100 text-slate-400"}`}>
+                            {isDone ? <CheckCircle2 size={15} /> : milestoneIndex + 1}
+                          </div>
+                          <div className={`min-w-0 flex-1 rounded-lg border px-3 py-2.5 ${isCurrent ? "border-blue-200 bg-blue-50/60" : isDone ? "border-emerald-100 bg-emerald-50/40" : "border-slate-100 bg-white"}`}>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className={`text-sm font-semibold ${isCurrent ? "text-[#0a4d8c]" : "text-slate-700"}`}>{milestone.step}</span>
+                              <span className={`text-[10px] font-bold uppercase tracking-wider ${isDone ? "text-emerald-600" : isCurrent ? "text-[#0a4d8c]" : "text-slate-400"}`}>{isDone ? "Selesai" : isCurrent ? "Sedang berjalan" : "Berikutnya"}</span>
+                            </div>
+                            <div className="mt-1 flex flex-wrap gap-x-3 text-[11px] text-slate-500">
+                              {milestone.date && <span>{milestone.date}</span>}
+                              {milestone.pic && <span>PIC: {milestone.pic}</span>}
+                              {milestone.documentId && <span>Dokumen tertaut: {milestone.documentId}</span>}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {otherMilestones.length > 0 && (
+                    <details className="mt-4 rounded-lg border border-slate-200 bg-slate-50/50">
+                      <summary className="cursor-pointer list-none px-4 py-3 text-xs font-semibold text-slate-600 hover:text-[#0a4d8c]">
+                        Tampilkan {otherMilestones.length} tahapan lainnya
+                      </summary>
+                      <div className="space-y-2 border-t border-slate-200 px-4 py-3">
+                        {otherMilestones.map(milestone => (
+                          <div key={milestone.id} className="flex items-center justify-between gap-3 rounded-md bg-white px-3 py-2 text-xs">
+                            <span className="font-medium text-slate-700">{milestone.step}</span>
+                            <span className={`font-semibold ${milestone.status === "Done" ? "text-emerald-600" : "text-slate-400"}`}>{milestone.status === "Done" ? "Selesai" : "Pending"}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  )}
+                </section>
                 
                 {/* Documents Section */}
                 <div>
@@ -335,14 +447,12 @@ export default function TrackerPage() {
                   {docs.length > 0 ? (
                     <div className="space-y-2">
                       {docs.map(d => (
-                        <div key={d.id} className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-lg p-2.5">
-                          <div>
-                            <div className="text-[13px] font-semibold text-slate-800">{d.name}</div>
-                            <div className="text-[11px] text-slate-500">{d.type} • {d.uploadDate}</div>
-                          </div>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${d.status === 'Lulus Verifikasi' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
-                            {d.status}
-                          </span>
+                        <div key={d.id}>
+                          <button onClick={() => setExpandedRelatedId(current => current === `doc-${d.id}` ? null : `doc-${d.id}`)} className="flex w-full items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50 p-2.5 text-left transition hover:border-blue-200 hover:bg-blue-50/40">
+                            <div className="min-w-0"><div className="truncate text-[12px] font-medium text-slate-800">{d.name}</div><div className="mt-0.5 text-[11px] text-slate-500">{d.type} • {d.uploadDate}</div></div>
+                            <div className="flex shrink-0 items-center gap-2"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${d.status === 'Lulus Verifikasi' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>{d.status}</span>{expandedRelatedId === `doc-${d.id}` ? <ChevronDown size={15} className="text-slate-400" /> : <ChevronRight size={15} className="text-slate-400" />}</div>
+                          </button>
+                          {expandedRelatedId === `doc-${d.id}` && <div className="border-x border-b border-slate-200 bg-white px-3 py-3 text-xs text-slate-600"><div>{d.issues.length > 0 ? d.issues.join(" ") : "Tidak ada temuan pemeriksaan."}</div>{d.nextAction && <div className="mt-2"><span className="font-semibold text-[#0a4d8c]">Next Action:</span> {d.nextAction}</div>}<button onClick={() => router.push(`/documents/result?id=${d.id}`)} className="mt-3 font-semibold text-[#0a4d8c] hover:underline">Buka hasil pemeriksaan</button></div>}
                         </div>
                       ))}
                     </div>
@@ -365,14 +475,12 @@ export default function TrackerPage() {
                   {guars.length > 0 ? (
                     <div className="space-y-2">
                       {guars.map(g => (
-                        <div key={g.id} className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-lg p-2.5">
-                          <div>
-                            <div className="text-[13px] font-semibold text-slate-800">{g.vendor}</div>
-                            <div className="text-[11px] text-slate-500">{g.type} • Jatuh tempo: {g.expiryDate}</div>
-                          </div>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${g.status === 'Aktif' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
-                            {g.status}
-                          </span>
+                        <div key={g.id}>
+                          <button onClick={() => setExpandedRelatedId(current => current === `guarantee-${g.id}` ? null : `guarantee-${g.id}`)} className="flex w-full items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50 p-2.5 text-left transition hover:border-blue-200 hover:bg-blue-50/40">
+                            <div className="min-w-0"><div className="truncate text-[12px] font-medium text-slate-800">{g.vendor}</div><div className="mt-0.5 text-[11px] text-slate-500">{g.type} • Jatuh tempo: {g.expiryDate}</div></div>
+                            <div className="flex shrink-0 items-center gap-2"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${g.status === 'Aktif' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>{g.status}</span>{expandedRelatedId === `guarantee-${g.id}` ? <ChevronDown size={15} className="text-slate-400" /> : <ChevronRight size={15} className="text-slate-400" />}</div>
+                          </button>
+                          {expandedRelatedId === `guarantee-${g.id}` && <div className="border-x border-b border-slate-200 bg-white px-3 py-3 text-xs text-slate-600"><div><span className="font-semibold">{g.referenceNo}</span> • {g.issuer} • {g.value}</div>{g.nextAction && <div className="mt-2"><span className="font-semibold text-[#0a4d8c]">Next Action:</span> {g.nextAction}</div>}<button onClick={() => router.push('/guarantees')} className="mt-3 font-semibold text-[#0a4d8c] hover:underline">Buka modul jaminan</button></div>}
                         </div>
                       ))}
                     </div>
@@ -395,14 +503,12 @@ export default function TrackerPage() {
                   {slas.length > 0 ? (
                     <div className="space-y-2">
                       {slas.map(s => (
-                        <div key={s.id} className="flex items-center justify-between bg-slate-50 border border-slate-100 rounded-lg p-2.5">
-                          <div>
-                            <div className="text-[13px] font-semibold text-slate-800">{s.taskName}</div>
-                            <div className="text-[11px] text-slate-500">PIC: {s.pic} • Target: {s.targetDate}</div>
-                          </div>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${s.status === 'On Track' || s.status === 'Selesai' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : s.status === 'At Risk' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
-                            {s.status}
-                          </span>
+                        <div key={s.id}>
+                          <button onClick={() => setExpandedRelatedId(current => current === `sla-${s.id}` ? null : `sla-${s.id}`)} className="flex w-full items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50 p-2.5 text-left transition hover:border-blue-200 hover:bg-blue-50/40">
+                            <div className="min-w-0"><div className="truncate text-[12px] font-medium text-slate-800">{s.taskName}</div><div className="mt-0.5 text-[11px] text-slate-500">PIC: {s.pic} • Target: {s.targetDate}</div></div>
+                            <div className="flex shrink-0 items-center gap-2"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${s.status === 'On Track' || s.status === 'Selesai' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : s.status === 'At Risk' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-red-50 text-red-700 border-red-200'}`}>{s.status}</span>{expandedRelatedId === `sla-${s.id}` ? <ChevronDown size={15} className="text-slate-400" /> : <ChevronRight size={15} className="text-slate-400" />}</div>
+                          </button>
+                          {expandedRelatedId === `sla-${s.id}` && <div className="border-x border-b border-slate-200 bg-white px-3 py-3 text-xs text-slate-600"><div><span className="font-semibold">Milestone:</span> {s.milestone} • Urgensi: {s.urgencyLevel}</div>{s.nextAction && <div className="mt-2"><span className="font-semibold text-[#0a4d8c]">Next Action:</span> {s.nextAction}</div>}<button onClick={() => router.push('/deadlines')} className="mt-3 font-semibold text-[#0a4d8c] hover:underline">Buka modul SLA</button></div>}
                         </div>
                       ))}
                     </div>
@@ -440,6 +546,7 @@ export default function TrackerPage() {
                   amount: formData.get('amount') as string,
                   amountRaw: 50000000,
                   stage: "Persiapan",
+                  currentStep: "Rapat Pra-Tender",
                   department: formData.get('department') as string,
                   fpp: formData.get('fpp') as string || `FPP-${Date.now().toString().slice(-4)}`,
                   daysInStage: 0,

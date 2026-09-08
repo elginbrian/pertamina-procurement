@@ -2,9 +2,9 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { Inbox } from "lucide-react";
-import { GuaranteeItem, GuaranteeStatus } from "@/lib/types";
+import { GuaranteeStatus } from "@/lib/types";
 import { GuaranteeFilterBar } from "@/components/widgets/guarantees/GuaranteeFilterBar";
-import { GuaranteeRow } from "@/components/widgets/guarantees/GuaranteeRow";
+import { GuaranteeGroupRow } from "@/components/widgets/guarantees/GuaranteeGroupRow";
 import { TablePagination } from "@/components/widgets/TablePagination";
 import { useProcurement } from "@/context/ProcurementContext";
 
@@ -32,22 +32,32 @@ export default function GuaranteesPage() {
 
   const filteredGuarantees = useMemo(() => {
     return guarantees.filter((item) => {
+      const request = state.requests.find(requestItem => requestItem.id === item.requestId);
       const matchesSearch = item.referenceNo.toLowerCase().includes(searchQuery.toLowerCase()) || 
                             item.pic.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                            item.type.toLowerCase().includes(searchQuery.toLowerCase());
+                            item.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            item.requestId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            request?.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === "All" || item.status === statusFilter;
       const matchesType = typeFilter === "All" || item.type === typeFilter;
       
       return matchesSearch && matchesStatus && matchesType;
     });
-  }, [guarantees, searchQuery, statusFilter, typeFilter]);
+  }, [guarantees, state.requests, searchQuery, statusFilter, typeFilter]);
 
-  const totalPages = Math.ceil(filteredGuarantees.length / itemsPerPage);
+  const guaranteeGroups = useMemo(() => state.requests
+    .map(request => ({
+      request,
+      guarantees: filteredGuarantees.filter(guarantee => guarantee.requestId === request.id),
+    }))
+    .filter(group => group.guarantees.length > 0), [state.requests, filteredGuarantees]);
+
+  const totalPages = Math.ceil(guaranteeGroups.length / itemsPerPage);
   
   const paginatedGuarantees = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredGuarantees.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredGuarantees, currentPage]);
+    return guaranteeGroups.slice(startIndex, startIndex + itemsPerPage);
+  }, [guaranteeGroups, currentPage, itemsPerPage]);
 
   return (
     <div className="space-y-6 pb-12">
@@ -135,17 +145,17 @@ export default function GuaranteesPage() {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="px-4 py-3">Referensi</th>
+                <th className="px-4 py-3">Pengadaan</th>
+                <th className="px-4 py-3">Isi Folder</th>
                 <th className="px-4 py-3">Nilai Jaminan</th>
-                <th className="px-4 py-3">PIC</th>
-                <th className="px-4 py-3">Jatuh Tempo</th>
+                <th className="px-4 py-3">Expiry Terdekat</th>
                 <th className="px-4 py-3">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
               {paginatedGuarantees.length > 0 ? (
-                paginatedGuarantees.map((item) => (
-                  <GuaranteeRow key={item.id} guarantee={item} />
+                paginatedGuarantees.map((group) => (
+                  <GuaranteeGroupRow key={group.request.id} request={group.request} guarantees={group.guarantees} />
                 ))
               ) : (
                 <tr>
@@ -164,11 +174,11 @@ export default function GuaranteesPage() {
           <TablePagination 
             currentPage={currentPage}
             totalPages={Math.max(totalPages, 1)}
-            totalItems={filteredGuarantees.length}
+            totalItems={guaranteeGroups.length}
             itemsPerPage={itemsPerPage}
             onPageChange={setCurrentPage}
             onItemsPerPageChange={setItemsPerPage}
-            itemName="jaminan"
+            itemName="pengadaan"
           />
         </div>
       </div>
