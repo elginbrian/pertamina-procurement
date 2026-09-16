@@ -33,7 +33,7 @@ export function DocumentGroupRow({ request, documents }: DocumentGroupRowProps) 
               <Folder size={18} />
             </div>
             <div className="min-w-0">
-              <div className="text-[13px] font-medium text-slate-800">{request.title}</div>
+              <div className="flex flex-wrap items-center gap-2 text-[13px] font-medium text-slate-800"><span>{request.title}</span><span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${request.operationalStatus === "On Going" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : request.operationalStatus === "On Hold" ? "border-amber-200 bg-amber-50 text-amber-700" : "border-red-200 bg-red-50 text-red-700"}`}>{request.operationalStatus}</span></div>
               <div className="mt-1 text-[11px] text-slate-500">{request.id} · {request.department} · {request.currentStep}</div>
             </div>
           </div>

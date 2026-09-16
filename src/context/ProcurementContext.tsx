@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, useCallback } from "react";
-import type { ProcurementState, ProcurementStage, ProcurementStep, ProcurementRequest, DocumentItem, GuaranteeItem, ActionItem, NotificationItem, DeadlineItem } from "@/lib/types";
+import type { ProcurementState, ProcurementStage, ProcurementStep, ProcurementRequest, ProcurementOperationalStatus, DocumentItem, GuaranteeItem, ProcurementAttachment, ActionItem, NotificationItem, DeadlineItem, HistoryItem } from "@/lib/types";
 import { initialProcurementState } from "@/lib/mockData";
 import { getDeadlineTiming } from "@/lib/deadlineUtils";
 
@@ -11,14 +11,18 @@ type ProcurementAction =
   // Tracker
   | { type: "ADD_REQUEST"; request: ProcurementRequest }
   | { type: "MOVE_REQUEST"; id: string; stage: ProcurementStage }
+  | { type: "UPDATE_REQUEST_OPERATIONAL_STATUS"; id: string; status: ProcurementOperationalStatus; reason?: string }
   | { type: "MOVE_REQUEST_STEP"; id: string; step: ProcurementStep }
   // D1 Documents
   | { type: "ADD_DOCUMENT"; document: DocumentItem }
   | { type: "UPDATE_DOCUMENT_STATUS"; id: string; status: DocumentItem["status"] }
   // D2 Guarantees
   | { type: "ADD_GUARANTEE"; guarantee: GuaranteeItem }
+  | { type: "UPDATE_GUARANTEE"; id: string; changes: Partial<GuaranteeItem> }
+  | { type: "ADD_ATTACHMENT"; attachment: ProcurementAttachment }
   // D4 Deadlines
   | { type: "ADD_DEADLINE"; deadline: DeadlineItem }
+  | { type: "UPDATE_DEADLINE"; id: string; changes: Partial<DeadlineItem> }
   | { type: "UPDATE_DEADLINE_STATUS"; id: string; status: "On Track" | "At Risk" | "Overdue" | "Selesai" }
   // Actions
   | { type: "UPDATE_ACTION_STATUS"; id: string; status: ActionItem["status"] }
@@ -44,6 +48,10 @@ const stageForStep: Record<ProcurementStep, ProcurementStage> = {
   "Pengumuman Pemenang": "Contracting",
   "Penunjukan Pemenang": "Selesai",
 };
+
+function historyItem(requestId: string, category: HistoryItem["category"], title: string, description: string): HistoryItem {
+  return { id: `HIST-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, requestId, category, title, description, createdAt: new Date().toISOString() };
+}
 
 function actionForGuarantee(guarantee: GuaranteeItem): ActionItem | null {
   if (guarantee.status === "Aktif" && !guarantee.nextAction) return null;
@@ -94,6 +102,7 @@ function procurementReducer(state: ProcurementState, action: ProcurementAction):
       return {
         ...state,
         requests: [action.request, ...state.requests],
+        history: [historyItem(action.request.id, "Pekerjaan", "Pekerjaan dibuat", `${action.request.title} ditambahkan ke tracker.`), ...state.history],
       };
     }
 
@@ -120,6 +129,30 @@ function procurementReducer(state: ProcurementState, action: ProcurementAction):
             : r
         ),
         notifications: [notification, ...state.notifications],
+      };
+    }
+
+    case "UPDATE_REQUEST_OPERATIONAL_STATUS": {
+      const request = state.requests.find(r => r.id === action.id);
+      if (!request) return state;
+
+      return {
+        ...state,
+        requests: state.requests.map(r => r.id === action.id
+          ? { ...r, operationalStatus: action.status, operationalStatusReason: action.reason, updatedAt: new Date().toISOString().split("T")[0] }
+          : r
+        ),
+        history: [historyItem(action.id, "Pekerjaan", "Status pekerjaan diperbarui", `Status diubah menjadi ${action.status}${action.reason ? `: ${action.reason}` : "."}`), ...state.history],
+        notifications: [{
+          id: `NOTIF-${Date.now()}`,
+          requestId: action.id,
+          title: `Status Pekerjaan Diperbarui: ${request.id}`,
+          description: `${request.title} sekarang berstatus ${action.status}.`,
+          time: "Baru saja",
+          isRead: false,
+          type: "success",
+          category: "Hari Ini",
+        }, ...state.notifications],
       };
     }
 
@@ -155,6 +188,7 @@ function procurementReducer(state: ProcurementState, action: ProcurementAction):
           };
         }),
         notifications: [notification, ...state.notifications],
+        history: [historyItem(action.id, "Timeline", "Tahap timeline diperbarui", `Tahap aktif diubah menjadi ${action.step}.`), ...state.history],
       };
     }
 
@@ -196,6 +230,7 @@ function procurementReducer(state: ProcurementState, action: ProcurementAction):
           : state.milestones,
         actions: [newAction, ...state.actions],
         notifications: [newNotif, ...state.notifications],
+        history: [historyItem(action.document.requestId, "Dokumen", "Dokumen ditambahkan", `${action.document.name} ditambahkan untuk pemeriksaan.`), ...state.history],
       };
     }
 
@@ -228,6 +263,7 @@ function procurementReducer(state: ProcurementState, action: ProcurementAction):
           (a.referenceId === action.id && isPass) ? { ...a, status: "Done" } : a
         ),
         notifications: [newNotif, ...state.notifications],
+        history: [historyItem(doc.requestId, "Dokumen", "Status dokumen diperbarui", `${doc.name} diubah menjadi ${action.status}.`), ...state.history],
       };
     }
 
@@ -249,8 +285,26 @@ function procurementReducer(state: ProcurementState, action: ProcurementAction):
         guarantees: [action.guarantee, ...state.guarantees],
         actions: newAction ? [newAction, ...state.actions] : state.actions,
         notifications: [newNotif, ...state.notifications],
+        history: [historyItem(action.guarantee.requestId, "Jaminan", "Jaminan ditambahkan", `${action.guarantee.type} ${action.guarantee.referenceNo} ditambahkan.`), ...state.history],
       };
     }
+
+    case "UPDATE_GUARANTEE": {
+      const existing = state.guarantees.find(guarantee => guarantee.id === action.id);
+      if (!existing) return state;
+      const updated = { ...existing, ...action.changes };
+      const expiryTime = new Date(`${updated.expiryDate}T23:59:59`).getTime();
+      const remainingDays = Number.isNaN(expiryTime) ? 0 : Math.ceil((expiryTime - Date.now()) / 86400000);
+      const status: GuaranteeItem["status"] = remainingDays < 0 ? "Expired" : remainingDays <= state.settings.slaWarningDays ? "Mendekati Expiry" : "Aktif";
+      return {
+        ...state,
+        guarantees: state.guarantees.map(guarantee => guarantee.id === action.id ? { ...updated, remainingDays, status } : guarantee),
+        history: [historyItem(updated.requestId, "Jaminan", "Data jaminan dikoreksi", `${updated.referenceNo} diperbarui melalui koreksi manual hasil ekstraksi.`), ...state.history],
+      };
+    }
+
+    case "ADD_ATTACHMENT":
+      return { ...state, attachments: [action.attachment, ...state.attachments], history: [historyItem(action.attachment.requestId, "Dokumen", "Dokumen pendukung ditambahkan", `${action.attachment.fileName} disimpan tanpa ekstraksi.`), ...state.history] };
 
     case "ADD_DEADLINE": {
       const timing = getDeadlineTiming(action.deadline.targetDate, state.settings.slaWarningDays, action.deadline.status);
@@ -260,6 +314,19 @@ function procurementReducer(state: ProcurementState, action: ProcurementAction):
         ...state,
         deadlines: [deadline, ...state.deadlines],
         actions: newAction ? [newAction, ...state.actions] : state.actions,
+        history: [historyItem(deadline.requestId, "SLA", "SLA ditambahkan", `${deadline.taskName} ditetapkan hingga ${deadline.targetDate}.`), ...state.history],
+      };
+    }
+
+    case "UPDATE_DEADLINE": {
+      const existing = state.deadlines.find(d => d.id === action.id);
+      if (!existing) return state;
+      const updated = { ...existing, ...action.changes };
+      const timing = getDeadlineTiming(updated.targetDate, state.settings.slaWarningDays, updated.status);
+      return {
+        ...state,
+        deadlines: state.deadlines.map(d => d.id === action.id ? { ...updated, ...timing } : d),
+        history: [historyItem(updated.requestId, "SLA", "SLA diperbarui", `${updated.taskName} diperbarui; target ${updated.targetDate}.`), ...state.history],
       };
     }
 
@@ -364,11 +431,15 @@ interface ProcurementContextValue {
   // Convenience helpers
   addRequest: (request: ProcurementRequest) => void;
   moveRequest: (id: string, stage: ProcurementStage) => void;
+  updateRequestOperationalStatus: (id: string, status: ProcurementOperationalStatus, reason?: string) => void;
   moveRequestStep: (id: string, step: ProcurementStep) => void;
   addDocument: (doc: DocumentItem) => void;
   updateDocumentStatus: (id: string, status: DocumentItem["status"]) => void;
   addGuarantee: (guarantee: GuaranteeItem) => void;
+  updateGuarantee: (id: string, changes: Partial<GuaranteeItem>) => void;
+  addAttachment: (attachment: ProcurementAttachment) => void;
   addDeadline: (deadline: DeadlineItem) => void;
+  updateDeadline: (id: string, changes: Partial<DeadlineItem>) => void;
   updateDeadlineStatus: (id: string, status: "On Track" | "At Risk" | "Overdue" | "Selesai") => void;
   updateActionStatus: (id: string, status: ActionItem["status"]) => void;
   markNotificationRead: (id: string) => void;
@@ -389,6 +460,9 @@ export function ProcurementProvider({ children }: { children: React.ReactNode })
   const moveRequest = useCallback((id: string, stage: ProcurementStage) =>
     dispatch({ type: "MOVE_REQUEST", id, stage }), []);
 
+  const updateRequestOperationalStatus = useCallback((id: string, status: ProcurementOperationalStatus, reason?: string) =>
+    dispatch({ type: "UPDATE_REQUEST_OPERATIONAL_STATUS", id, status, reason }), []);
+
   const moveRequestStep = useCallback((id: string, step: ProcurementStep) =>
     dispatch({ type: "MOVE_REQUEST_STEP", id, step }), []);
 
@@ -401,8 +475,17 @@ export function ProcurementProvider({ children }: { children: React.ReactNode })
   const addGuarantee = useCallback((guarantee: GuaranteeItem) =>
     dispatch({ type: "ADD_GUARANTEE", guarantee }), []);
 
+  const updateGuarantee = useCallback((id: string, changes: Partial<GuaranteeItem>) =>
+    dispatch({ type: "UPDATE_GUARANTEE", id, changes }), []);
+
+  const addAttachment = useCallback((attachment: ProcurementAttachment) =>
+    dispatch({ type: "ADD_ATTACHMENT", attachment }), []);
+
   const addDeadline = useCallback((deadline: DeadlineItem) =>
     dispatch({ type: "ADD_DEADLINE", deadline }), []);
+
+  const updateDeadline = useCallback((id: string, changes: Partial<DeadlineItem>) =>
+    dispatch({ type: "UPDATE_DEADLINE", id, changes }), []);
 
   const updateDeadlineStatus = useCallback((id: string, status: "On Track" | "At Risk" | "Overdue" | "Selesai") =>
     dispatch({ type: "UPDATE_DEADLINE_STATUS", id, status }), []);
@@ -422,8 +505,8 @@ export function ProcurementProvider({ children }: { children: React.ReactNode })
   return (
     <ProcurementContext.Provider value={{
       state, dispatch,
-      addRequest, moveRequest, moveRequestStep, addDocument, updateDocumentStatus,
-      addGuarantee, addDeadline, updateDeadlineStatus, updateActionStatus,
+      addRequest, moveRequest, updateRequestOperationalStatus, moveRequestStep, addDocument, updateDocumentStatus,
+      addGuarantee, updateGuarantee, addAttachment, addDeadline, updateDeadline, updateDeadlineStatus, updateActionStatus,
       markNotificationRead, markAllRead, updateSettings,
     }}>
       {children}

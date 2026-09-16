@@ -1,10 +1,19 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useMemo, useState } from "react";
 import { ArrowLeft, UploadCloud, FileText, ArrowRight, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useProcurement } from "@/context/ProcurementContext";
-import type { DocumentItem, DocumentType } from "@/lib/types";
+import type { DocumentItem, DocumentKind, DocumentType } from "@/lib/types";
+
+const VALIDATION_RULES: Record<DocumentKind, string[]> = {
+  "Surat Penawaran": ["Nama pekerjaan", "Nomor tender", "Tanggal dokumen"],
+  "Surat Pengajuan": ["Nama pekerjaan", "Nomor tender", "Tanggal dokumen"],
+  "RKS": ["Nama pekerjaan", "Nomor tender", "Tanggal dokumen"],
+  "Pakta Integritas": ["Nama pekerjaan", "Tanggal dokumen"],
+  "TKDN": ["Nama pekerjaan", "Nomor tender", "Tanggal dokumen"],
+  "Lainnya": ["Nama pekerjaan", "Nomor tender", "Tanggal dokumen"],
+};
 
 export default function DocumentUploadPage() {
   const router = useRouter();
@@ -12,8 +21,25 @@ export default function DocumentUploadPage() {
   const [file, setFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [docType, setDocType] = useState<DocumentType | "">("");
+  const [documentKind, setDocumentKind] = useState<DocumentKind | "">("");
+  const [extractedData, setExtractedData] = useState({ workName: "", tenderNumber: "", documentDate: "" });
   const [notes, setNotes] = useState("");
   const [requestId, setRequestId] = useState("");
+  const suggestedRequest = useMemo(() => {
+    const normalizedWorkName = extractedData.workName.trim().toLowerCase();
+    if (!normalizedWorkName) return null;
+    return state.requests
+      .map(request => {
+        const title = request.title.toLowerCase();
+        const exact = title === normalizedWorkName;
+        const contains = title.includes(normalizedWorkName) || normalizedWorkName.includes(title);
+        const matchingWords = normalizedWorkName.split(/\s+/).filter(word => word.length > 2 && title.includes(word)).length;
+        const score = exact ? 98 : contains ? 88 : Math.min(80, matchingWords * 18);
+        return { request, score };
+      })
+      .filter(candidate => candidate.score >= 36)
+      .sort((a, b) => b.score - a.score)[0] ?? null;
+  }, [extractedData.workName, state.requests]);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -96,13 +122,13 @@ export default function DocumentUploadPage() {
           
           <div className="p-6 space-y-5 flex-1">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Terkait Pengadaan <span className="text-red-500">*</span></label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Terkait Pekerjaan <span className="text-red-500">*</span></label>
               <select 
                 value={requestId}
                 onChange={(e) => setRequestId(e.target.value)}
                 className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c] bg-white"
               >
-                <option value="">Pilih nomor pengadaan...</option>
+                <option value="">Pilih pekerjaan atau gunakan hasil pencocokan...</option>
                 <option value="REQ-2026-101">REQ-2026-101 – Pengadaan Server Rack 42U</option>
                 <option value="REQ-2026-102">REQ-2026-102 – Lisensi Software Design Suite</option>
                 <option value="REQ-2026-103">REQ-2026-103 – Renovasi Ruang Meeting Lt. 4</option>
@@ -125,6 +151,23 @@ export default function DocumentUploadPage() {
                 <option value="Dokumentasi">Dokumentasi – Notulen / Kontrak</option>
               </select>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Template Validasi <span className="text-red-500">*</span></label>
+              <select value={documentKind} onChange={(e) => setDocumentKind(e.target.value as DocumentKind)} className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c] bg-white">
+                <option value="" disabled>Pilih template dokumen...</option>
+                <option>Surat Penawaran</option><option>Surat Pengajuan</option><option>RKS</option><option>Pakta Integritas</option><option>TKDN</option><option>Lainnya</option>
+              </select>
+              <p className="mt-1.5 text-xs text-slate-500">Informasi berikut akan dibandingkan dengan dokumen lain pada pekerjaan yang sama.</p>
+            </div>
+
+            {documentKind && <div className="space-y-3 rounded-xl border border-blue-100 bg-blue-50/40 p-4">
+              <div><h3 className="text-xs font-bold uppercase tracking-wider text-[#0a4d8c]">Informasi untuk Validasi Konsistensi</h3><p className="mt-1 text-xs text-slate-500">Template {documentKind} akan memeriksa: {VALIDATION_RULES[documentKind].join(", ")}.</p></div>
+              <input value={extractedData.workName} onChange={(e) => setExtractedData(data => ({ ...data, workName: e.target.value }))} placeholder="Nama pekerjaan dalam dokumen" className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-[#0a4d8c] focus:outline-none" />
+              <div className="grid grid-cols-2 gap-3"><input value={extractedData.tenderNumber} onChange={(e) => setExtractedData(data => ({ ...data, tenderNumber: e.target.value }))} placeholder="Nomor tender" className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-[#0a4d8c] focus:outline-none" /><input type="date" value={extractedData.documentDate} onChange={(e) => setExtractedData(data => ({ ...data, documentDate: e.target.value }))} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm focus:border-[#0a4d8c] focus:outline-none" /></div>
+              {suggestedRequest && <div className="flex flex-col gap-3 rounded-lg border border-blue-200 bg-white p-3 sm:flex-row sm:items-center sm:justify-between"><div><div className="text-xs font-semibold text-slate-800">Rekomendasi pencocokan pekerjaan</div><div className="mt-1 text-xs text-slate-600">{suggestedRequest.request.id} · {suggestedRequest.request.title} <span className="ml-1 font-semibold text-emerald-600">{suggestedRequest.score}% cocok</span></div></div><button type="button" onClick={() => setRequestId(suggestedRequest.request.id)} className="shrink-0 rounded-md border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-semibold text-[#0a4d8c] hover:bg-blue-100">Gunakan Pekerjaan Ini</button></div>}
+              {requestId && <p className="text-xs text-slate-500">Pekerjaan terpilih: <span className="font-semibold text-slate-700">{state.requests.find(request => request.id === requestId)?.title}</span>. Anda tetap dapat menggantinya secara manual.</p>}
+            </div>}
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Catatan Tambahan (Opsional)</label>
@@ -183,29 +226,40 @@ export default function DocumentUploadPage() {
             </button>
             <button 
               onClick={() => {
-                if (!file || !docType || !requestId) return;
+                if (!file || !docType || !documentKind || !requestId) return;
+                const consistencyIssues = state.documents
+                  .filter(document => document.requestId === requestId && document.extractedData)
+                  .flatMap(document => {
+                    const data = document.extractedData!;
+                    const issues: string[] = [];
+                    if (extractedData.workName && data.workName && extractedData.workName.trim().toLowerCase() !== data.workName.trim().toLowerCase()) issues.push(`Nama pekerjaan berbeda dengan ${document.name}.`);
+                    if (extractedData.tenderNumber && data.tenderNumber && extractedData.tenderNumber.trim().toLowerCase() !== data.tenderNumber.trim().toLowerCase()) issues.push(`Nomor tender berbeda dengan ${document.name}.`);
+                    return issues;
+                  });
                 const newDoc: DocumentItem = {
                   id: `DOC-${Date.now()}`,
                   requestId,
                   name: file.name.replace(/\.[^/.]+$/, ""),
                   type: docType as DocumentType,
-                  status: "Catatan Procurement",
+                  documentKind: documentKind as DocumentKind,
+                  status: consistencyIssues.length ? "Catatan Procurement" : "Lulus Verifikasi",
                   uploadDate: new Date().toISOString().split("T")[0],
                   pic: "P3 - Admin",
-                  issues: ["Dokumen baru diupload, menunggu pemeriksaan lengkap."],
-                  nextAction: notes || "Periksa kelengkapan dokumen sesuai checklist Pra-Tender.",
+                  issues: consistencyIssues,
+                  nextAction: consistencyIssues.length ? "Periksa dan samakan informasi yang berbeda sebelum dokumen diproses." : notes || "Informasi dokumen konsisten dengan data yang tersedia. Tetap lakukan review Procurement.",
                   procurementStep: state.requests.find(request => request.id === requestId)?.currentStep,
                   documentDate: new Date().toISOString().split("T")[0],
                   canGenerateAiDraft: true,
                   fileName: file.name,
                   fileSize: file.size,
+                  extractedData,
                 };
                 addDocument(newDoc);
                 router.push(`/documents/result?id=${newDoc.id}`);
               }}
-              disabled={!file || !docType || !requestId}
+              disabled={!file || !docType || !documentKind || !requestId}
               className={`px-5 py-2.5 flex items-center gap-2 rounded-lg text-sm font-medium shadow-sm transition-all ${
-                (file && docType && requestId) ? 'bg-[#0a4d8c] hover:bg-[#093e6f] text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                (file && docType && documentKind && requestId) ? 'bg-[#0a4d8c] hover:bg-[#093e6f] text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >
               <span>Mulai Pemeriksaan AI</span>

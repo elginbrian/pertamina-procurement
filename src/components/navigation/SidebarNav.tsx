@@ -3,7 +3,6 @@ import {
   ListTodo,
   FileSearch,
   ShieldAlert,
-  CalendarClock,
   Bell,
   LogOut,
   ChevronLeft,
@@ -16,11 +15,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 const navItems: any[] = [
-  { key: "documents", label: "D1 - Dokumen", icon: FileSearch },
-  { key: "overview", label: "D3 - Tracker", icon: LayoutDashboard },
+  { key: "documents", label: "Dokumen", icon: FileSearch },
+  { key: "overview", label: "Pekerjaan", icon: LayoutDashboard },
   { key: "next-action", label: "Tindakan", icon: ListTodo },
-  { key: "guarantees", label: "D2 - Jaminan", icon: ShieldAlert },
-  { key: "deadlines", label: "D4 - Jatuh Tempo", icon: CalendarClock },
+  { key: "guarantees", label: "Jaminan", icon: ShieldAlert },
   { key: "notifications", label: "Notifikasi", icon: Bell },
   { key: "settings", label: "Pengaturan", icon: Settings },
 ];

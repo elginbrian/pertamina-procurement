@@ -1,5 +1,5 @@
 import { Search, Filter } from "lucide-react";
-import { DocumentStatus } from "@/lib/types";
+import { DocumentStatus, ProcurementOperationalStatus } from "@/lib/types";
 
 interface DocumentFilterBarProps {
   searchQuery: string;
@@ -8,9 +8,11 @@ interface DocumentFilterBarProps {
   setStatusFilter: (val: DocumentStatus | "All") => void;
   typeFilter: string;
   setTypeFilter: (val: string) => void;
+  workStatusFilter: ProcurementOperationalStatus | "All";
+  setWorkStatusFilter: (val: ProcurementOperationalStatus | "All") => void;
 }
 
-export function DocumentFilterBar({ searchQuery, setSearchQuery, statusFilter, setStatusFilter, typeFilter, setTypeFilter }: DocumentFilterBarProps) {
+export function DocumentFilterBar({ searchQuery, setSearchQuery, statusFilter, setStatusFilter, typeFilter, setTypeFilter, workStatusFilter, setWorkStatusFilter }: DocumentFilterBarProps) {
   return (
     <div className="flex flex-col xl:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
       <div className="relative w-full flex-1">
@@ -37,6 +39,12 @@ export function DocumentFilterBar({ searchQuery, setSearchQuery, statusFilter, s
               <option value="Kondisional">Kondisional</option>
               <option value="Best Practice">Best Practice</option>
               <option value="Dokumentasi">Dokumentasi</option>
+            </select>
+            <select value={workStatusFilter} onChange={(e) => setWorkStatusFilter(e.target.value as ProcurementOperationalStatus | "All")} className="w-full sm:w-[130px] lg:w-[150px] border border-slate-200 rounded-lg text-[13px] px-3 py-2 focus:outline-none focus:border-[#0a4d8c] bg-white truncate">
+              <option value="All">Status Pekerjaan</option>
+              <option value="On Going">On Going</option>
+              <option value="On Hold">On Hold</option>
+              <option value="Batal">Batal</option>
             </select>
             <select 
               value={statusFilter}

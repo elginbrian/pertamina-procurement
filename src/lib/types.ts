@@ -15,6 +15,9 @@ export type ProcurementStage =
   | "Contracting"  // Contracting / Pembuatan PO
   | "Selesai";     // Kontrak ditandatangani, PO diterbitkan
 
+/** Status operasional pekerjaan, terpisah dari tahap proses procurement. */
+export type ProcurementOperationalStatus = "On Going" | "On Hold" | "Batal";
+
 /** Tahapan Berita Acara dan deliverable utama pada proses pemilihan. */
 export type ProcurementStep =
   | "Rapat Pra-Tender"
@@ -51,6 +54,8 @@ export interface ProcurementRequest {
   amount: string;           // Nilai (formatted)
   amountRaw: number;        // Nilai numerik (untuk sorting/filter)
   stage: ProcurementStage;
+  operationalStatus: ProcurementOperationalStatus;
+  operationalStatusReason?: string;
   currentStep: ProcurementStep;
   department: string;       // Fungsi/Departemen peminta
   daysInStage: number;      // Berapa hari di stage ini
@@ -74,11 +79,21 @@ export type DocumentType =
   | "Best Practice"
   | "Dokumentasi";
 
+/** Template validasi D1 untuk membandingkan informasi lintas dokumen. */
+export type DocumentKind = "Surat Penawaran" | "Surat Pengajuan" | "RKS" | "Pakta Integritas" | "TKDN" | "Lainnya";
+
+export interface DocumentExtractedData {
+  workName?: string;
+  tenderNumber?: string;
+  documentDate?: string;
+}
+
 export interface DocumentItem {
   id: string;               // e.g. "DOC-2026-001"
   requestId: string;        // FK → ProcurementRequest.id
   name: string;             // Nama dokumen
   type: DocumentType;
+  documentKind?: DocumentKind;
   status: DocumentStatus;
   uploadDate: string;       // ISO date string
   pic: string;              // PIC yang upload
@@ -90,6 +105,7 @@ export interface DocumentItem {
   canGenerateAiDraft?: boolean;
   fileName?: string;        // Nama file yang diupload
   fileSize?: number;        // Byte
+  extractedData?: DocumentExtractedData;
 }
 
 // ─── DOMAIN: D2 - JAMINAN ─────────────────────────────────────────────────
@@ -104,6 +120,8 @@ export type GuaranteeType =
   | "Jaminan Masa Pemeliharaan"
   | "Jaminan Uang Muka";
 
+export type GuaranteeIssuerType = "Bank" | "Asuransi" | "Lainnya";
+
 export interface GuaranteeItem {
   id: string;               // e.g. "GUAR-001"
   requestId: string;        // FK → ProcurementRequest.id
@@ -112,6 +130,8 @@ export interface GuaranteeItem {
   value: string;            // Formatted
   valueRaw: number;         // Numerik
   issuer: string;           // Bank / Asuransi penerbit
+  issuerType?: GuaranteeIssuerType;
+  beneficiary?: string;
   vendor: string;           // Nama vendor / principal
   issueDate: string;
   submissionDate?: string;
@@ -122,6 +142,21 @@ export interface GuaranteeItem {
   nextAction?: string;
   fileName?: string;
   fileSize?: number;
+}
+
+/** Dokumen pendukung per pekerjaan yang disimpan tanpa proses ekstraksi OCR. */
+export type ProcurementAttachmentType = "Dokumen Jaminan" | "TKDN" | "Dokumen Pendukung Lain";
+
+export interface ProcurementAttachment {
+  id: string;
+  requestId: string;
+  type: ProcurementAttachmentType;
+  name: string;
+  uploadedAt: string;
+  uploadedBy: string;
+  fileName: string;
+  fileSize?: number;
+  notes?: string;
 }
 
 // ─── DOMAIN: D4 - DEADLINES / SLA ─────────────────────────────────────────
@@ -137,11 +172,13 @@ export interface DeadlineItem {
   pic: string;
   department: string;
   targetDate: string;
+  startDate?: string;
   daysRemaining: number;
   status: DeadlineStatus;
   urgencyLevel: UrgencyLevel;
   milestone: string;        // Fase/milestone terkait
   nextAction?: string;
+  overdueReason?: string;
 }
 
 // ─── DOMAIN: TINDAKAN (NEXT ACTION) ───────────────────────────────────────
@@ -182,6 +219,17 @@ export interface NotificationItem {
   category: NotificationCategory;
 }
 
+export type HistoryCategory = "Pekerjaan" | "Timeline" | "SLA" | "Dokumen" | "Jaminan";
+
+export interface HistoryItem {
+  id: string;
+  requestId: string;
+  category: HistoryCategory;
+  title: string;
+  description: string;
+  createdAt: string;
+}
+
 // ─── DOMAIN: PENGATURAN (SETTINGS) ────────────────────────────────────────
 export interface SystemSettings {
   emailNotifications: boolean;
@@ -199,9 +247,10 @@ export interface ProcurementState {
   milestones: ProcurementMilestone[];
   documents: DocumentItem[];
   guarantees: GuaranteeItem[];
+  attachments: ProcurementAttachment[];
   deadlines: DeadlineItem[];
   actions: ActionItem[];
   notifications: NotificationItem[];
+  history: HistoryItem[];
   settings: SystemSettings;
 }
-

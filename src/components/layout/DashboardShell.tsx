@@ -7,7 +7,6 @@ import { SidebarNav } from "@/components/navigation/SidebarNav";
 import TrackerPage from "@/components/pages/tracker/TrackerPage";
 import DocumentsPage from "@/components/pages/documents/DocumentsPage";
 import GuaranteesPage from "@/components/pages/guarantees/GuaranteesPage";
-import DeadlinesPage from "@/components/pages/deadlines/DeadlinesPage";
 import NextActionPage from "@/components/pages/next-action/NextActionPage";
 import NotificationsPage from "@/components/pages/notifications/NotificationsPage";
 import DocumentUploadPage from "@/components/pages/documents/DocumentUploadPage";
@@ -58,8 +57,6 @@ function DashboardShellInner() {
       case "guarantees":
         if (path.includes("upload")) return "guarantees/upload";
         return "guarantees";
-      case "deadlines":
-        return "deadlines";
       case "notifications":
         return "notifications";
       case "settings":
@@ -78,27 +75,25 @@ function DashboardShellInner() {
   const headerForTab = (tab: string) => {
     switch (tab) {
       case "overview":
-        return { title: "Tracker Dokumen & Item", subtitle: "Status keseluruhan pengadaan (D3)" };
+        return { title: "Pekerjaan", subtitle: "Status, timeline, dan SLA pengadaan" };
       case "next-action":
         return { title: "Tindakan (Next Action)", subtitle: "Daftar tindakan yang perlu ditangani" };
       case "documents":
-        return { title: "Pemeriksaan Dokumen", subtitle: "Review, kelengkapan, dan draft (D1)" };
+        return { title: "Dokumen", subtitle: "Review, kelengkapan, dan draft" };
       case "documents/upload":
-        return { title: "Upload Dokumen (D1)", subtitle: "Pemeriksaan cerdas dengan sistem PRIMA AI" };
+        return { title: "Upload Dokumen", subtitle: "Pemeriksaan cerdas dengan sistem PRIMA AI" };
       case "documents/result":
-        return { title: "Hasil Pemeriksaan (D1)", subtitle: "Laporan otomatis verifikasi dokumen" };
+        return { title: "Hasil Pemeriksaan", subtitle: "Laporan otomatis verifikasi dokumen" };
       case "guarantees":
-        return { title: "Pantau Jaminan", subtitle: "Status dan masa berlaku jaminan (D2)" };
+        return { title: "Jaminan", subtitle: "Status dan masa berlaku jaminan" };
       case "guarantees/upload":
-        return { title: "Upload Jaminan (D2)", subtitle: "Ekstraksi data jaminan cerdas via OCR PRIMA" };
-      case "deadlines":
-        return { title: "Jatuh Tempo", subtitle: "SLA timer dan pengingat batas waktu (D4)" };
+        return { title: "Upload Jaminan", subtitle: "Ekstraksi data jaminan cerdas via OCR PRIMA" };
       case "notifications":
         return { title: "Notifikasi", subtitle: "Pemberitahuan dan update sistem" };
       case "settings":
         return { title: "Pengaturan", subtitle: "Akses dan pengaturan sistem" };
       default:
-        return { title: "Pemeriksaan Dokumen", subtitle: "Kesiapan dokumen dan antrean review (D1)" };
+        return { title: "Dokumen", subtitle: "Kesiapan dokumen dan antrean review" };
     }
   };
 
@@ -116,7 +111,7 @@ function DashboardShellInner() {
       <SidebarNav onSelect={(k) => setSelectedTab(k)} />
 
         <div className={`flex min-w-0 flex-1 flex-col transition-all duration-300`}>
-        <div className={["overview", "documents", "documents/upload", "documents/result", "guarantees", "guarantees/upload", "deadlines", "next-action", "notifications"].includes(selectedTab) ? "lg:hidden" : "block"}>
+        <div className={["overview", "documents", "documents/upload", "documents/result", "guarantees", "guarantees/upload", "next-action", "notifications"].includes(selectedTab) ? "lg:hidden" : "block"}>
           <DashboardHeader
             title={header.title}
             subtitle={header.subtitle}
@@ -140,7 +135,6 @@ function DashboardShellInner() {
             )}
             {selectedTab === "guarantees" && <GuaranteesPage />}
             {selectedTab === "guarantees/upload" && <GuaranteeUploadPage />}
-            {selectedTab === "deadlines" && <DeadlinesPage />}
             {selectedTab === "notifications" && <NotificationsPage />}
             {selectedTab === "settings" && <SettingsPage />}
           </div>

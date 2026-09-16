@@ -16,9 +16,11 @@ import type {
   ProcurementRequest,
   DocumentItem,
   GuaranteeItem,
+  ProcurementAttachment,
   DeadlineItem,
   ActionItem,
   NotificationItem,
+  HistoryItem,
 } from "./types";
 
 // ─── PROCUREMENT REQUESTS (Entitas Utama) ─────────────────────────────────
@@ -32,6 +34,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 120.000.000",
     amountRaw: 120_000_000,
     stage: "Persiapan",
+    operationalStatus: "On Going",
     currentStep: "Rapat Pra-Tender",
     department: "IT Infrastructure",
     daysInStage: 2,
@@ -46,6 +49,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 45.000.000",
     amountRaw: 45_000_000,
     stage: "Persiapan",
+    operationalStatus: "On Hold",
     currentStep: "Rapat Pra-Tender",
     department: "Creative",
     daysInStage: 5,
@@ -61,6 +65,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 85.500.000",
     amountRaw: 85_500_000,
     stage: "Sourcing",
+    operationalStatus: "On Going",
     currentStep: "Prebid Meeting",
     department: "General Affairs",
     daysInStage: 12,
@@ -76,6 +81,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 150.000.000",
     amountRaw: 150_000_000,
     stage: "Evaluasi",
+    operationalStatus: "On Going",
     currentStep: "Evaluasi Dokumen Penawaran",
     department: "IT Infrastructure",
     daysInStage: 4,
@@ -90,6 +96,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 35.000.000",
     amountRaw: 35_000_000,
     stage: "Contracting",
+    operationalStatus: "On Going",
     currentStep: "Penunjukan Pemenang",
     department: "HR",
     daysInStage: 1,
@@ -104,6 +111,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 320.000.000",
     amountRaw: 320_000_000,
     stage: "Contracting",
+    operationalStatus: "On Hold",
     currentStep: "Negosiasi Manual",
     department: "Operations",
     daysInStage: 7,
@@ -119,6 +127,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 65.000.000",
     amountRaw: 65_000_000,
     stage: "Selesai",
+    operationalStatus: "On Going",
     currentStep: "Penunjukan Pemenang",
     department: "HR",
     daysInStage: 20,
@@ -133,6 +142,7 @@ const mockRequests: ProcurementRequest[] = [
     amount: "Rp 15.000.000",
     amountRaw: 15_000_000,
     stage: "Persiapan",
+    operationalStatus: "Batal",
     currentStep: "Rapat Pra-Tender",
     department: "IT Infrastructure",
     daysInStage: 1,
@@ -637,15 +647,21 @@ const mockNotifications: NotificationItem[] = [
   },
 ];
 
+const mockAttachments: ProcurementAttachment[] = [];
+
+const mockHistory: HistoryItem[] = [];
+
 // ─── INITIAL STATE (Single Source of Truth) ────────────────────────────────
 export const initialProcurementState: ProcurementState = {
   requests: mockRequests,
   milestones: mockMilestones,
   documents: mockDocuments,
   guarantees: mockGuarantees,
+  attachments: mockAttachments,
   deadlines: mockDeadlines,
   actions: mockActions,
   notifications: mockNotifications,
+  history: mockHistory,
   settings: {
     emailNotifications: true,
     whatsappNotifications: false,

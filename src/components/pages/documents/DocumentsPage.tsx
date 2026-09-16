@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { AlertCircle, ArrowRight, CheckCircle2, ChevronDown, ChevronRight, FileCheck2, Inbox, Sparkles, UploadCloud } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { DocumentStatus } from "@/lib/types";
+import { DocumentStatus, ProcurementOperationalStatus } from "@/lib/types";
 import { DocumentFilterBar } from "@/components/widgets/documents/DocumentFilterBar";
 import { DocumentGroupRow } from "@/components/widgets/documents/DocumentGroupRow";
 import { TablePagination } from "@/components/widgets/TablePagination";
@@ -16,6 +16,7 @@ export default function DocumentsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<DocumentStatus | "All">("All");
   const [typeFilter, setTypeFilter] = useState("All");
+  const [workStatusFilter, setWorkStatusFilter] = useState<ProcurementOperationalStatus | "All">("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [expandedReviewId, setExpandedReviewId] = useState<string | null>(null);
@@ -37,7 +38,7 @@ export default function DocumentsPage() {
   // Reset pagination on filter change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, statusFilter, typeFilter]);
+  }, [searchQuery, statusFilter, typeFilter, workStatusFilter]);
 
   const filteredDocuments = useMemo(() => {
     return documents.filter((doc) => {
@@ -48,10 +49,11 @@ export default function DocumentsPage() {
                             request?.title.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesStatus = statusFilter === "All" || doc.status === statusFilter;
       const matchesType = typeFilter === "All" || doc.type === typeFilter;
+      const matchesWorkStatus = workStatusFilter === "All" || request?.operationalStatus === workStatusFilter;
       
-      return matchesSearch && matchesStatus && matchesType;
+      return matchesSearch && matchesStatus && matchesType && matchesWorkStatus;
     });
-  }, [documents, state.requests, searchQuery, statusFilter, typeFilter]);
+  }, [documents, state.requests, searchQuery, statusFilter, typeFilter, workStatusFilter]);
 
   const documentGroups = useMemo(() => state.requests
     .map(request => ({
@@ -201,6 +203,8 @@ export default function DocumentsPage() {
         setStatusFilter={setStatusFilter}
         typeFilter={typeFilter}
         setTypeFilter={setTypeFilter}
+        workStatusFilter={workStatusFilter}
+        setWorkStatusFilter={setWorkStatusFilter}
         />
       </div>
 

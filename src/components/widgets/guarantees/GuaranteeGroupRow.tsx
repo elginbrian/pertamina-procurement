@@ -1,10 +1,11 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, FileText, Folder } from "lucide-react";
+import { ChevronDown, ChevronRight, FileText, Folder, Eye, XCircle } from "lucide-react";
 import type { GuaranteeItem, ProcurementRequest } from "@/lib/types";
 
 interface GuaranteeGroupRowProps {
   request: ProcurementRequest;
   guarantees: GuaranteeItem[];
+  onEdit: (guarantee: GuaranteeItem) => void;
 }
 
 function statusClass(status: GuaranteeItem["status"]) {
@@ -13,9 +14,10 @@ function statusClass(status: GuaranteeItem["status"]) {
   return "bg-blue-50 text-[#0a4d8c] border-blue-200";
 }
 
-export function GuaranteeGroupRow({ request, guarantees }: GuaranteeGroupRowProps) {
+export function GuaranteeGroupRow({ request, guarantees, onEdit }: GuaranteeGroupRowProps) {
   const [expanded, setExpanded] = useState(false);
   const [expandedGuaranteeId, setExpandedGuaranteeId] = useState<string | null>(null);
+  const [previewingGuaranteeId, setPreviewingGuaranteeId] = useState<string | null>(null);
   const expiredCount = guarantees.filter(guarantee => guarantee.status === "Expired").length;
   const attentionCount = guarantees.filter(guarantee => guarantee.status === "Mendekati Expiry").length;
   const latestExpiry = guarantees.reduce((latest, guarantee) => guarantee.expiryDate < latest ? guarantee.expiryDate : latest, guarantees[0]?.expiryDate || "-");
@@ -73,8 +75,13 @@ export function GuaranteeGroupRow({ request, guarantees }: GuaranteeGroupRowProp
                         <div><div className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Referensi</div><div className="mt-1">{guarantee.referenceNo}</div></div>
                         <div><div className="font-bold uppercase tracking-wider text-[10px] text-slate-400">PIC</div><div className="mt-1">{guarantee.pic}</div></div>
                         <div><div className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Hari tersisa</div><div className="mt-1">{guarantee.remainingDays < 0 ? `Terlewat ${Math.abs(guarantee.remainingDays)} hari` : `${guarantee.remainingDays} hari lagi`}</div></div>
+                        <div><div className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Penerbit</div><div className="mt-1">{guarantee.issuerType ? `${guarantee.issuerType} · ` : ""}{guarantee.issuer}</div></div>
+                        <div className="sm:col-span-2"><div className="font-bold uppercase tracking-wider text-[10px] text-slate-400">Penerima jaminan</div><div className="mt-1">{guarantee.beneficiary || "Belum diisi"}</div></div>
                       </div>
                       {guarantee.nextAction && <div className="mt-3 text-xs text-slate-600"><span className="font-semibold text-[#0a4d8c]">Next Action:</span> {guarantee.nextAction}</div>}
+                      <button type="button" onClick={() => onEdit(guarantee)} className="mt-3 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-[#0a4d8c] hover:bg-blue-100">Koreksi Data Ekstraksi</button>
+                      {guarantee.fileName && <button type="button" onClick={() => setPreviewingGuaranteeId(guarantee.id)} className="ml-2 mt-3 inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:border-[#0a4d8c] hover:text-[#0a4d8c]"><Eye size={13} /> Lihat Dokumen Asli</button>}
+                      {previewingGuaranteeId === guarantee.id && <div className="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm"><div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-3 py-2"><div className="flex min-w-0 items-center gap-2"><FileText size={15} className="shrink-0 text-[#0a4d8c]" /><span className="truncate text-xs font-semibold text-slate-700">{guarantee.fileName}</span></div><button type="button" onClick={() => setPreviewingGuaranteeId(null)} aria-label="Tutup preview dokumen" className="text-slate-400 hover:text-slate-700"><XCircle size={16} /></button></div><div className="relative h-52 overflow-hidden bg-slate-100 p-5"><div className="mx-auto flex h-full max-w-md flex-col bg-white p-5 shadow-sm"><div className="mx-auto h-3 w-1/2 rounded bg-slate-200" /><div className="mt-5 h-2 w-full rounded bg-slate-100" /><div className="mt-2 h-2 w-5/6 rounded bg-slate-100" /><div className="mt-2 h-2 w-full rounded bg-slate-100" /><div className="mt-5 rounded border border-blue-100 bg-blue-50/50 p-3"><div className="h-2 w-1/3 rounded bg-blue-200" /><div className="mt-2 h-2 w-3/4 rounded bg-blue-100" /></div><div className="mt-auto text-center text-[10px] text-slate-400">Preview mock dokumen jaminan</div></div></div><div className="border-t border-slate-100 px-3 py-2 text-[11px] text-slate-500">Dokumen asli tersimpan sebagai metadata pada mockup ini; preview file nyata memerlukan penyimpanan file/backend.</div></div>}
                     </div>
                   )}
                 </div>
