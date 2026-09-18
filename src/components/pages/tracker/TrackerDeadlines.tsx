@@ -1,17 +1,26 @@
 import { useMemo, useState } from "react";
 import { TablePagination } from "@/components/widgets/TablePagination";
+import { nextSortDirection, sortRecords, SortableTableHeader, SortDirection } from "@/components/widgets/SortableTableHeader";
 
 import { TrackerDeadlinesProps } from "./types";
 
 export function TrackerDeadlines({ deadlines, requests, openRequestDetail, setEditingDeadlineId }: TrackerDeadlinesProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [sort, setSort] = useState<{ key: "work" | "pic" | "period" | "status"; direction: SortDirection }>({ key: "work", direction: null });
   const totalPages = Math.max(1, Math.ceil(deadlines.length / itemsPerPage));
   const safePage = Math.min(currentPage, totalPages);
+  const sortedDeadlines = useMemo(() => sortRecords(deadlines, sort.direction, deadline => {
+    if (sort.key === "work") return requests.find(request => request.id === deadline.requestId)?.title ?? deadline.requestId;
+    if (sort.key === "pic") return deadline.pic.name;
+    if (sort.key === "period") return deadline.targetDate;
+    return deadline.status;
+  }), [deadlines, requests, sort]);
   const paginatedDeadlines = useMemo(() => {
     const start = (safePage - 1) * itemsPerPage;
-    return deadlines.slice(start, start + itemsPerPage);
-  }, [deadlines, itemsPerPage, safePage]);
+    return sortedDeadlines.slice(start, start + itemsPerPage);
+  }, [sortedDeadlines, itemsPerPage, safePage]);
+  const toggleSort = (key: typeof sort.key) => setSort(current => ({ key, direction: current.key === key ? nextSortDirection(current.direction) : "asc" }));
 
   return (
     <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -26,10 +35,10 @@ export function TrackerDeadlines({ deadlines, requests, openRequestDetail, setEd
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500">
             <tr>
-              <th className="px-5 py-3">Pekerjaan / SLA</th>
-              <th className="px-4 py-3">PIC</th>
-              <th className="px-4 py-3">Periode</th>
-              <th className="px-4 py-3">Status waktu</th>
+              <SortableTableHeader label="Pekerjaan / SLA" direction={sort.key === "work" ? sort.direction : null} onClick={() => toggleSort("work")} className="px-5" />
+              <SortableTableHeader label="PIC" direction={sort.key === "pic" ? sort.direction : null} onClick={() => toggleSort("pic")} />
+              <SortableTableHeader label="Periode" direction={sort.key === "period" ? sort.direction : null} onClick={() => toggleSort("period")} />
+              <SortableTableHeader label="Status waktu" direction={sort.key === "status" ? sort.direction : null} onClick={() => toggleSort("status")} />
               <th className="px-5 py-3 text-right">Aksi</th>
             </tr>
           </thead>

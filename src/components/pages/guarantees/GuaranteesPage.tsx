@@ -8,6 +8,7 @@ import { GuaranteeFilterBar } from "@/components/widgets/guarantees/GuaranteeFil
 import { GuaranteeStats } from "@/components/widgets/stats/GuaranteeStats";
 import { GuaranteeGroupRow } from "@/components/widgets/guarantees/GuaranteeGroupRow";
 import { TablePagination } from "@/components/widgets/TablePagination";
+import { nextSortDirection, sortRecords, SortableTableHeader, SortDirection } from "@/components/widgets/SortableTableHeader";
 import { useProcurement } from "@/context/ProcurementContext";
 
 export default function GuaranteesPage() {
@@ -19,6 +20,7 @@ export default function GuaranteesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [editingGuarantee, setEditingGuarantee] = useState<GuaranteeItem | null>(null);
+  const [sort, setSort] = useState<{ key: "title" | "count" | "value" | "expiry" | "status"; direction: SortDirection }>({ key: "title", direction: null });
 
   const aktifCount = guarantees.filter(d => d.status === "Aktif").length;
   const mendekatiCount = guarantees.filter(d => d.status === "Mendekati Expiry").length;
@@ -68,12 +70,20 @@ export default function GuaranteesPage() {
       return hasActiveFilters ? group.guarantees.length > 0 : requestMatchesSearch || group.guarantees.length > 0;
     }), [state.requests, filteredGuarantees, searchQuery, statusFilter, typeFilter]);
 
-  const totalPages = Math.ceil(guaranteeGroups.length / itemsPerPage);
+  const sortedGuaranteeGroups = useMemo(() => sortRecords(guaranteeGroups, sort.direction, group => {
+    if (sort.key === "title") return group.request.title;
+    if (sort.key === "count") return group.guarantees.length;
+    if (sort.key === "value") return group.guarantees.reduce((total, guarantee) => total + guarantee.value, 0);
+    if (sort.key === "expiry") return group.guarantees.reduce((nearest, guarantee) => !nearest || guarantee.expiryDate < nearest ? guarantee.expiryDate : nearest, "");
+    return group.guarantees.some(guarantee => guarantee.status === "Expired") ? 3 : group.guarantees.some(guarantee => guarantee.status === "Mendekati Expiry") ? 2 : 1;
+  }), [guaranteeGroups, sort]);
+  const totalPages = Math.ceil(sortedGuaranteeGroups.length / itemsPerPage);
   
   const paginatedGuarantees = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return guaranteeGroups.slice(startIndex, startIndex + itemsPerPage);
-  }, [guaranteeGroups, currentPage, itemsPerPage]);
+    return sortedGuaranteeGroups.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedGuaranteeGroups, currentPage, itemsPerPage]);
+  const toggleSort = (key: typeof sort.key) => setSort(current => ({ key, direction: current.key === key ? nextSortDirection(current.direction) : "asc" }));
 
   return (
     <div className="space-y-6 pb-12">
@@ -102,11 +112,11 @@ export default function GuaranteesPage() {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="px-4 py-3">Pengadaan</th>
-                <th className="px-4 py-3">Isi Folder</th>
-                <th className="px-4 py-3">Nilai Jaminan</th>
-                <th className="px-4 py-3">Expiry Terdekat</th>
-                <th className="px-4 py-3">Status</th>
+                <SortableTableHeader label="Pengadaan" direction={sort.key === "title" ? sort.direction : null} onClick={() => toggleSort("title")} />
+                <SortableTableHeader label="Isi Folder" direction={sort.key === "count" ? sort.direction : null} onClick={() => toggleSort("count")} />
+                <SortableTableHeader label="Nilai Jaminan" direction={sort.key === "value" ? sort.direction : null} onClick={() => toggleSort("value")} />
+                <SortableTableHeader label="Expiry Terdekat" direction={sort.key === "expiry" ? sort.direction : null} onClick={() => toggleSort("expiry")} />
+                <SortableTableHeader label="Status" direction={sort.key === "status" ? sort.direction : null} onClick={() => toggleSort("status")} />
                 <th className="px-4 py-3 text-right">Aksi</th>
                 <th className="w-14 px-2 py-3"><span className="sr-only">Buka folder</span></th>
               </tr>

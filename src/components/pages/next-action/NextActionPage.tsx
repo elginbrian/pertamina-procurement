@@ -7,6 +7,7 @@ import { ActionFilterBar } from "@/components/widgets/next-action/ActionFilterBa
 import { ActionStats } from "@/components/widgets/stats/ActionStats";
 import { ActionRow } from "@/components/widgets/next-action/ActionRow";
 import { TablePagination } from "@/components/widgets/TablePagination";
+import { nextSortDirection, sortRecords, SortableTableHeader, SortDirection } from "@/components/widgets/SortableTableHeader";
 import { useProcurement } from "@/context/ProcurementContext";
 
 export default function NextActionPage() {
@@ -17,6 +18,7 @@ export default function NextActionPage() {
   const [priorityFilter, setPriorityFilter] = useState<ActionPriority | "All">("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [sort, setSort] = useState<{ key: "title" | "source" | "assignee" | "dueDate" | "status"; direction: SortDirection }>({ key: "title", direction: null });
 
   const highCount = actions.filter(d => d.priority === "High").length;
   const mediumCount = actions.filter(d => d.priority === "Medium").length;
@@ -44,12 +46,17 @@ export default function NextActionPage() {
     });
   }, [actions, searchQuery, sourceFilter, priorityFilter]);
 
-  const totalPages = Math.ceil(filteredActions.length / itemsPerPage);
+  const sortedActions = useMemo(() => sortRecords(filteredActions, sort.direction, item => {
+    if (sort.key === "assignee") return item.assignee.name;
+    return item[sort.key];
+  }), [filteredActions, sort]);
+  const totalPages = Math.ceil(sortedActions.length / itemsPerPage);
   
   const paginatedActions = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredActions.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredActions, currentPage, itemsPerPage]);
+    return sortedActions.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedActions, currentPage, itemsPerPage]);
+  const toggleSort = (key: typeof sort.key) => setSort(current => ({ key, direction: current.key === key ? nextSortDirection(current.direction) : "asc" }));
 
   return (
     <div className="space-y-6 pb-12">
@@ -78,11 +85,11 @@ export default function NextActionPage() {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="px-4 py-3">Tindakan & Ref</th>
-                <th className="px-4 py-3">Sumber & Tipe</th>
-                <th className="px-4 py-3">Assignee</th>
-                <th className="px-4 py-3">Batas Waktu</th>
-                <th className="px-4 py-3">Status</th>
+                <SortableTableHeader label="Tindakan & Ref" direction={sort.key === "title" ? sort.direction : null} onClick={() => toggleSort("title")} />
+                <SortableTableHeader label="Sumber & Tipe" direction={sort.key === "source" ? sort.direction : null} onClick={() => toggleSort("source")} />
+                <SortableTableHeader label="Assignee" direction={sort.key === "assignee" ? sort.direction : null} onClick={() => toggleSort("assignee")} />
+                <SortableTableHeader label="Batas Waktu" direction={sort.key === "dueDate" ? sort.direction : null} onClick={() => toggleSort("dueDate")} />
+                <SortableTableHeader label="Status" direction={sort.key === "status" ? sort.direction : null} onClick={() => toggleSort("status")} />
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">

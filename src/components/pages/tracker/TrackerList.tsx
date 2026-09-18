@@ -1,6 +1,7 @@
 import { Eye } from "lucide-react";
 import { useMemo, useState } from "react";
 import { TablePagination } from "@/components/widgets/TablePagination";
+import { nextSortDirection, sortRecords, SortableTableHeader, SortDirection } from "@/components/widgets/SortableTableHeader";
 import { TrackerItem } from "./types";
 
 import { TrackerListProps } from "./types";
@@ -8,12 +9,22 @@ import { TrackerListProps } from "./types";
 export function TrackerList({ filteredItems, timeStatusMap, openRequestDetail }: TrackerListProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [sort, setSort] = useState<{ key: "title" | "status" | "pic" | "step" | "amount" | "sla"; direction: SortDirection }>({ key: "title", direction: null });
   const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
   const safePage = Math.min(currentPage, totalPages);
+  const sortedItems = useMemo(() => sortRecords(filteredItems, sort.direction, item => {
+    if (sort.key === "title") return item.title;
+    if (sort.key === "status") return item.operationalStatus;
+    if (sort.key === "pic") return item.pic.name;
+    if (sort.key === "step") return item.currentStep;
+    if (sort.key === "amount") return item.amount;
+    return timeStatusMap[item.id] ?? "";
+  }), [filteredItems, sort, timeStatusMap]);
   const paginatedItems = useMemo(() => {
     const start = (safePage - 1) * itemsPerPage;
-    return filteredItems.slice(start, start + itemsPerPage);
-  }, [filteredItems, itemsPerPage, safePage]);
+    return sortedItems.slice(start, start + itemsPerPage);
+  }, [sortedItems, itemsPerPage, safePage]);
+  const toggleSort = (key: typeof sort.key) => setSort(current => ({ key, direction: current.key === key ? nextSortDirection(current.direction) : "asc" }));
 
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -28,12 +39,12 @@ export function TrackerList({ filteredItems, timeStatusMap, openRequestDetail }:
         <table className="w-full min-w-[900px] text-left">
           <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500">
             <tr>
-              <th className="px-5 py-3">Pekerjaan</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">PIC</th>
-              <th className="px-4 py-3">Tahap</th>
-              <th className="px-4 py-3">Nilai</th>
-              <th className="px-4 py-3">SLA</th>
+              <SortableTableHeader label="Pekerjaan" direction={sort.key === "title" ? sort.direction : null} onClick={() => toggleSort("title")} className="px-5" />
+              <SortableTableHeader label="Status" direction={sort.key === "status" ? sort.direction : null} onClick={() => toggleSort("status")} />
+              <SortableTableHeader label="PIC" direction={sort.key === "pic" ? sort.direction : null} onClick={() => toggleSort("pic")} />
+              <SortableTableHeader label="Tahap" direction={sort.key === "step" ? sort.direction : null} onClick={() => toggleSort("step")} />
+              <SortableTableHeader label="Nilai" direction={sort.key === "amount" ? sort.direction : null} onClick={() => toggleSort("amount")} />
+              <SortableTableHeader label="SLA" direction={sort.key === "sla" ? sort.direction : null} onClick={() => toggleSort("sla")} />
               <th className="px-5 py-3"></th>
             </tr>
           </thead>

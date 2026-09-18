@@ -8,6 +8,7 @@ import { DocumentFilterBar } from "@/components/widgets/documents/DocumentFilter
 import { DocumentStats } from "@/components/widgets/stats/DocumentStats";
 import { DocumentGroupRow } from "@/components/widgets/documents/DocumentGroupRow";
 import { TablePagination } from "@/components/widgets/TablePagination";
+import { nextSortDirection, sortRecords, SortableTableHeader, SortDirection } from "@/components/widgets/SortableTableHeader";
 import { useProcurement } from "@/context/ProcurementContext";
 
 export default function DocumentsPage() {
@@ -21,6 +22,7 @@ export default function DocumentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [expandedReviewId, setExpandedReviewId] = useState<string | null>(null);
+  const [sort, setSort] = useState<{ key: "title" | "count" | "pic" | "readiness"; direction: SortDirection }>({ key: "title", direction: null });
 
   const readyCount = documents.filter(d => d.status === "Lulus Verifikasi").length;
   const attnCount = documents.filter(d => d.status === "Catatan Procurement").length;
@@ -69,12 +71,19 @@ export default function DocumentsPage() {
     }))
     .filter(group => group.documents.length > 0), [state.requests, filteredDocuments]);
 
-  const totalPages = Math.ceil(documentGroups.length / itemsPerPage);
+  const sortedDocumentGroups = useMemo(() => sortRecords(documentGroups, sort.direction, group => {
+    if (sort.key === "title") return group.request.title;
+    if (sort.key === "count") return group.documents.length;
+    if (sort.key === "pic") return group.request.pic.name;
+    return group.documents.filter(document => document.status === "Lulus Verifikasi").length / group.documents.length;
+  }), [documentGroups, sort]);
+  const totalPages = Math.ceil(sortedDocumentGroups.length / itemsPerPage);
   
   const paginatedDocuments = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
-    return documentGroups.slice(startIndex, startIndex + itemsPerPage);
-  }, [documentGroups, currentPage, itemsPerPage]);
+    return sortedDocumentGroups.slice(startIndex, startIndex + itemsPerPage);
+  }, [sortedDocumentGroups, currentPage, itemsPerPage]);
+  const toggleSort = (key: typeof sort.key) => setSort(current => ({ key, direction: current.key === key ? nextSortDirection(current.direction) : "asc" }));
 
   return (
     <div className="flex flex-col gap-6 pb-12">
@@ -162,10 +171,10 @@ export default function DocumentsPage() {
           <table className="w-full text-left border-collapse whitespace-nowrap">
             <thead>
               <tr className="bg-slate-50 border-b border-slate-200 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="px-4 py-3">Pengadaan</th>
-                <th className="px-4 py-3">Isi Folder</th>
-                <th className="px-4 py-3">PIC</th>
-                <th className="px-4 py-3">Kesiapan</th>
+                <SortableTableHeader label="Pengadaan" direction={sort.key === "title" ? sort.direction : null} onClick={() => toggleSort("title")} />
+                <SortableTableHeader label="Isi Folder" direction={sort.key === "count" ? sort.direction : null} onClick={() => toggleSort("count")} />
+                <SortableTableHeader label="PIC" direction={sort.key === "pic" ? sort.direction : null} onClick={() => toggleSort("pic")} />
+                <SortableTableHeader label="Kesiapan" direction={sort.key === "readiness" ? sort.direction : null} onClick={() => toggleSort("readiness")} />
                 <th className="px-4 py-3"></th>
               </tr>
             </thead>
