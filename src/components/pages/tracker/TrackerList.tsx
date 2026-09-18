@@ -24,7 +24,7 @@ export function TrackerList({ filteredItems, timeStatusMap, openRequestDetail }:
         </div>
         <span className="text-xs font-semibold text-slate-500">{filteredItems.length} pekerjaan</span>
       </div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overscroll-x-contain touch-pan-x [-webkit-overflow-scrolling:touch]">
         <table className="w-full min-w-[900px] text-left">
           <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500">
             <tr>

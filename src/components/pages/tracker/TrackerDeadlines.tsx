@@ -22,7 +22,7 @@ export function TrackerDeadlines({ deadlines, requests, openRequestDetail, setEd
         </div>
         <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-[#0a4d8c]">{deadlines.length} SLA</span>
       </div>
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overscroll-x-contain touch-pan-x [-webkit-overflow-scrolling:touch]">
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead className="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500">
             <tr>

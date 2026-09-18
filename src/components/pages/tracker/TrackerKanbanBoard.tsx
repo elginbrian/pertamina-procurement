@@ -16,9 +16,9 @@ export function TrackerKanbanBoard({
 }: TrackerKanbanBoardProps) {
   return (
     <div className="h-[calc(100vh-240px)] min-h-[600px] overflow-x-auto overflow-y-hidden pb-1 hide-scrollbar">
-      <div className="flex h-full min-w-[960px] gap-5 pb-1">
+      <div className="flex h-full min-w-[1080px] gap-5 pb-1">
         {/* Statistics Panel (reusable) */}
-        <div className="flex w-[220px] shrink-0 flex-col">
+        <div className="flex w-[280px] shrink-0 flex-col">
           <TrackerStatsPanel
             totalItemsCount={totalItemsCount}
             onGoingCount={onGoingCount}

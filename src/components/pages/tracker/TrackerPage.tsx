@@ -115,7 +115,7 @@ export default function TrackerPage() {
       />
 
       {viewMode === "list" && (
-        <div className="grid gap-5" style={{ gridTemplateColumns: "220px 1fr" }}>
+        <div className="grid gap-5" style={{ gridTemplateColumns: "280px minmax(0, 1fr)" }}>
           {/* Stats panel — same size as kanban column */}
           <div className="self-start">
             <TrackerStatsPanel
