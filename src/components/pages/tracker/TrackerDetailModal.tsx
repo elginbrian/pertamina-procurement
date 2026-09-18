@@ -110,7 +110,7 @@ export function TrackerDetailModal({
                 const milestoneIndex = timelineStart + index;
                 const isDone = milestone.status === "Done";
                 const isCurrent = milestone.status === "In Progress";
-                const milestoneSla = slas.find(sla => sla.milestone === milestone.step);
+                const milestoneSlas = slas.filter(sla => sla.milestone === milestone.step);
                 return (
                   <div key={milestone.id} className="relative flex gap-4 py-2">
                     <div className={`z-10 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-4 border-white text-[11px] font-bold ${isDone ? "bg-emerald-500 text-white" : isCurrent ? "bg-[#0a4d8c] text-white ring-4 ring-blue-100" : "bg-slate-100 text-slate-400"}`}>
@@ -126,11 +126,40 @@ export function TrackerDetailModal({
                         {milestone.pic && <span>PIC: {milestone.pic.name}</span>}
                         {milestone.documentId && <span>Dokumen tertaut: {milestone.documentId}</span>}
                       </div>
-                      {milestoneSla && <div className={`mt-3 flex flex-wrap items-center justify-between gap-2 rounded-md border px-2.5 py-2 text-[11px] ${milestoneSla.status === "Overdue" ? "border-red-200 bg-red-50 text-red-700" : milestoneSla.status === "At Risk" ? "border-amber-200 bg-amber-50 text-amber-700" : "border-blue-100 bg-blue-50/50 text-[#0a4d8c]"}`}>
-                        <div><span className="font-semibold">SLA:</span> {milestoneSla.startDate ?? "-"} s.d. {milestoneSla.targetDate} · {milestoneSla.status === "Overdue" ? `${Math.abs(milestoneSla.daysRemaining)} hari terlambat` : milestoneSla.status === "Selesai" ? "Selesai" : `${milestoneSla.daysRemaining} hari tersisa`}{milestoneSla.status === "Overdue" && milestoneSla.overdueReason ? <span className="block pt-1 text-red-600">Alasan: {milestoneSla.overdueReason}</span> : null}</div>
-                        <button type="button" onClick={() => setEditingDeadlineId(milestoneSla.id)} className="shrink-0 rounded border border-current/30 bg-white/70 px-2 py-1 font-semibold hover:bg-white">Edit SLA</button>
-                      </div>}
-                      {!milestoneSla && <button type="button" onClick={() => setAddingDeadlineRequestId(selectedRequestId)} className="mt-3 text-[11px] font-semibold text-[#0a4d8c] hover:underline">+ Tambah SLA untuk tahapan ini</button>}
+                      
+                      {milestoneSlas.length > 0 && (
+                        <div className="mt-3 space-y-2">
+                          {milestoneSlas.map(s => (
+                            <div key={s.id} className="overflow-hidden rounded-md border border-slate-200 bg-white/60">
+                              <button onClick={() => setExpandedRelatedId(current => current === `sla-${s.id}` ? null : `sla-${s.id}`)} className="flex w-full items-center justify-between gap-3 px-2.5 py-2 text-left transition hover:bg-white">
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5"><CalendarClock size={14} className="text-slate-400" /><span className="truncate text-xs font-semibold text-slate-700">{s.taskName}</span></div>
+                                  <div className="mt-1 text-[11px] text-slate-500">PIC: {s.pic.name} • Target: {s.targetDate}</div>
+                                </div>
+                                <div className="flex shrink-0 items-center gap-2">
+                                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full border ${s.status === 'On Track' || s.status === 'Selesai' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : s.status === 'At Risk' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-red-50 text-red-700 border-red-200'}`}>
+                                    {s.status === "Overdue" ? `${Math.abs(s.daysRemaining)}h lewat` : s.status === "Selesai" ? "Selesai" : `${s.daysRemaining}h sisa`}
+                                  </span>
+                                  {expandedRelatedId === `sla-${s.id}` ? <ChevronDown size={14} className="text-slate-400" /> : <ChevronRight size={14} className="text-slate-400" />}
+                                </div>
+                              </button>
+                              {expandedRelatedId === `sla-${s.id}` && (
+                                <div className="border-t border-slate-100 bg-slate-50 px-3 py-3 text-[11px] text-slate-600">
+                                  <div><span className="font-semibold">SLA:</span> {s.startDate ?? "-"} s.d. {s.targetDate} • Urgensi: {s.urgencyLevel}</div>
+                                  {s.status === "Overdue" && s.overdueReason && <div className="mt-1 text-red-600 font-medium">Alasan telat: {s.overdueReason}</div>}
+                                  {s.nextAction && <div className="mt-1"><span className="font-semibold text-[#0a4d8c]">Next Action:</span> {s.nextAction}</div>}
+                                  <button onClick={() => setEditingDeadlineId(s.id)} className="mt-2 text-[#0a4d8c] font-semibold hover:underline">Edit SLA</button>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {!isDone && (
+                        <button type="button" onClick={() => setAddingDeadlineRequestId(selectedRequestId)} className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-blue-200 bg-blue-50/50 py-2.5 text-[11px] font-bold text-[#0a4d8c] transition hover:bg-blue-100/50">
+                          + Tambah SLA di tahapan ini
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -194,31 +223,6 @@ export function TrackerDetailModal({
             )}
           </div>
 
-          {/* Deadlines Section */}
-          <div>
-            <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
-              <div className="flex items-center gap-2 text-[#0a4d8c] font-semibold text-sm">
-                <CalendarClock size={16} />
-                SLA & Jatuh Tempo
-              </div>
-              <button onClick={() => setAddingDeadlineRequestId(selectedRequestId)} className="rounded-md bg-[#0a4d8c] px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-[#093e6f]">+ Tambah SLA</button>
-            </div>
-            {slas.length > 0 ? (
-              <div className="space-y-2">
-                {slas.map(s => (
-                  <div key={s.id}>
-                    <button onClick={() => setExpandedRelatedId(current => current === `sla-${s.id}` ? null : `sla-${s.id}`)} className="flex w-full items-center justify-between gap-3 rounded-lg border border-slate-100 bg-slate-50 p-2.5 text-left transition hover:border-blue-200 hover:bg-blue-50/40">
-                      <div className="min-w-0"><div className="truncate text-[12px] font-medium text-slate-800">{s.taskName}</div><div className="mt-0.5 text-[11px] text-slate-500">PIC: {s.pic.name} • Target: {s.targetDate}</div></div>
-                      <div className="flex shrink-0 items-center gap-2"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${s.status === 'On Track' || s.status === 'Selesai' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : s.status === 'At Risk' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-red-50 text-red-700 border-red-200'}`}>{s.status}</span>{expandedRelatedId === `sla-${s.id}` ? <ChevronDown size={15} className="text-slate-400" /> : <ChevronRight size={15} className="text-slate-400" />}</div>
-                    </button>
-                    {expandedRelatedId === `sla-${s.id}` && <div className="border-x border-b border-slate-200 bg-white px-3 py-3 text-xs text-slate-600"><div><span className="font-semibold">Milestone:</span> {s.milestone} • Urgensi: {s.urgencyLevel}</div>{s.nextAction && <div className="mt-2"><span className="font-semibold text-[#0a4d8c]">Next Action:</span> {s.nextAction}</div>}<button onClick={() => setEditingDeadlineId(s.id)} className="mt-3 font-semibold text-[#0a4d8c] hover:underline">Edit SLA</button></div>}
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-xs text-slate-500 italic py-2 text-center bg-slate-50 rounded-lg border border-dashed border-slate-200">Tidak ada SLA tertaut.</div>
-            )}
-          </div>
 
           <section>
             <div className="flex items-end justify-between gap-3 border-b border-slate-200 pb-3"><div><h4 className="text-sm font-bold text-slate-800">Histori Aktivitas</h4><p className="mt-1 text-xs text-slate-500">Perubahan penting pada pekerjaan, timeline, SLA, dokumen, dan jaminan.</p></div><span className="rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">{history.length} aktivitas</span></div>

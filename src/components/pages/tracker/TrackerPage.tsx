@@ -41,7 +41,7 @@ export default function TrackerPage() {
     const map: Record<string, string> = {};
     state.deadlines.forEach(d => {
       const prev = map[d.requestId];
-      const timing = getDeadlineTiming(d.targetDate, state.settings.slaWarningDays, d.status);
+      const timing = getDeadlineTiming(d, state.settings.slaWarningDays);
       const rank = { "Overdue": 3, "At Risk": 2, "On Track": 1, "Selesai": 0 } as const;
       if (!prev || rank[timing.status as keyof typeof rank] > rank[prev as keyof typeof rank]) {
         map[d.requestId] = timing.status;
@@ -65,7 +65,7 @@ export default function TrackerPage() {
 
   const deadlines = useMemo(() => state.deadlines.map(deadline => ({
     ...deadline,
-    ...getDeadlineTiming(deadline.targetDate, state.settings.slaWarningDays, deadline.status),
+    ...getDeadlineTiming(deadline, state.settings.slaWarningDays),
   })), [state.deadlines, state.settings.slaWarningDays]);
 
   const filteredItems = useMemo(() => {
@@ -91,6 +91,18 @@ export default function TrackerPage() {
   const onGoingCount = filteredItems.filter(item => item.operationalStatus === "On Going").length;
   const onHoldCount = filteredItems.filter(item => item.operationalStatus === "On Hold").length;
   const cancelledCount = filteredItems.filter(item => item.operationalStatus === "Batal").length;
+
+  const documentsMap = useMemo(() => {
+    const map: Record<string, { total: number; valid: number }> = {};
+    state.requests.forEach(req => {
+      const docs = state.documents.filter(d => d.requestId === req.id);
+      map[req.id] = {
+        total: docs.length,
+        valid: docs.filter(d => d.status === "Lulus Verifikasi").length
+      };
+    });
+    return map;
+  }, [state.requests, state.documents]);
   const handleDragStart = (e: React.DragEvent, id: string) => {
     e.dataTransfer.setData("itemId", id);
   };
@@ -131,6 +143,7 @@ export default function TrackerPage() {
             <TrackerList 
               filteredItems={filteredItems} 
               timeStatusMap={timeStatusMap} 
+              documentsMap={documentsMap}
               openRequestDetail={openRequestDetail} 
             />
           </div>
@@ -168,7 +181,7 @@ export default function TrackerPage() {
       {selectedRequestId && (() => {
         const docs = state.documents.filter(d => d.requestId === selectedRequestId);
         const guars = state.guarantees.filter(d => d.requestId === selectedRequestId);
-        const slas = state.deadlines.filter(d => d.requestId === selectedRequestId).map(deadline => ({ ...deadline, ...getDeadlineTiming(deadline.targetDate, state.settings.slaWarningDays, deadline.status) }));
+        const slas = state.deadlines.filter(d => d.requestId === selectedRequestId).map(deadline => ({ ...deadline, ...getDeadlineTiming(deadline, state.settings.slaWarningDays) }));
         const history = state.history.filter(item => item.requestId === selectedRequestId);
         const request = state.requests.find(r => r.id === selectedRequestId);
         const milestones = state.milestones.filter(m => m.requestId === selectedRequestId);

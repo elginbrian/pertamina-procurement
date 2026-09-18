@@ -28,6 +28,8 @@ export interface DeadlineItem {
   urgencyLevel: "Low" | "Medium" | "High" | "Critical";
   nextAction?: string;
   overdueReason?: string;
+  pausedAt?: string;
+  accumulatedPausedDays?: number;
 }
 
 export interface ProcurementState {

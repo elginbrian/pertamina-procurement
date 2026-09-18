@@ -23,7 +23,7 @@ export type ProcurementStep =
   | "Pengumuman Pemenang"
   | "Penunjukan Pemenang";
 
-export type ProcurementMilestoneStatus = "Pending" | "In Progress" | "Done";
+export type ProcurementMilestoneStatus = "Pending" | "In Progress" | "Done" | "Skipped";
 
 export interface ProcurementMilestone {
   id: string;
@@ -64,7 +64,7 @@ export type DocumentType =
   | "Best Practice"
   | "Dokumentasi";
 
-export type DocumentKind = "Surat Penawaran" | "Surat Pengajuan" | "RKS" | "Pakta Integritas" | "TKDN" | "Lainnya";
+export type DocumentKind = "Surat Penawaran" | "Surat Pernyataan" | "RKS" | "Pakta Integritas" | "TKDN" | "Lainnya";
 
 export interface DocumentExtractedData {
   workName?: string;
@@ -92,7 +92,7 @@ export interface DocumentItem {
   extractedData?: DocumentExtractedData;
 }
 
-export type ProcurementAttachmentType = "Dokumen Jaminan" | "TKDN" | "Dokumen Pendukung Lain";
+export type ProcurementAttachmentType = "Dokumen Pendukung Lain";
 
 export interface ProcurementAttachment {
   id: string;

@@ -17,6 +17,8 @@ export interface DeadlineItem {
   milestone: string;
   nextAction?: string;
   overdueReason?: string;
+  pausedAt?: string;
+  accumulatedPausedDays?: number;
 }
 
 export type ActionPriority = "High" | "Medium" | "Low";

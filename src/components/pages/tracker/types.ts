@@ -30,6 +30,7 @@ export interface TrackerHeaderProps {
 export interface TrackerListProps {
   filteredItems: TrackerItem[];
   timeStatusMap: Record<string, string>;
+  documentsMap: Record<string, { total: number; valid: number }>;
   openRequestDetail: (id: string) => void;
 }
 

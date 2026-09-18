@@ -6,10 +6,11 @@ import { useRouter } from "next/navigation";
 import { useProcurement } from "@/context/ProcurementContext";
 import type { DocumentItem, DocumentKind, DocumentType } from "@/types";
 import { DocumentPreview } from "@/components/widgets/upload/DocumentPreview";
+import { ValidationSimulationModal } from "@/components/widgets/upload/ValidationSimulationModal";
 
 const VALIDATION_RULES: Record<DocumentKind, string[]> = {
   "Surat Penawaran": ["Nama pekerjaan", "Nomor tender", "Tanggal dokumen"],
-  "Surat Pengajuan": ["Nama pekerjaan", "Nomor tender", "Tanggal dokumen"],
+  "Surat Pernyataan": ["Nama pekerjaan", "Nomor tender", "Tanggal dokumen"],
   "RKS": ["Nama pekerjaan", "Nomor tender", "Tanggal dokumen"],
   "Pakta Integritas": ["Nama pekerjaan", "Tanggal dokumen"],
   "TKDN": ["Nama pekerjaan", "Nomor tender", "Tanggal dokumen"],
@@ -26,6 +27,9 @@ export default function DocumentUploadPage() {
   const [extractedData, setExtractedData] = useState({ workName: "", tenderNumber: "", documentDate: "" });
   const [notes, setNotes] = useState("");
   const [requestId, setRequestId] = useState("");
+  const [isSimulating, setIsSimulating] = useState(false);
+  
+  const isD1Doc = ["Surat Penawaran", "Surat Pernyataan", "Pakta Integritas"].includes(documentKind);
   const suggestedRequest = useMemo(() => {
     const normalizedWorkName = extractedData.workName.trim().toLowerCase();
     if (!normalizedWorkName) return null;
@@ -108,17 +112,19 @@ export default function DocumentUploadPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Jenis Dokumen <span className="text-red-500">*</span></label>
-              <select 
-                value={docType}
-                onChange={(e) => setDocType(e.target.value as DocumentType)}
-                className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c] bg-white"
-              >
-                <option value="" disabled>Pilih jenis dokumen...</option>
-                <option value="Wajib">Wajib – RKS / HPS / Pakta Integritas</option>
-                <option value="Kondisional">Kondisional – TKDN / Izin Prinsip</option>
-                <option value="Best Practice">Best Practice – Referensi Tambahan</option>
-                <option value="Dokumentasi">Dokumentasi – Notulen / Kontrak</option>
-              </select>
+                <select 
+                  value={documentKind}
+                  onChange={(e) => setDocumentKind(e.target.value as DocumentKind)}
+                  className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2.5 focus:outline-none focus:border-[#0a4d8c] focus:ring-1 focus:ring-[#0a4d8c] bg-white"
+                >
+                  <option value="">Pilih spesifikasi...</option>
+                  <option value="Surat Penawaran">Surat Penawaran</option>
+                  <option value="Surat Pernyataan">Surat Pernyataan</option>
+                  <option value="Pakta Integritas">Pakta Integritas</option>
+                  <option value="RKS">Rencana Kerja & Syarat (RKS)</option>
+                  <option value="TKDN">Sertifikat TKDN</option>
+                  <option value="Lainnya">Lainnya</option>
+                </select>
             </div>
 
             <div>
@@ -196,6 +202,12 @@ export default function DocumentUploadPage() {
             <button 
               onClick={() => {
                 if (!file || !docType || !documentKind || !requestId) return;
+                
+                if (isD1Doc) {
+                  setIsSimulating(true);
+                  return;
+                }
+
                 const consistencyIssues = state.documents
                   .filter(document => document.requestId === requestId && document.extractedData)
                   .flatMap(document => {
@@ -228,15 +240,50 @@ export default function DocumentUploadPage() {
               }}
               disabled={!file || !docType || !documentKind || !requestId}
               className={`px-5 py-2.5 flex items-center gap-2 rounded-lg text-sm font-medium shadow-sm transition-all ${
-                (file && docType && documentKind && requestId) ? 'bg-[#0a4d8c] hover:bg-[#093e6f] text-white' : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                (file && docType && documentKind && requestId) 
+                  ? isD1Doc 
+                    ? 'bg-amber-500 hover:bg-amber-600 text-white' 
+                    : 'bg-[#0a4d8c] hover:bg-[#093e6f] text-white' 
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >
-              <span>Mulai Pemeriksaan AI</span>
+              <span>{isD1Doc ? "Simulasi Validasi D1 (AI)" : "Mulai Pemeriksaan AI"}</span>
               <ArrowRight size={16} />
             </button>
           </div>
         </div>
       </div>
+      
+      <ValidationSimulationModal 
+        isOpen={isSimulating}
+        onClose={() => setIsSimulating(false)}
+        documentKind={documentKind}
+        file={file}
+        workName={extractedData.workName}
+        onComplete={(findings, isValid) => {
+          setIsSimulating(false);
+          const newDoc: DocumentItem = {
+            id: `DOC-${Date.now()}`,
+            requestId,
+            name: file!.name.replace(/\.[^/.]+$/, ""),
+            type: docType as DocumentType,
+            documentKind: documentKind as DocumentKind,
+            status: isValid ? "Lulus Verifikasi" : "Catatan Procurement",
+            uploadDate: new Date().toISOString().split("T")[0],
+            pic: { id: "USR-ADMIN", name: "Admin" },
+            issues: findings,
+            nextAction: isValid ? "Informasi dokumen lengkap dan valid." : "Harap lengkapi atau perbaiki bagian yang menjadi temuan.",
+            procurementStep: state.requests.find(request => request.id === requestId)?.currentStep,
+            documentDate: new Date().toISOString().split("T")[0],
+            canGenerateAiDraft: true,
+            fileUrl: `https://storage.pertamina.com/mock/${file!.name}`,
+            mimeType: file!.type || "application/octet-stream",
+            extractedData,
+          };
+          addDocument(newDoc);
+          router.push(`/dashboard/documents/result?id=${newDoc.id}`);
+        }}
+      />
     </div>
   );
 }

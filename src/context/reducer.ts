@@ -48,7 +48,7 @@ export function actionForGuarantee(guarantee: GuaranteeItem): ActionItem | null 
 
   const isExpired = guarantee.status === "Expired";
   return {
-    id: `ACT-GUAR-${Date.now()}`,
+    id: `ACT-GUAR-${guarantee.id}`,
     requestId: guarantee.requestId,
     referenceId: guarantee.id,
     title: isExpired ? `Eskalasi Jaminan Expired: ${guarantee.referenceNo}` : `Tindak Lanjut Jaminan: ${guarantee.referenceNo}`,
@@ -67,7 +67,7 @@ export function actionForDeadline(deadline: DeadlineItem): ActionItem | null {
   if (deadline.status === "Selesai") return null;
 
   return {
-    id: `ACT-DL-${Date.now()}`,
+    id: `ACT-DL-${deadline.id}`,
     requestId: deadline.requestId,
     referenceId: deadline.id,
     title: deadline.nextAction ?? `Tindak Lanjut SLA: ${deadline.taskName}`,
@@ -139,6 +139,21 @@ export function procurementReducer(state: ProcurementState, action: ProcurementA
           type: "success",
           category: "Hari Ini",
         }, ...state.notifications],
+        deadlines: state.deadlines.map(d => {
+          if (d.requestId !== action.id) return d;
+          if (action.status === "On Hold" && request.operationalStatus !== "On Hold") {
+            return { ...d, pausedAt: new Date().toISOString() };
+          }
+          if (action.status !== "On Hold" && request.operationalStatus === "On Hold") {
+            let additionalDays = 0;
+            if (d.pausedAt) {
+              const diffMs = new Date().getTime() - new Date(d.pausedAt).getTime();
+              additionalDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            }
+            return { ...d, accumulatedPausedDays: (d.accumulatedPausedDays || 0) + additionalDays, pausedAt: undefined };
+          }
+          return d;
+        }),
       };
     }
 
@@ -169,7 +184,11 @@ export function procurementReducer(state: ProcurementState, action: ProcurementA
           const milestoneIndex = Object.keys(stageForStep).indexOf(m.step);
           return {
             ...m,
-            status: milestoneIndex < currentIndex ? "Done" : milestoneIndex === currentIndex ? "In Progress" : "Pending",
+            status: milestoneIndex < currentIndex 
+              ? (m.status === "Pending" ? "Skipped" : m.status) 
+              : milestoneIndex === currentIndex 
+                ? "In Progress" 
+                : "Pending",
             date: milestoneIndex <= currentIndex ? new Date().toISOString().split("T")[0] : m.date,
           };
         }),
@@ -180,20 +199,6 @@ export function procurementReducer(state: ProcurementState, action: ProcurementA
 
     case "ADD_DOCUMENT": {
       const request = state.requests.find(r => r.id === action.document.requestId);
-      const newAction: ActionItem = {
-        id: `ACT-${Date.now()}`,
-        requestId: action.document.requestId,
-        referenceId: action.document.id,
-        title: `Review Dokumen Baru: ${action.document.name}`,
-        source: "Dokumen",
-        priority: "Medium",
-        dateAdded: new Date().toISOString().split("T")[0],
-        dueDate: new Date(Date.now() + 3 * 86400000).toISOString().split("T")[0],
-        description: `Dokumen "${action.document.name}" baru diunggah untuk ${request?.title ?? action.document.requestId}. Segera lakukan pemeriksaan kelengkapan dan verifikasi.`,
-        assignee: action.document.pic,
-        status: "Pending",
-        actionType: "Review",
-      };
       const newNotif: NotificationItem = {
         id: `NOTIF-${Date.now()}`,
         requestId: action.document.requestId,
@@ -286,7 +291,7 @@ export function procurementReducer(state: ProcurementState, action: ProcurementA
       return { ...state, attachments: [action.attachment, ...state.attachments], history: [historyItem(action.attachment.requestId, "Dokumen", "Dokumen pendukung ditambahkan", `${action.attachment.fileUrl ? action.attachment.fileUrl.split('/').pop() : "File"} disimpan tanpa ekstraksi.`), ...state.history] };
 
     case "ADD_DEADLINE": {
-      const timing = getDeadlineTiming(action.deadline.targetDate, state.settings.slaWarningDays, action.deadline.status);
+      const timing = getDeadlineTiming(action.deadline, state.settings.slaWarningDays);
       const deadline = { ...action.deadline, ...timing };
       const newAction = actionForDeadline(deadline);
       return {
@@ -300,7 +305,7 @@ export function procurementReducer(state: ProcurementState, action: ProcurementA
       const existing = state.deadlines.find(d => d.id === action.id);
       if (!existing) return state;
       const updated = { ...existing, ...action.changes };
-      const timing = getDeadlineTiming(updated.targetDate, state.settings.slaWarningDays, updated.status);
+      const timing = getDeadlineTiming(updated, state.settings.slaWarningDays);
       return {
         ...state,
         deadlines: state.deadlines.map(d => d.id === action.id ? { ...updated, ...timing } : d),

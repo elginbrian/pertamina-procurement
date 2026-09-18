@@ -7,15 +7,22 @@ import { TrackerDeadlinesProps } from "./types";
 export function TrackerDeadlines({ deadlines, requests, openRequestDetail, setEditingDeadlineId }: TrackerDeadlinesProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [showOverdueOnly, setShowOverdueOnly] = useState(false);
   const [sort, setSort] = useState<{ key: "work" | "pic" | "period" | "status"; direction: SortDirection }>({ key: "work", direction: null });
-  const totalPages = Math.max(1, Math.ceil(deadlines.length / itemsPerPage));
+  
+  const filteredDeadlines = useMemo(() => {
+    return showOverdueOnly ? deadlines.filter(d => d.status === "Overdue" || d.status === "At Risk") : deadlines;
+  }, [deadlines, showOverdueOnly]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredDeadlines.length / itemsPerPage));
   const safePage = Math.min(currentPage, totalPages);
-  const sortedDeadlines = useMemo(() => sortRecords(deadlines, sort.direction, deadline => {
+  
+  const sortedDeadlines = useMemo(() => sortRecords(filteredDeadlines, sort.direction, deadline => {
     if (sort.key === "work") return requests.find(request => request.id === deadline.requestId)?.title ?? deadline.requestId;
     if (sort.key === "pic") return deadline.pic.name;
     if (sort.key === "period") return deadline.targetDate;
     return deadline.status;
-  }), [deadlines, requests, sort]);
+  }), [filteredDeadlines, requests, sort]);
   const paginatedDeadlines = useMemo(() => {
     const start = (safePage - 1) * itemsPerPage;
     return sortedDeadlines.slice(start, start + itemsPerPage);
@@ -27,9 +34,20 @@ export function TrackerDeadlines({ deadlines, requests, openRequestDetail, setEd
       <div className="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-sm font-bold text-slate-800">SLA & Jatuh Tempo Pekerjaan</h2>
-          <p className="mt-1 text-xs text-slate-500">SLA dan jatuh tempo terhubung ke setiap pekerjaan. Pilih pekerjaan untuk melihat timeline, lalu edit SLA dari daftar ini.</p>
+          <p className="mt-1 text-xs text-slate-500">Pantau SLA yang sudah atau hampir jatuh tempo dari seluruh pekerjaan.</p>
         </div>
-        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-[#0a4d8c]">{deadlines.length} SLA</span>
+        <div className="flex items-center gap-4">
+          <label className="flex items-center gap-2 text-xs font-semibold text-slate-600 cursor-pointer">
+            <input 
+              type="checkbox" 
+              checked={showOverdueOnly} 
+              onChange={(e) => setShowOverdueOnly(e.target.checked)}
+              className="rounded border-slate-300 text-[#0a4d8c] focus:ring-[#0a4d8c]"
+            />
+            Hanya Jatuh Tempo & Berisiko
+          </label>
+          <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-[#0a4d8c]">{filteredDeadlines.length} SLA</span>
+        </div>
       </div>
       <div className="overflow-x-auto overscroll-x-contain touch-pan-x [-webkit-overflow-scrolling:touch]">
         <table className="w-full min-w-[760px] text-left text-sm">
@@ -49,8 +67,8 @@ export function TrackerDeadlines({ deadlines, requests, openRequestDetail, setEd
                 <tr key={deadline.id} className="hover:bg-slate-50/70">
                   <td className="px-5 py-3">
                     <button onClick={() => openRequestDetail(deadline.requestId)} className="text-left hover:text-[#0a4d8c]">
-                      <div className="font-medium text-slate-800">{request?.title ?? deadline.requestId}</div>
-                      <div className="mt-0.5 text-xs text-slate-500">{deadline.taskName} · {deadline.milestone}</div>
+                      <div className="font-medium text-slate-800">{deadline.taskName}</div>
+                      <div className="mt-0.5 text-xs text-slate-500">{request?.title ?? deadline.requestId} · {deadline.milestone}</div>
                     </button>
                   </td>
                   <td className="px-4 py-3 text-xs text-slate-600">{deadline.pic.name}</td>
@@ -76,7 +94,7 @@ export function TrackerDeadlines({ deadlines, requests, openRequestDetail, setEd
         <TablePagination
           currentPage={safePage}
           totalPages={totalPages}
-          totalItems={deadlines.length}
+          totalItems={filteredDeadlines.length}
           itemsPerPage={itemsPerPage}
           onPageChange={setCurrentPage}
           onItemsPerPageChange={setItemsPerPage}

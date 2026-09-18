@@ -18,6 +18,60 @@
     "nextAction": "Hubungi vendor untuk memastikan kelengkapan dokumen teknis server rack 42U."
   },
   {
+    "id": "DL-007",
+    "requestId": "REQ-2026-101",
+    "taskName": "Persetujuan Dokumen RKS",
+    "pic": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "department": {
+      "id": "DEPT-II-200",
+      "name": "IT Infrastructure"
+    },
+    "targetDate": "2026-08-10",
+    "status": "Selesai",
+    "urgencyLevel": "High",
+    "milestone": "Rapat Pra-Tender",
+    "nextAction": ""
+  },
+  {
+    "id": "DL-008",
+    "requestId": "REQ-2026-101",
+    "taskName": "Penyebaran Undangan Pengadaan",
+    "pic": {
+      "id": "USR-AW-157",
+      "name": "Andi Wijaya"
+    },
+    "department": {
+      "id": "DEPT-II-200",
+      "name": "IT Infrastructure"
+    },
+    "targetDate": "2026-08-15",
+    "status": "Selesai",
+    "urgencyLevel": "Medium",
+    "milestone": "Pengumuman Pengadaan",
+    "nextAction": ""
+  },
+  {
+    "id": "DL-009",
+    "requestId": "REQ-2026-101",
+    "taskName": "Penilaian Bobot Finansial",
+    "pic": {
+      "id": "USR-DP-747",
+      "name": "Diana Putri"
+    },
+    "department": {
+      "id": "DEPT-II-200",
+      "name": "IT Infrastructure"
+    },
+    "targetDate": "2026-08-23",
+    "status": "At Risk",
+    "urgencyLevel": "High",
+    "milestone": "Evaluasi Dokumen Penawaran",
+    "nextAction": "Segera lengkapi matriks penilaian finansial."
+  },
+  {
     "id": "DL-002",
     "requestId": "REQ-2026-103",
     "taskName": "Persetujuan RAB Renovasi Lt. 4",
@@ -36,6 +90,24 @@
     "nextAction": "SLA persetujuan hampir habis. Segera minta approval dari VP General Affairs."
   },
   {
+    "id": "DL-010",
+    "requestId": "REQ-2026-103",
+    "taskName": "Drafting Dokumen Aanwijzing",
+    "pic": {
+      "id": "USR-CD-651",
+      "name": "Citra Dewi"
+    },
+    "department": {
+      "id": "DEPT-GA-387",
+      "name": "General Affairs"
+    },
+    "targetDate": "2026-08-28",
+    "status": "On Track",
+    "urgencyLevel": "Medium",
+    "milestone": "Prebid Meeting",
+    "nextAction": "Siapkan draft dokumen untuk meeting besok."
+  },
+  {
     "id": "DL-003",
     "requestId": "REQ-2026-102",
     "taskName": "Negosiasi Harga Software Suite",
@@ -52,6 +124,24 @@
     "urgencyLevel": "Critical",
     "milestone": "Negosiasi Manual",
     "nextAction": "Negosiasi melewati batas SLA 5 hari. Eskalasi ke Manager Procurement atau jadwal ulang meeting secepatnya."
+  },
+  {
+    "id": "DL-011",
+    "requestId": "REQ-2026-102",
+    "taskName": "Review HPS (Harga Perkiraan Sendiri)",
+    "pic": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "department": {
+      "id": "DEPT-C-882",
+      "name": "Creative"
+    },
+    "targetDate": "2026-08-10",
+    "status": "Selesai",
+    "urgencyLevel": "Medium",
+    "milestone": "Rapat Pra-Tender",
+    "nextAction": ""
   },
   {
     "id": "DL-004",

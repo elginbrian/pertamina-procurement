@@ -134,8 +134,6 @@ export default function GuaranteeUploadPage() {
               >
                 <option value="Jaminan Pelaksanaan">Jaminan Pelaksanaan — ekstraksi OCR</option>
                 <option value="Jaminan Pemeliharaan">Jaminan Pemeliharaan — ekstraksi OCR</option>
-                <option value="Dokumen Jaminan">Dokumen Jaminan — simpan tanpa ekstraksi</option>
-                <option value="TKDN">TKDN — simpan tanpa ekstraksi</option>
                 <option value="Dokumen Pendukung Lain">Dokumen Pendukung Lain — simpan tanpa ekstraksi</option>
               </select>
               <p className="mt-1.5 text-xs text-slate-500">{requiresExtraction ? "Data jaminan akan ditampilkan untuk diperiksa dan dikoreksi manual." : "File disimpan pada pekerjaan tanpa menjalankan ekstraksi OCR."}</p>

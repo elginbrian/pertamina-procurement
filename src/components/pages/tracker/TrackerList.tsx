@@ -1,4 +1,4 @@
-import { Eye } from "lucide-react";
+import { Eye, FileText } from "lucide-react";
 import { useMemo, useState } from "react";
 import { TablePagination } from "@/components/widgets/TablePagination";
 import { nextSortDirection, sortRecords, SortableTableHeader, SortDirection } from "@/components/widgets/SortableTableHeader";
@@ -6,7 +6,7 @@ import { TrackerItem } from "./types";
 
 import { TrackerListProps } from "./types";
 
-export function TrackerList({ filteredItems, timeStatusMap, openRequestDetail }: TrackerListProps) {
+export function TrackerList({ filteredItems, timeStatusMap, documentsMap, openRequestDetail }: TrackerListProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [sort, setSort] = useState<{ key: "title" | "status" | "pic" | "step" | "amount" | "sla"; direction: SortDirection }>({ key: "title", direction: null });
@@ -44,6 +44,7 @@ export function TrackerList({ filteredItems, timeStatusMap, openRequestDetail }:
               <SortableTableHeader label="PIC" direction={sort.key === "pic" ? sort.direction : null} onClick={() => toggleSort("pic")} />
               <SortableTableHeader label="Tahap" direction={sort.key === "step" ? sort.direction : null} onClick={() => toggleSort("step")} />
               <SortableTableHeader label="Nilai" direction={sort.key === "amount" ? sort.direction : null} onClick={() => toggleSort("amount")} />
+              <th className="px-5 py-3 text-left">Dokumen</th>
               <SortableTableHeader label="SLA" direction={sort.key === "sla" ? sort.direction : null} onClick={() => toggleSort("sla")} />
               <th className="px-5 py-3"></th>
             </tr>
@@ -63,6 +64,21 @@ export function TrackerList({ filteredItems, timeStatusMap, openRequestDetail }:
                 <td className="px-4 py-3 text-xs text-slate-600">{item.pic.name}</td>
                 <td className="px-4 py-3 text-xs text-slate-600">{item.currentStep}</td>
                 <td className="px-4 py-3 text-xs font-medium text-slate-700">{item.amount}</td>
+                <td className="px-5 py-3 text-xs">
+                  {(() => {
+                    const docStats = documentsMap[item.id] || { total: 0, valid: 0 };
+                    if (docStats.total === 0) return <span className="text-slate-400 font-medium">0 Dokumen</span>;
+                    const allValid = docStats.valid === docStats.total;
+                    return (
+                      <div className="flex items-center gap-1.5">
+                        <FileText size={14} className={allValid ? "text-emerald-500" : "text-amber-500"} />
+                        <span className={`font-semibold ${allValid ? "text-emerald-600" : "text-amber-600"}`}>
+                          {docStats.valid}/{docStats.total} <span className="font-normal opacity-80">Valid</span>
+                        </span>
+                      </div>
+                    );
+                  })()}
+                </td>
                 <td className="px-4 py-3 text-xs font-medium text-slate-600">{timeStatusMap[item.id] ?? "-"}</td>
                 <td className="px-5 py-3 text-right">
                   <button onClick={() => openRequestDetail(item.id)} className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 hover:border-[#0a4d8c] hover:text-[#0a4d8c]">
