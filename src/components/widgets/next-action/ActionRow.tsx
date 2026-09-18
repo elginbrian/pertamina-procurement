@@ -16,10 +16,10 @@ export function ActionRow({ item }: ActionRowProps) {
   const navigateToSource = (e: React.MouseEvent) => {
     e.stopPropagation();
     switch (item.source) {
-      case "Dokumen": router.push('/documents'); break;
-      case "Jaminan": router.push('/guarantees'); break;
-      case "Deadline": case "SLA/Jatuh Tempo": router.push('/deadlines'); break;
-      case "Proses Pengadaan": router.push('/'); break;
+      case "Dokumen": router.push('/dashboard/documents'); break;
+      case "Jaminan": router.push('/dashboard/guarantees'); break;
+      case "Deadline": case "SLA/Jatuh Tempo": router.push('/dashboard/overview'); break;
+      case "Proses Pengadaan": router.push('/dashboard/overview'); break;
       default: break;
     }
   };

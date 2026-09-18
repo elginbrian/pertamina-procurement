@@ -1,5 +1,5 @@
-import { DashboardShell } from '@/components/layout/DashboardShell';
+import { redirect } from "next/navigation";
 
 export default function NextActionRoute() {
-  return <DashboardShell />;
+  redirect("/dashboard/next-action");
 }

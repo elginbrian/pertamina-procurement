@@ -52,7 +52,12 @@ export default function GuaranteesPage() {
       request,
       guarantees: filteredGuarantees.filter(guarantee => guarantee.requestId === request.id),
     }))
-    .filter(group => group.guarantees.length > 0), [state.requests, filteredGuarantees]);
+    .filter(group => {
+      const requestMatchesSearch = !searchQuery || [group.request.id, group.request.title, group.request.pic]
+        .some(value => value.toLowerCase().includes(searchQuery.toLowerCase()));
+      const hasActiveFilters = statusFilter !== "All" || typeFilter !== "All";
+      return hasActiveFilters ? group.guarantees.length > 0 : requestMatchesSearch || group.guarantees.length > 0;
+    }), [state.requests, filteredGuarantees, searchQuery, statusFilter, typeFilter]);
 
   const totalPages = Math.ceil(guaranteeGroups.length / itemsPerPage);
   
@@ -152,6 +157,8 @@ export default function GuaranteesPage() {
                 <th className="px-4 py-3">Nilai Jaminan</th>
                 <th className="px-4 py-3">Expiry Terdekat</th>
                 <th className="px-4 py-3">Status</th>
+                <th className="px-4 py-3 text-right">Aksi</th>
+                <th className="w-14 px-2 py-3"><span className="sr-only">Buka folder</span></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200">
@@ -161,7 +168,7 @@ export default function GuaranteesPage() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={5}>
+                  <td colSpan={7}>
                     <div className="flex flex-col items-center justify-center p-12 text-slate-500">
                       <Inbox size={48} className="text-slate-300 mb-4" />
                       <p className="text-lg font-medium text-slate-700">Data jaminan tidak ditemukan</p>

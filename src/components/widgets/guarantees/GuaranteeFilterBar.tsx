@@ -1,6 +1,5 @@
-import { Search, Filter, Plus, Upload } from "lucide-react";
+import { Search, Filter } from "lucide-react";
 import { GuaranteeStatus } from "@/lib/types";
-import { useRouter } from "next/navigation";
 
 interface GuaranteeFilterBarProps {
   searchQuery: string;
@@ -12,7 +11,6 @@ interface GuaranteeFilterBarProps {
 }
 
 export function GuaranteeFilterBar({ searchQuery, setSearchQuery, statusFilter, setStatusFilter, typeFilter, setTypeFilter }: GuaranteeFilterBarProps) {
-  const router = useRouter();
   return (
     <div className="flex flex-col xl:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
       <div className="relative w-full flex-1">
@@ -51,15 +49,6 @@ export function GuaranteeFilterBar({ searchQuery, setSearchQuery, statusFilter, 
             </select>
           </div>
         </div>
-        
-        <button 
-          onClick={() => router.push('/guarantees/upload')}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap shrink-0"
-        >
-          <Upload size={16} />
-          <span className="hidden sm:inline">Upload Jaminan</span>
-          <span className="sm:hidden">Upload</span>
-        </button>
       </div>
     </div>
   );

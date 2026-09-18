@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { Suspense } from "react";
 import { DashboardHeader } from "@/components/layout/DashboardHeader";
-import { DashboardToolbar } from "@/components/layout/DashboardToolbar";
 import { SidebarNav } from "@/components/navigation/SidebarNav";
 import TrackerPage from "@/components/pages/tracker/TrackerPage";
 import DocumentsPage from "@/components/pages/documents/DocumentsPage";
@@ -17,60 +16,35 @@ import { ProcurementProvider } from "@/context/ProcurementContext";
 
 import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
 
-type ProcurementRow = {
-  no: string;
-  item: string;
-  vendor: string;
-  amount: string;
-  status: string;
-  badge: "approved" | "pending" | "review" | "rejected";
-};
-
-const rows: ProcurementRow[] = [
-  { no: "PR-2041", item: "Laptop Pro 14", vendor: "PT Teknologi Prima", amount: "Rp 44.0 Jt", status: "Disetujui", badge: "approved" },
-  { no: "PR-2048", item: "Server Rack 42U", vendor: "CV Infra Digital", amount: "Rp 118.0 Jt", status: "Dalam Proses", badge: "pending" },
-  { no: "PR-2052", item: "Tablet Field Ops", vendor: "PT Global Worktech", amount: "Rp 29.5 Jt", status: "Review", badge: "review" },
-  { no: "PR-2057", item: "UPS 20KVA", vendor: "PT Energi Lestari", amount: "Rp 66.2 Jt", status: "Ditolak", badge: "rejected" },
-];
-
-const approvals: { title: string; owner: string; time: string }[] = [];
-
-import { usePathname } from "next/navigation";
-
-function DashboardShellInner() {
+function DashboardShellInner({ routeSegments }: { routeSegments: string[] }) {
   const { mobileOpen, setMobileOpen, collapsed } = useSidebar();
-  const pathname = usePathname();
 
-  const deriveTabFromPath = (path?: string) => {
-    if (!path) return "documents";
-    const parts = path.split("/").filter(Boolean);
-    const first = parts[0] || "";
+  const deriveTabFromRoute = (segments: string[]) => {
+    const [first = "overview", second] = segments;
     switch (first) {
       case "overview":
         return "overview";
       case "next-action":
         return "next-action";
       case "documents":
-        if (path.includes("upload")) return "documents/upload";
-        if (path.includes("result")) return "documents/result";
+        if (second === "upload") return "documents/upload";
+        if (second === "result") return "documents/result";
         return "documents";
       case "guarantees":
-        if (path.includes("upload")) return "guarantees/upload";
+        if (second === "upload") return "guarantees/upload";
         return "guarantees";
       case "notifications":
         return "notifications";
       case "settings":
         return "settings";
       default:
-        return "documents";
+        return "overview";
     }
   };
 
-  const [selectedTab, setSelectedTab] = useState<string>(() => deriveTabFromPath(pathname));
-
-  useEffect(() => {
-    setSelectedTab(deriveTabFromPath(pathname));
-  }, [pathname]);
+  // Params route diberikan oleh App Router, sehingga sidebar dan konten
+  // selalu memakai sumber state yang sama pada setiap navigasi.
+  const selectedTab = deriveTabFromRoute(routeSegments);
 
   const headerForTab = (tab: string) => {
     switch (tab) {
@@ -107,8 +81,7 @@ function DashboardShellInner() {
         aria-hidden="true"
       />
 
-      {/* SidebarNav derives active state from the URL; do not force a selectedKey from local state */}
-      <SidebarNav onSelect={(k) => setSelectedTab(k)} />
+      <SidebarNav activeKey={selectedTab.split("/")[0]} />
 
         <div className={`flex min-w-0 flex-1 flex-col transition-all duration-300`}>
         <div className={["overview", "documents", "documents/upload", "documents/result", "guarantees", "guarantees/upload", "next-action", "notifications"].includes(selectedTab) ? "lg:hidden" : "block"}>
@@ -122,7 +95,7 @@ function DashboardShellInner() {
         </div>
 
         <main className="scrollbar-thin flex-1 overflow-y-auto px-4 py-3 sm:px-6 sm:py-4 lg:px-7 lg:py-5">
-          <div key={pathname ?? selectedTab} className="animate-page-enter">
+          <div key={routeSegments.join("/")} className="animate-page-enter">
 
             {selectedTab === "overview" && <TrackerPage />}
             {selectedTab === "next-action" && <NextActionPage />}
@@ -134,7 +107,11 @@ function DashboardShellInner() {
               </Suspense>
             )}
             {selectedTab === "guarantees" && <GuaranteesPage />}
-            {selectedTab === "guarantees/upload" && <GuaranteeUploadPage />}
+            {selectedTab === "guarantees/upload" && (
+              <Suspense fallback={<div className="rounded-xl border border-slate-200 bg-white p-8 text-sm text-slate-500">Memuat formulir jaminan...</div>}>
+                <GuaranteeUploadPage />
+              </Suspense>
+            )}
             {selectedTab === "notifications" && <NotificationsPage />}
             {selectedTab === "settings" && <SettingsPage />}
           </div>
@@ -144,11 +121,11 @@ function DashboardShellInner() {
   );
 }
 
-export function DashboardShell() {
+export function DashboardShell({ routeSegments = ["overview"] }: { routeSegments?: string[] }) {
   return (
     <ProcurementProvider>
       <SidebarProvider>
-        <DashboardShellInner />
+        <DashboardShellInner routeSegments={routeSegments} />
       </SidebarProvider>
     </ProcurementProvider>
   );

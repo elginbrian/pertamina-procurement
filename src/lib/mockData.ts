@@ -4,7 +4,7 @@
  * Referensi: PPT Checklist Pra Tender, Proposal, Prosedur Input
  *
  * Semua data saling terhubung melalui requestId (FK ke ProcurementRequest).
- * Ketika request berpindah stage di Tracker, status di D1-D4 ikut mencerminkan
+ * Ketika request berpindah stage di Tracker, status dokumen, jaminan, dan SLA ikut mencerminkan
  * konteks yang relevan.
  * ============================================================
  */
@@ -178,7 +178,7 @@ const mockMilestones: ProcurementMilestone[] = mockRequests.flatMap(request => {
   }));
 });
 
-// ─── D1: DOKUMEN PRA-TENDER ────────────────────────────────────────────────
+// ─── DOKUMEN PRA-TENDER ────────────────────────────────────────────────────
 // Dokumen-dokumen ini terkait langsung ke request. Stage "Persiapan" berarti
 // dokumen sedang dalam proses review oleh Procurement (Fase II PPT Checklist).
 const mockDocuments: DocumentItem[] = [
@@ -330,7 +330,7 @@ const mockDocuments: DocumentItem[] = [
   },
 ];
 
-// ─── D2: JAMINAN ──────────────────────────────────────────────────────────
+// ─── JAMINAN ──────────────────────────────────────────────────────────────
 const mockGuarantees: GuaranteeItem[] = [
   {
     id: "GUAR-001",
@@ -411,7 +411,7 @@ const mockGuarantees: GuaranteeItem[] = [
   },
 ];
 
-// ─── D4: DEADLINES / SLA ──────────────────────────────────────────────────
+// ─── SLA / JATUH TEMPO ────────────────────────────────────────────────────
 // Setiap deadline terhubung ke requestId yang relevan
 const mockDeadlines: DeadlineItem[] = [
   {
@@ -495,7 +495,7 @@ const mockDeadlines: DeadlineItem[] = [
 ];
 
 // ─── TINDAKAN (NEXT ACTION) ────────────────────────────────────────────────
-// Action items dihasilkan dari kondisi D1, D2, D4
+// Action items dihasilkan dari kondisi dokumen, jaminan, dan SLA
 const mockActions: ActionItem[] = [
   {
     id: "ACT-001",

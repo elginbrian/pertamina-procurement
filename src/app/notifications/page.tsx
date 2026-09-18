@@ -1,5 +1,5 @@
-import { DashboardShell } from '@/components/layout/DashboardShell';
+import { redirect } from "next/navigation";
 
 export default function NotificationsPageRoute() {
-  return <DashboardShell />;
+  redirect("/dashboard/notifications");
 }

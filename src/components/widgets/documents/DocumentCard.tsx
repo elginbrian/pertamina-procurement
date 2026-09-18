@@ -66,14 +66,14 @@ export function DocumentCard({ doc }: { doc: DocumentItem }) {
         {/* Right Side: Actions */}
         <div className="flex items-center gap-2">
           <button 
-            onClick={(e) => { e.stopPropagation(); router.push('/documents/result'); }}
+            onClick={(e) => { e.stopPropagation(); router.push('/dashboard/documents/result'); }}
             className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-50 rounded-lg transition-colors tooltip-trigger" 
             title="Lihat Dokumen"
           >
             <Eye size={18} />
           </button>
           <button 
-            onClick={(e) => { e.stopPropagation(); router.push('/documents/result'); }}
+            onClick={(e) => { e.stopPropagation(); router.push('/dashboard/documents/result'); }}
             className="p-2 text-slate-400 hover:text-[#0a4d8c] hover:bg-blue-50 rounded-lg transition-colors tooltip-trigger" 
             title="Detail Pemeriksaan"
           >

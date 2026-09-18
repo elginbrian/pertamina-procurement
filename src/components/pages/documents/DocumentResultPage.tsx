@@ -16,7 +16,7 @@ export default function DocumentResultPage() {
       {/* Header Result */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <button 
-          onClick={() => router.push('/documents')}
+          onClick={() => router.push('/dashboard/documents')}
           className="flex items-center gap-2 text-slate-500 hover:text-slate-800 transition-colors text-sm font-medium w-fit"
         >
           <ArrowLeft size={16} /> Kembali ke Daftar Dokumen
@@ -33,7 +33,7 @@ export default function DocumentResultPage() {
               if (selectedDocument) {
                 updateDocumentStatus(selectedDocument.id, "Tindak Lanjut FPP");
               }
-              router.push('/documents');
+              router.push('/dashboard/documents');
             }}
             className="px-4 py-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
           >

@@ -42,10 +42,10 @@ export function ActionFilterBar({
               className="w-full sm:w-[130px] lg:w-[150px] border border-slate-200 rounded-lg text-[13px] px-3 py-2 focus:outline-none focus:border-[#0a4d8c] bg-white truncate"
             >
               <option value="All">Semua Sumber</option>
-              <option value="Dokumen">Dokumen (D1)</option>
-              <option value="Jaminan">Jaminan (D2)</option>
-              <option value="Proses Pengadaan">Tracker (D3)</option>
-              <option value="SLA/Jatuh Tempo">SLA (D4)</option>
+              <option value="Dokumen">Dokumen</option>
+              <option value="Jaminan">Jaminan</option>
+              <option value="Proses Pengadaan">Pekerjaan</option>
+              <option value="SLA/Jatuh Tempo">SLA & Jatuh Tempo</option>
             </select>
             <select 
               value={priorityFilter}

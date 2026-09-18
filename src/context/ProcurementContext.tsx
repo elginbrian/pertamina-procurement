@@ -13,14 +13,14 @@ type ProcurementAction =
   | { type: "MOVE_REQUEST"; id: string; stage: ProcurementStage }
   | { type: "UPDATE_REQUEST_OPERATIONAL_STATUS"; id: string; status: ProcurementOperationalStatus; reason?: string }
   | { type: "MOVE_REQUEST_STEP"; id: string; step: ProcurementStep }
-  // D1 Documents
+  // Documents
   | { type: "ADD_DOCUMENT"; document: DocumentItem }
   | { type: "UPDATE_DOCUMENT_STATUS"; id: string; status: DocumentItem["status"] }
-  // D2 Guarantees
+  // Guarantees
   | { type: "ADD_GUARANTEE"; guarantee: GuaranteeItem }
   | { type: "UPDATE_GUARANTEE"; id: string; changes: Partial<GuaranteeItem> }
   | { type: "ADD_ATTACHMENT"; attachment: ProcurementAttachment }
-  // D4 Deadlines
+  // SLA and deadlines
   | { type: "ADD_DEADLINE"; deadline: DeadlineItem }
   | { type: "UPDATE_DEADLINE"; id: string; changes: Partial<DeadlineItem> }
   | { type: "UPDATE_DEADLINE_STATUS"; id: string; status: "On Track" | "At Risk" | "Overdue" | "Selesai" }

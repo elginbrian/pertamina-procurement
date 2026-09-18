@@ -23,12 +23,9 @@ const navItems: any[] = [
   { key: "settings", label: "Pengaturan", icon: Settings },
 ];
 
-import { usePathname } from "next/navigation";
-
-export function SidebarNav({ onSelect, selectedKey }: { onSelect?: (key: string) => void; selectedKey?: string }) {
+export function SidebarNav({ activeKey }: { activeKey: string }) {
   const { collapsed, toggleCollapsed, mobileOpen, setMobileOpen } = useSidebar();
   const { state } = useProcurement();
-  const pathname = usePathname();
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   
   const unreadCount = state.notifications.filter(n => !n.isRead).length;
@@ -48,12 +45,6 @@ export function SidebarNav({ onSelect, selectedKey }: { onSelect?: (key: string)
   }, []);
 
   const effectiveCollapsed = isMobileViewport ? false : collapsed;
-
-  const activeKeyFromPath = (() => {
-    if (!pathname) return "documents";
-    const parts = pathname.split("/").filter(Boolean);
-    return parts[0] || "documents";
-  })();
 
   const containerClasses = [
     "fixed left-0 top-0 h-screen bg-white border-r border-slate-200 z-40 transition-all duration-300 ease-in-out flex flex-col",
@@ -122,12 +113,12 @@ export function SidebarNav({ onSelect, selectedKey }: { onSelect?: (key: string)
       >
         {navItems.map((item) => {
           const Icon = item.icon ?? LayoutDashboard;
-          const isActive = item.key === (selectedKey ?? activeKeyFromPath);
+          const isActive = item.key === activeKey;
 
           return (
             <div key={item.key}>
               <Link
-                href={item.key === "overview" ? "/overview" : `/${item.key}`}
+                href={`/dashboard/${item.key}`}
                 className={navItemClasses(isActive)}
                 onClick={() => {
                   // close mobile overlay; do not mutate external selectedKey here — URL is source of truth
@@ -164,7 +155,7 @@ export function SidebarNav({ onSelect, selectedKey }: { onSelect?: (key: string)
               {!effectiveCollapsed && item.children && (
                 <div className="mt-1 flex flex-col gap-1 px-1">
                   {item.children.map((child: any) => (
-                    <Link key={child.key} href={`/${child.key}`} className={childItemClasses()} onClick={() => setMobileOpen(false)}>
+                    <Link key={child.key} href={`/dashboard/${child.key}`} className={childItemClasses()} onClick={() => setMobileOpen(false)}>
                       <span className="text-[13px]">{child.label}</span>
                     </Link>
                   ))}
@@ -176,13 +167,14 @@ export function SidebarNav({ onSelect, selectedKey }: { onSelect?: (key: string)
       </nav>
 
       <div className="mt-auto border-t border-slate-200 px-3 py-4">
-        <button
-          type="button"
+        <Link
+          href="/login"
           className={`flex w-full items-center justify-center gap-2 rounded-[12px] border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 ${effectiveCollapsed ? "" : "justify-start"}`}
+          onClick={() => setMobileOpen(false)}
         >
           <LogOut size={16} />
           {!effectiveCollapsed && <span>Keluar</span>}
-        </button>
+        </Link>
       </div>
     </aside>
   );

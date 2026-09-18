@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, FileText, Folder, Eye, XCircle } from "lucide-react";
+import { ChevronDown, ChevronRight, FileText, Folder, Eye, Upload, XCircle } from "lucide-react";
 import type { GuaranteeItem, ProcurementRequest } from "@/lib/types";
+import { useRouter } from "next/navigation";
 
 interface GuaranteeGroupRowProps {
   request: ProcurementRequest;
@@ -15,6 +16,7 @@ function statusClass(status: GuaranteeItem["status"]) {
 }
 
 export function GuaranteeGroupRow({ request, guarantees, onEdit }: GuaranteeGroupRowProps) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const [expandedGuaranteeId, setExpandedGuaranteeId] = useState<string | null>(null);
   const [previewingGuaranteeId, setPreviewingGuaranteeId] = useState<string | null>(null);
@@ -43,20 +45,47 @@ export function GuaranteeGroupRow({ request, guarantees, onEdit }: GuaranteeGrou
         <td className="px-4 py-4 text-sm text-slate-600">{guarantees.map(guarantee => guarantee.value).join(" · ")}</td>
         <td className="px-4 py-4 text-sm font-medium text-slate-700">{latestExpiry}</td>
         <td className="px-4 py-4">
-          <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
             <div className="flex flex-wrap gap-1.5">
               {expiredCount > 0 && <span className="rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] font-semibold text-red-700">{expiredCount} expired</span>}
               {attentionCount > 0 && <span className="rounded-full border border-blue-200 bg-blue-50 px-2 py-0.5 text-[11px] font-semibold text-[#0a4d8c]">{attentionCount} mendekati</span>}
               {expiredCount === 0 && attentionCount === 0 && <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">Aman</span>}
             </div>
-            {expanded ? <ChevronDown className="shrink-0 text-slate-400" size={18} /> : <ChevronRight className="shrink-0 text-slate-400" size={18} />}
           </div>
+        </td>
+        <td className="px-4 py-4 text-right">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              router.push(`/dashboard/guarantees/upload?requestId=${request.id}`);
+            }}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#0a4d8c] px-3 py-2 text-xs font-semibold text-white shadow-sm hover:bg-[#093e6f]"
+          >
+            <Upload size={14} />
+            Upload Jaminan
+          </button>
+        </td>
+        <td className="px-2 py-4">
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation();
+              setExpanded(value => !value);
+            }}
+            aria-label={expanded ? "Tutup isi folder" : "Buka isi folder"}
+            aria-expanded={expanded}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-500 hover:border-[#0a4d8c] hover:text-[#0a4d8c]"
+          >
+            {expanded ? <ChevronDown size={17} /> : <ChevronRight size={17} />}
+          </button>
         </td>
       </tr>
       {expanded && (
         <tr>
-          <td colSpan={5} className="border-b border-slate-200 bg-slate-50/70 p-0">
+          <td colSpan={7} className="border-b border-slate-200 bg-slate-50/70 p-0">
             <div className="space-y-2 px-5 py-4 sm:px-16">
+              {guarantees.length === 0 && <div className="rounded-lg border border-dashed border-slate-300 bg-white px-4 py-5 text-center text-xs text-slate-500">Belum ada jaminan pada pengadaan ini. Gunakan tombol Upload Jaminan untuk menambahkan dokumen pertama.</div>}
               {guarantees.map(guarantee => (
                 <div key={guarantee.id}>
                   <button onClick={() => setExpandedGuaranteeId(current => current === guarantee.id ? null : guarantee.id)} className="flex w-full flex-col gap-3 rounded-lg border border-slate-200 bg-white p-3 text-left transition hover:border-[#0a4d8c]/40 hover:bg-blue-50/40 sm:flex-row sm:items-center">

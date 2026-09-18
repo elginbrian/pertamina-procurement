@@ -122,7 +122,7 @@ export default function TrackerPage() {
     setSelectedRequestId(requestId);
   };
 
-  // Compute Time Status per request from D4 deadlines
+  // Compute time status per pekerjaan dari SLA dan jatuh tempo.
   const timeStatusMap = useMemo(() => {
     const map: Record<string, "On Track" | "At Risk" | "Overdue" | "Selesai"> = {};
     state.deadlines.forEach(d => {
@@ -388,7 +388,7 @@ export default function TrackerPage() {
                         </div>
                       )}
                       
-                      {/* Time Status from D4 */}
+                      {/* Status waktu dari SLA dan jatuh tempo */}
                       {timeStatusMap[item.id] && item.operationalStatus !== "Batal" && (
                         <div className={`flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
                           timeStatusMap[item.id] === 'Overdue'
@@ -429,7 +429,7 @@ export default function TrackerPage() {
         <div className="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-sm font-bold text-slate-800">SLA & Jatuh Tempo Pekerjaan</h2>
-            <p className="mt-1 text-xs text-slate-500">D4 terintegrasi di D3. Pilih pekerjaan untuk melihat timeline, lalu edit SLA dari daftar ini.</p>
+            <p className="mt-1 text-xs text-slate-500">SLA dan jatuh tempo terhubung ke setiap pekerjaan. Pilih pekerjaan untuk melihat timeline, lalu edit SLA dari daftar ini.</p>
           </div>
           <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-[#0a4d8c]">{deadlines.length} SLA</span>
         </div>
@@ -487,7 +487,7 @@ export default function TrackerPage() {
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 text-blue-100">
                     <LayoutList size={18} />
-                    <span className="text-[11px] font-bold uppercase tracking-[0.16em]">Helicopter View D3</span>
+                    <span className="text-[11px] font-bold uppercase tracking-[0.16em]">Ringkasan Pekerjaan</span>
                   </div>
                   <h3 id="tracker-detail-title" className="mt-2 truncate text-base font-bold text-white">{request?.title ?? selectedRequestId}</h3>
                   <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-blue-100">
@@ -584,9 +584,9 @@ export default function TrackerPage() {
                   <div className="flex items-center justify-between mb-3 border-b border-slate-100 pb-2">
                     <div className="flex items-center gap-2 text-[#0a4d8c] font-semibold text-sm">
                       <FileText size={16} />
-                      Dokumen (D1)
+                      Dokumen
                     </div>
-                    <button onClick={() => router.push('/documents')} className="text-[11px] font-medium text-slate-500 hover:text-[#0a4d8c] transition-colors flex items-center gap-1">
+                    <button onClick={() => router.push('/dashboard/documents')} className="text-[11px] font-medium text-slate-500 hover:text-[#0a4d8c] transition-colors flex items-center gap-1">
                       Ke Modul Dokumen <ChevronRight size={12} />
                     </button>
                   </div>
@@ -598,7 +598,7 @@ export default function TrackerPage() {
                             <div className="min-w-0"><div className="truncate text-[12px] font-medium text-slate-800">{d.name}</div><div className="mt-0.5 text-[11px] text-slate-500">{d.type} • {d.uploadDate}</div></div>
                             <div className="flex shrink-0 items-center gap-2"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${d.status === 'Lulus Verifikasi' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>{d.status}</span>{expandedRelatedId === `doc-${d.id}` ? <ChevronDown size={15} className="text-slate-400" /> : <ChevronRight size={15} className="text-slate-400" />}</div>
                           </button>
-                          {expandedRelatedId === `doc-${d.id}` && <div className="border-x border-b border-slate-200 bg-white px-3 py-3 text-xs text-slate-600"><div>{d.issues.length > 0 ? d.issues.join(" ") : "Tidak ada temuan pemeriksaan."}</div>{d.nextAction && <div className="mt-2"><span className="font-semibold text-[#0a4d8c]">Next Action:</span> {d.nextAction}</div>}<button onClick={() => router.push(`/documents/result?id=${d.id}`)} className="mt-3 font-semibold text-[#0a4d8c] hover:underline">Buka hasil pemeriksaan</button></div>}
+                          {expandedRelatedId === `doc-${d.id}` && <div className="border-x border-b border-slate-200 bg-white px-3 py-3 text-xs text-slate-600"><div>{d.issues.length > 0 ? d.issues.join(" ") : "Tidak ada temuan pemeriksaan."}</div>{d.nextAction && <div className="mt-2"><span className="font-semibold text-[#0a4d8c]">Next Action:</span> {d.nextAction}</div>}<button onClick={() => router.push(`/dashboard/documents/result?id=${d.id}`)} className="mt-3 font-semibold text-[#0a4d8c] hover:underline">Buka hasil pemeriksaan</button></div>}
                         </div>
                       ))}
                     </div>
@@ -614,7 +614,7 @@ export default function TrackerPage() {
                       <ShieldCheck size={16} />
                       Jaminan
                     </div>
-                    <div className="flex items-center gap-3"><button onClick={() => router.push('/guarantees')} className="text-[11px] font-medium text-slate-500 hover:text-[#0a4d8c] transition-colors flex items-center gap-1">Lihat Semua <ChevronRight size={12} /></button><button onClick={() => router.push(`/guarantees/upload?requestId=${selectedRequestId}`)} className="rounded-md bg-[#0a4d8c] px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-[#093e6f]">+ Jaminan</button></div>
+                    <div className="flex items-center gap-3"><button onClick={() => router.push('/dashboard/guarantees')} className="text-[11px] font-medium text-slate-500 hover:text-[#0a4d8c] transition-colors flex items-center gap-1">Lihat Semua <ChevronRight size={12} /></button><button onClick={() => router.push(`/dashboard/guarantees/upload?requestId=${selectedRequestId}`)} className="rounded-md bg-[#0a4d8c] px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-[#093e6f]">+ Jaminan</button></div>
                   </div>
                   {guars.length > 0 ? (
                     <div className="space-y-2">
@@ -624,7 +624,7 @@ export default function TrackerPage() {
                             <div className="min-w-0"><div className="truncate text-[12px] font-medium text-slate-800">{g.vendor}</div><div className="mt-0.5 text-[11px] text-slate-500">{g.type} • Jatuh tempo: {g.expiryDate}</div></div>
                             <div className="flex shrink-0 items-center gap-2"><span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${g.status === 'Aktif' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-red-50 text-red-700 border-red-200'}`}>{g.status}</span>{expandedRelatedId === `guarantee-${g.id}` ? <ChevronDown size={15} className="text-slate-400" /> : <ChevronRight size={15} className="text-slate-400" />}</div>
                           </button>
-                          {expandedRelatedId === `guarantee-${g.id}` && <div className="border-x border-b border-slate-200 bg-white px-3 py-3 text-xs text-slate-600"><div><span className="font-semibold">{g.referenceNo}</span> • {g.issuer} • {g.value}</div>{g.nextAction && <div className="mt-2"><span className="font-semibold text-[#0a4d8c]">Next Action:</span> {g.nextAction}</div>}<button onClick={() => router.push('/guarantees')} className="mt-3 font-semibold text-[#0a4d8c] hover:underline">Buka modul jaminan</button></div>}
+                          {expandedRelatedId === `guarantee-${g.id}` && <div className="border-x border-b border-slate-200 bg-white px-3 py-3 text-xs text-slate-600"><div><span className="font-semibold">{g.referenceNo}</span> • {g.issuer} • {g.value}</div>{g.nextAction && <div className="mt-2"><span className="font-semibold text-[#0a4d8c]">Next Action:</span> {g.nextAction}</div>}<button onClick={() => router.push('/dashboard/guarantees')} className="mt-3 font-semibold text-[#0a4d8c] hover:underline">Buka modul jaminan</button></div>}
                         </div>
                       ))}
                     </div>

@@ -77,7 +77,7 @@ export function DocumentGroupRow({ request, documents }: DocumentGroupRowProps) 
                         </div>
                       ) : <div className="text-xs text-emerald-700">Tidak ada temuan pemeriksaan.</div>}
                       {document.nextAction && <div className="mt-3 text-xs text-slate-600"><span className="font-semibold text-[#0a4d8c]">Next Action:</span> {document.nextAction}</div>}
-                      <button onClick={() => router.push(`/documents/result?id=${document.id}`)} className="mt-3 text-xs font-semibold text-[#0a4d8c] hover:underline">Buka hasil pemeriksaan</button>
+                      <button onClick={() => router.push(`/dashboard/documents/result?id=${document.id}`)} className="mt-3 text-xs font-semibold text-[#0a4d8c] hover:underline">Buka hasil pemeriksaan</button>
                     </div>
                   )}
                 </div>

@@ -69,7 +69,7 @@ export default function DocumentUploadPage() {
     <div className="space-y-6 pt-4 pb-12 min-h-[calc(100vh-140px)] flex flex-col">
       <button
         type="button"
-        onClick={() => router.push("/documents")}
+        onClick={() => router.push("/dashboard/documents")}
         className="inline-flex w-fit items-center gap-2 text-sm font-medium text-slate-500 transition-colors hover:text-[#0a4d8c]"
       >
         <ArrowLeft size={16} />
@@ -117,7 +117,7 @@ export default function DocumentUploadPage() {
         <div className="w-full md:w-1/2 flex flex-col">
           <div className="p-6 border-b border-slate-100">
             <h2 className="text-lg font-bold text-slate-800">Upload Dokumen Pra-Tender</h2>
-            <p className="text-sm text-slate-500 mt-1">Sistem PRIMA akan memverifikasi kelengkapan dokumen (D1).</p>
+            <p className="text-sm text-slate-500 mt-1">Sistem PRIMA membantu memverifikasi kelengkapan dan konsistensi dokumen.</p>
           </div>
           
           <div className="p-6 space-y-5 flex-1">
@@ -219,7 +219,7 @@ export default function DocumentUploadPage() {
 
           <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 mt-auto">
             <button 
-              onClick={() => router.push('/documents')}
+              onClick={() => router.push('/dashboard/documents')}
               className="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-colors shadow-sm"
             >
               Batal
@@ -255,7 +255,7 @@ export default function DocumentUploadPage() {
                   extractedData,
                 };
                 addDocument(newDoc);
-                router.push(`/documents/result?id=${newDoc.id}`);
+                router.push(`/dashboard/documents/result?id=${newDoc.id}`);
               }}
               disabled={!file || !docType || !documentKind || !requestId}
               className={`px-5 py-2.5 flex items-center gap-2 rounded-lg text-sm font-medium shadow-sm transition-all ${

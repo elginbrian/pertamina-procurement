@@ -12,7 +12,8 @@ export default function GuaranteeUploadPage() {
   const { state, addGuarantee, addAttachment } = useProcurement();
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
-  const [requestId, setRequestId] = useState(() => searchParams.get("requestId") ?? "");
+  const [requestId] = useState(() => searchParams.get("requestId") ?? "");
+  const selectedRequest = state.requests.find(request => request.id === requestId);
   const [documentType, setDocumentType] = useState<"Jaminan Pelaksanaan" | "Jaminan Pemeliharaan" | ProcurementAttachmentType>("Jaminan Pelaksanaan");
   const [formData, setFormData] = useState({
     type: "Jaminan Pelaksanaan" as GuaranteeItem["type"],
@@ -143,15 +144,16 @@ export default function GuaranteeUploadPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Terkait Pengadaan <span className="text-red-500">*</span></label>
-              <select
-                value={requestId}
-                onChange={(event) => setRequestId(event.target.value)}
-                className="w-full border border-slate-200 rounded-lg text-sm px-3 py-2.5 bg-white focus:outline-none focus:border-[#0a4d8c]"
-              >
-                <option value="">Pilih nomor pengadaan...</option>
-                {state.requests.map(request => <option key={request.id} value={request.id}>{request.id} - {request.title}</option>)}
-              </select>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Terkait Pengadaan</label>
+              {selectedRequest ? (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 px-3 py-3">
+                  <div className="text-xs font-semibold text-[#0a4d8c]">{selectedRequest.id}</div>
+                  <div className="mt-1 text-sm font-semibold text-slate-800">{selectedRequest.title}</div>
+                  <div className="mt-1 text-xs text-slate-500">PIC: {selectedRequest.pic}</div>
+                </div>
+              ) : (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-800">Pilih pengadaan dari halaman Jaminan untuk menambahkan dokumen.</div>
+              )}
             </div>
 
             <div>
@@ -245,7 +247,7 @@ export default function GuaranteeUploadPage() {
 
           <div className="p-6 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 mt-auto shrink-0">
             <button 
-              onClick={() => router.push('/guarantees')}
+              onClick={() => router.push('/dashboard/guarantees')}
               className="px-5 py-2.5 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-colors shadow-sm"
             >
               Batal
@@ -264,7 +266,7 @@ export default function GuaranteeUploadPage() {
                     fileName: file.name,
                     fileSize: file.size,
                   });
-                  router.push('/guarantees');
+                  router.push('/dashboard/guarantees');
                   return;
                 }
                 const expiryTime = new Date(formData.expiryDate).getTime();
@@ -292,7 +294,7 @@ export default function GuaranteeUploadPage() {
                   fileSize: file.size,
                 };
                 addGuarantee(newGuarantee);
-                router.push('/guarantees');
+                router.push('/dashboard/guarantees');
               }}
               disabled={!file || !requestId || (requiresExtraction && (!formData.vendor || !formData.issuer || !formData.referenceNo || !formData.value || !formData.issueDate || !formData.expiryDate))}
               className={`px-5 py-2.5 flex items-center gap-2 rounded-lg text-sm font-medium shadow-sm transition-all ${

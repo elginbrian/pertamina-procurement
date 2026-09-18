@@ -76,12 +76,12 @@ export default function DocumentsPage() {
         <div className="relative z-10 max-w-3xl">
           <div className="mb-3 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-blue-100">
             <FileCheck2 size={16} />
-            D1 / Document Readiness
+            Pemeriksaan Dokumen
           </div>
           <h1 className="max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">Pastikan setiap dokumen siap sebelum proses bergerak.</h1>
           <p className="mt-3 max-w-2xl text-sm leading-relaxed text-blue-100 sm:text-[15px]">Pantau kelengkapan DP3, temuan review, dan tindak lanjut FPP dari satu ruang kerja.</p>
           <div className="mt-6 flex flex-wrap gap-3">
-            <button onClick={() => router.push("/documents/upload")} className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#0a4d8c] shadow-sm transition hover:bg-blue-50">
+            <button onClick={() => router.push("/dashboard/documents/upload")} className="inline-flex items-center gap-2 rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-[#0a4d8c] shadow-sm transition hover:bg-blue-50">
               <UploadCloud size={16} /> Upload Dokumen
             </button>
           </div>
@@ -109,7 +109,7 @@ export default function DocumentsPage() {
                   <div className="border-x border-b border-slate-200 bg-slate-50 px-4 py-3 sm:px-12">
                     {document.issues.length > 0 ? <ul className="list-disc space-y-1 pl-4 text-xs leading-relaxed text-slate-600">{document.issues.map((issue, index) => <li key={`${document.id}-review-issue-${index}`}>{issue}</li>)}</ul> : <div className="text-xs text-emerald-700">Tidak ada temuan pemeriksaan.</div>}
                     {document.nextAction && <div className="mt-3 text-xs text-slate-600"><span className="font-semibold text-[#0a4d8c]">Next Action:</span> {document.nextAction}</div>}
-                    <button onClick={() => router.push(`/documents/result?id=${document.id}`)} className="mt-3 text-xs font-semibold text-[#0a4d8c] hover:underline">Buka hasil pemeriksaan</button>
+                    <button onClick={() => router.push(`/dashboard/documents/result?id=${document.id}`)} className="mt-3 text-xs font-semibold text-[#0a4d8c] hover:underline">Buka hasil pemeriksaan</button>
                   </div>
                 )}
               </div>

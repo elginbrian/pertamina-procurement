@@ -64,7 +64,7 @@ export interface ProcurementRequest {
   updatedAt: string;        // ISO date string
 }
 
-// ─── DOMAIN: D1 - DOKUMEN PRA-TENDER ──────────────────────────────────────
+// ─── DOMAIN: DOKUMEN PRA-TENDER ──────────────────────────────────────────
 
 /** Status dokumen berdasarkan hasil review Procurement */
 export type DocumentStatus =
@@ -79,7 +79,7 @@ export type DocumentType =
   | "Best Practice"
   | "Dokumentasi";
 
-/** Template validasi D1 untuk membandingkan informasi lintas dokumen. */
+/** Template validasi untuk membandingkan informasi lintas dokumen. */
 export type DocumentKind = "Surat Penawaran" | "Surat Pengajuan" | "RKS" | "Pakta Integritas" | "TKDN" | "Lainnya";
 
 export interface DocumentExtractedData {
@@ -108,7 +108,7 @@ export interface DocumentItem {
   extractedData?: DocumentExtractedData;
 }
 
-// ─── DOMAIN: D2 - JAMINAN ─────────────────────────────────────────────────
+// ─── DOMAIN: JAMINAN ─────────────────────────────────────────────────────
 
 export type GuaranteeStatus =
   | "Aktif"
@@ -159,7 +159,7 @@ export interface ProcurementAttachment {
   notes?: string;
 }
 
-// ─── DOMAIN: D4 - DEADLINES / SLA ─────────────────────────────────────────
+// ─── DOMAIN: SLA / JATUH TEMPO ────────────────────────────────────────────
 
 export type DeadlineStatus = "On Track" | "At Risk" | "Overdue" | "Selesai";
 export type UrgencyLevel = "Low" | "Medium" | "High" | "Critical";
