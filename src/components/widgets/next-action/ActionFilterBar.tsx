@@ -1,4 +1,4 @@
-import { Search, Filter, CheckSquare } from "lucide-react";
+import { Search, Filter } from "lucide-react";
 import { ActionPriority, ActionSource } from "@/types";
 
 import { ActionFilterBarProps } from "./types";
@@ -9,8 +9,7 @@ export function ActionFilterBar({
   sourceFilter, 
   setSourceFilter, 
   priorityFilter, 
-  setPriorityFilter,
-  onMarkAllDone
+  setPriorityFilter
 }: ActionFilterBarProps) {
   return (
     <div className="flex flex-col xl:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
@@ -36,8 +35,8 @@ export function ActionFilterBar({
               <option value="All">Semua Sumber</option>
               <option value="Dokumen">Dokumen</option>
               <option value="Jaminan">Jaminan</option>
+              <option value="Deadline">Deadline / SLA</option>
               <option value="Proses Pengadaan">Pekerjaan</option>
-              <option value="SLA/Jatuh Tempo">SLA & Jatuh Tempo</option>
             </select>
             <select 
               value={priorityFilter}
@@ -51,15 +50,6 @@ export function ActionFilterBar({
             </select>
           </div>
         </div>
-        
-        <button 
-          onClick={onMarkAllDone}
-          className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap shrink-0"
-        >
-          <CheckSquare size={16} />
-          <span className="hidden sm:inline">Tandai Selesai</span>
-          <span className="sm:hidden">Selesai</span>
-        </button>
       </div>
     </div>
   );

@@ -7,7 +7,6 @@ export function TrackerHeader({
   searchQuery, setSearchQuery,
   departmentFilter, setDepartmentFilter,
   operationalStatusFilter, setOperationalStatusFilter,
-  setShowAddModal,
   viewMode, setViewMode
 }: TrackerHeaderProps) {
   return (
@@ -48,12 +47,6 @@ export function TrackerHeader({
             <option value="Batal">Batal</option>
           </select>
         </div>
-        <button 
-          onClick={() => setShowAddModal(true)}
-          className="flex-1 sm:flex-none flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
-        >
-          + Tambah Request
-        </button>
         <div className="flex shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-white">
           <button type="button" onClick={() => setViewMode("kanban")} title="Tampilan Kanban" className={`p-2 transition-colors ${viewMode === "kanban" ? "bg-blue-50 text-[#0a4d8c]" : "text-slate-400 hover:bg-slate-50"}`}><LayoutGrid size={18} /></button>
           <button type="button" onClick={() => setViewMode("list")} title="Tampilan List" className={`border-l border-slate-200 p-2 transition-colors ${viewMode === "list" ? "bg-blue-50 text-[#0a4d8c]" : "text-slate-400 hover:bg-slate-50"}`}><LayoutList size={18} /></button>

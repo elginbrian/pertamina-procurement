@@ -55,7 +55,7 @@ function DashboardLayoutInner({ children }: { children: ReactNode }) {
           />
         </div>
 
-        <main className="scrollbar-thin flex-1 overflow-y-auto px-4 py-3 sm:px-6 sm:py-4 lg:px-7 lg:py-5">
+        <main className="scrollbar-thin flex-1 overflow-y-auto overflow-x-hidden px-4 py-3 sm:px-6 sm:py-4 lg:px-7 lg:py-5">
           <div className="animate-page-enter">
             {children}
           </div>

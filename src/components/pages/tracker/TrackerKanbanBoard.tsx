@@ -1,6 +1,7 @@
 import { GripVertical, AlertCircle, Clock, Eye } from "lucide-react";
 import { TrackerItem, TrackerStage } from "./types";
 import { calculateDaysBetween } from "@/lib/utils";
+import { TrackerStatsPanel } from "./TrackerStatsPanel";
 
 import { TrackerKanbanBoardProps } from "./types";
 const COLUMNS: { id: TrackerStage; title: string; color: string; bg: string; border: string; headerBg: string }[] = [
@@ -10,57 +11,21 @@ const COLUMNS: { id: TrackerStage; title: string; color: string; bg: string; bor
 ];
 
 export function TrackerKanbanBoard({
-  totalItemsCount, onGoingCount, onHoldCount, cancelledCount, pieChartStyle, itemsByStage, timeStatusMap,
-  expandedCardId, setExpandedCardId, handleDragStart, handleDragOver, handleDrop, openRequestDetail
+  totalItemsCount, onGoingCount, onHoldCount, cancelledCount, itemsByStage, timeStatusMap,
+  expandedCardId, setExpandedCardId, handleDragStart, handleDragOver, handleDrop, openRequestDetail, onAddRequest
 }: TrackerKanbanBoardProps) {
   return (
     <div className="h-[calc(100vh-240px)] min-h-[600px] overflow-x-auto overflow-y-hidden pb-1 hide-scrollbar">
       <div className="flex h-full min-w-[960px] gap-5 pb-1">
-        {/* Statistics Panel */}
-        <div className="flex min-w-0 flex-1 flex-col rounded-xl border border-slate-200 bg-white overflow-hidden shadow-sm">
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-[#093e6f] bg-[#0a4d8c] shrink-0">
-            <h3 className="font-bold text-[13px] uppercase tracking-wider text-white">Statistik</h3>
-          </div>
-          <div className="flex-1 overflow-y-auto p-5 space-y-8 hide-scrollbar">
-            
-            {/* Dynamic Pie Chart */}
-            <div className="flex flex-col items-center pt-2">
-              <div 
-                className="w-36 h-36 rounded-full relative shadow-[inset_0_2px_10px_rgba(0,0,0,0.05)]"
-                style={pieChartStyle}
-              >
-                <div className="absolute inset-0 m-auto w-[90px] h-[90px] bg-white rounded-full flex flex-col items-center justify-center shadow-sm">
-                  <span className="text-2xl font-black text-slate-700 leading-none">{totalItemsCount}</span>
-                  <span className="text-[10px] text-slate-400 font-medium mt-1">TOTAL</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Operational-status breakdown */}
-            <div className="space-y-3.5 bg-slate-50 p-4 rounded-xl border border-slate-100">
-              <div className="flex items-center justify-between text-[12px]">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                  <span className="text-slate-600 font-medium">On Going</span>
-                </div>
-                <span className="font-bold text-slate-700">{onGoingCount}</span>
-              </div>
-              <div className="flex items-center justify-between text-[12px]">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-                  <span className="text-slate-600 font-medium">On Hold</span>
-                </div>
-                <span className="font-bold text-slate-700">{onHoldCount}</span>
-              </div>
-              <div className="flex items-center justify-between text-[12px]">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-                  <span className="text-slate-600 font-medium">Batal</span>
-                </div>
-                <span className="font-bold text-slate-700">{cancelledCount}</span>
-              </div>
-            </div>
-          </div>
+        {/* Statistics Panel (reusable) */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <TrackerStatsPanel
+            totalItemsCount={totalItemsCount}
+            onGoingCount={onGoingCount}
+            onHoldCount={onHoldCount}
+            cancelledCount={cancelledCount}
+            onAddRequest={onAddRequest}
+          />
         </div>
 
         {COLUMNS.map(col => (

@@ -11,6 +11,7 @@ import { TrackerList } from "./TrackerList";
 import { TrackerKanbanBoard } from "./TrackerKanbanBoard";
 import { TrackerDeadlines } from "./TrackerDeadlines";
 import { TrackerDetailModal } from "./TrackerDetailModal";
+import { TrackerStatsPanel } from "./TrackerStatsPanel";
 import { DeadlineEditor, DeadlineCreator, AddRequestModal } from "./TrackerModals";
 
 export default function TrackerPage() {
@@ -90,17 +91,6 @@ export default function TrackerPage() {
   const onGoingCount = filteredItems.filter(item => item.operationalStatus === "On Going").length;
   const onHoldCount = filteredItems.filter(item => item.operationalStatus === "On Hold").length;
   const cancelledCount = filteredItems.filter(item => item.operationalStatus === "Batal").length;
-  const onGoingPct = totalItemsCount ? (onGoingCount / totalItemsCount) * 100 : 0;
-  const onHoldPct = totalItemsCount ? (onHoldCount / totalItemsCount) * 100 : 0;
-  
-  const pieChartStyle = totalItemsCount === 0 
-    ? { background: 'conic-gradient(#f1f5f9 0% 100%)' }
-    : { background: `conic-gradient(
-        #10b981 0% ${onGoingPct}%, 
-        #f59e0b ${onGoingPct}% ${onGoingPct + onHoldPct}%, 
-        #ef4444 ${onGoingPct + onHoldPct}% 100%
-      )`};
-
   const handleDragStart = (e: React.DragEvent, id: string) => {
     e.dataTransfer.setData("itemId", id);
   };
@@ -121,25 +111,40 @@ export default function TrackerPage() {
         searchQuery={searchQuery} setSearchQuery={setSearchQuery}
         departmentFilter={departmentFilter} setDepartmentFilter={setDepartmentFilter}
         operationalStatusFilter={operationalStatusFilter} setOperationalStatusFilter={setOperationalStatusFilter}
-        setShowAddModal={setShowAddModal}
         viewMode={viewMode} setViewMode={setViewMode}
       />
 
       {viewMode === "list" && (
-        <TrackerList 
-          filteredItems={filteredItems} 
-          timeStatusMap={timeStatusMap} 
-          openRequestDetail={openRequestDetail} 
-        />
+        <div className="grid gap-5" style={{ gridTemplateColumns: "220px 1fr" }}>
+          {/* Stats panel — same size as kanban column */}
+          <div className="self-start">
+            <TrackerStatsPanel
+              totalItemsCount={totalItemsCount}
+              onGoingCount={onGoingCount}
+              onHoldCount={onHoldCount}
+              cancelledCount={cancelledCount}
+              onAddRequest={() => setShowAddModal(true)}
+            />
+          </div>
+          {/* List table — fills grid cell, scrolls horizontally inside */}
+          <div className="min-w-0">
+            <TrackerList 
+              filteredItems={filteredItems} 
+              timeStatusMap={timeStatusMap} 
+              openRequestDetail={openRequestDetail} 
+            />
+          </div>
+        </div>
       )}
 
       {viewMode === "kanban" && (
         <TrackerKanbanBoard 
           totalItemsCount={totalItemsCount} onGoingCount={onGoingCount} onHoldCount={onHoldCount} cancelledCount={cancelledCount}
-          pieChartStyle={pieChartStyle} itemsByStage={itemsByStage} timeStatusMap={timeStatusMap}
+          itemsByStage={itemsByStage} timeStatusMap={timeStatusMap}
           expandedCardId={expandedCardId} setExpandedCardId={setExpandedCardId}
           handleDragStart={handleDragStart} handleDragOver={handleDragOver} handleDrop={handleDrop}
           openRequestDetail={openRequestDetail}
+          onAddRequest={() => setShowAddModal(true)}
         />
       )}
 

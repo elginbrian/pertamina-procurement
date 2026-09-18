@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { CheckSquare } from "lucide-react";
 import { ActionPriority, ActionSource } from "@/types";
 import { ActionFilterBar } from "@/components/widgets/next-action/ActionFilterBar";
@@ -10,7 +10,7 @@ import { TablePagination } from "@/components/widgets/TablePagination";
 import { useProcurement } from "@/context/ProcurementContext";
 
 export default function NextActionPage() {
-  const { state, updateActionStatus } = useProcurement();
+  const { state } = useProcurement();
   const actions = state.actions;
   const [searchQuery, setSearchQuery] = useState("");
   const [sourceFilter, setSourceFilter] = useState<ActionSource | "All">("All");
@@ -70,13 +70,6 @@ export default function NextActionPage() {
         setSourceFilter={setSourceFilter}
         priorityFilter={priorityFilter}
         setPriorityFilter={setPriorityFilter}
-        onMarkAllDone={() => {
-          filteredActions.forEach(a => {
-            if (a.status !== 'Done') {
-              updateActionStatus(a.id, 'Done');
-            }
-          });
-        }}
       />
 
       {/* Actions List (Table Layout) */}

@@ -1,4 +1,4 @@
-import { ProcurementState, ProcurementStep, ProcurementStage, HistoryItem, GuaranteeItem, ActionItem, DeadlineItem, NotificationItem } from "@/types";
+import { ProcurementState, ProcurementStep, ProcurementStage, HistoryItem, GuaranteeItem, ActionItem, DeadlineItem, NotificationItem, DocumentItem } from "@/types";
 import { ProcurementAction } from "./types";
 import { getDeadlineTiming } from "@/lib/deadlineUtils";
 
@@ -21,7 +21,29 @@ function historyItem(requestId: string, category: HistoryItem["category"], title
   return { id: `HIST-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`, requestId, category, title, description, createdAt: new Date().toISOString() };
 }
 
-function actionForGuarantee(guarantee: GuaranteeItem): ActionItem | null {
+export function actionForDocument(doc: DocumentItem): ActionItem | null {
+  if (doc.status === "Lulus Verifikasi") return null;
+  
+  const isActionNeeded = doc.status === "Catatan Procurement" || doc.status === "Tindak Lanjut FPP";
+  if (!isActionNeeded) return null;
+
+  return {
+    id: `ACT-DOC-${doc.id}`,
+    requestId: doc.requestId,
+    referenceId: doc.id,
+    title: doc.status === "Tindak Lanjut FPP" ? `Tindak Lanjut Dokumen: ${doc.name}` : `Catatan Dokumen: ${doc.name}`,
+    source: "Dokumen",
+    priority: doc.status === "Tindak Lanjut FPP" ? "High" : "Medium",
+    dateAdded: new Date().toISOString().split("T")[0],
+    dueDate: new Date(Date.now() + 2 * 86400000).toISOString().split("T")[0], // 2 days
+    description: doc.nextAction ?? `Terdapat temuan pada dokumen ${doc.name} yang perlu segera ditindaklanjuti.`,
+    assignee: doc.pic,
+    status: "Pending",
+    actionType: "Follow Up",
+  };
+}
+
+export function actionForGuarantee(guarantee: GuaranteeItem): ActionItem | null {
   if (guarantee.status === "Aktif" && !guarantee.nextAction) return null;
 
   const isExpired = guarantee.status === "Expired";
@@ -41,7 +63,7 @@ function actionForGuarantee(guarantee: GuaranteeItem): ActionItem | null {
   };
 }
 
-function actionForDeadline(deadline: DeadlineItem): ActionItem | null {
+export function actionForDeadline(deadline: DeadlineItem): ActionItem | null {
   if (deadline.status === "Selesai") return null;
 
   return {
@@ -191,7 +213,6 @@ export function procurementReducer(state: ProcurementState, action: ProcurementA
             : m
           )
           : state.milestones,
-        actions: [newAction, ...state.actions],
         notifications: [newNotif, ...state.notifications],
         history: [historyItem(action.document.requestId, "Dokumen", "Dokumen ditambahkan", `${action.document.name} ditambahkan untuk pemeriksaan.`), ...state.history],
       };
@@ -221,9 +242,6 @@ export function procurementReducer(state: ProcurementState, action: ProcurementA
         documents: state.documents.map(d =>
           d.id === action.id ? { ...d, status: action.status } : d
         ),
-        actions: state.actions.map(a => 
-          (a.referenceId === action.id && isPass) ? { ...a, status: "Done" } : a
-        ),
         notifications: [newNotif, ...state.notifications],
         history: [historyItem(doc.requestId, "Dokumen", "Status dokumen diperbarui", `${doc.name} diubah menjadi ${action.status}.`), ...state.history],
       };
@@ -245,7 +263,6 @@ export function procurementReducer(state: ProcurementState, action: ProcurementA
       return {
         ...state,
         guarantees: [action.guarantee, ...state.guarantees],
-        actions: newAction ? [newAction, ...state.actions] : state.actions,
         notifications: [newNotif, ...state.notifications],
         history: [historyItem(action.guarantee.requestId, "Jaminan", "Jaminan ditambahkan", `${action.guarantee.type} ${action.guarantee.referenceNo} ditambahkan.`), ...state.history],
       };
@@ -275,7 +292,6 @@ export function procurementReducer(state: ProcurementState, action: ProcurementA
       return {
         ...state,
         deadlines: [deadline, ...state.deadlines],
-        actions: newAction ? [newAction, ...state.actions] : state.actions,
         history: [historyItem(deadline.requestId, "SLA", "SLA ditambahkan", `${deadline.taskName} ditetapkan hingga ${deadline.targetDate}.`), ...state.history],
       };
     }
@@ -315,9 +331,6 @@ export function procurementReducer(state: ProcurementState, action: ProcurementA
         deadlines: state.deadlines.map(d =>
           d.id === action.id ? { ...d, status: action.status as any } : d
         ),
-        actions: state.actions.map(a => 
-          (a.referenceId === action.id && isDone) ? { ...a, status: "Done" } : a
-        ),
         notifications: newNotif ? [newNotif, ...state.notifications] : state.notifications,
       };
     }
@@ -352,7 +365,7 @@ export function procurementReducer(state: ProcurementState, action: ProcurementA
     }
 
     case "ADD_ACTION":
-      return { ...state, actions: [action.action, ...state.actions] };
+      return state;
 
     case "MARK_NOTIFICATION_READ":
       return {

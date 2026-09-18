@@ -23,7 +23,6 @@ export interface TrackerHeaderProps {
   setDepartmentFilter: (val: string) => void;
   operationalStatusFilter: ProcurementOperationalStatus | "All";
   setOperationalStatusFilter: (val: ProcurementOperationalStatus | "All") => void;
-  setShowAddModal: (val: boolean) => void;
   viewMode: "kanban" | "list";
   setViewMode: (val: "kanban" | "list") => void;
 }
@@ -39,7 +38,6 @@ export interface TrackerKanbanBoardProps {
   onGoingCount: number;
   onHoldCount: number;
   cancelledCount: number;
-  pieChartStyle: any;
   itemsByStage: Record<TrackerStage, TrackerItem[]>;
   timeStatusMap: Record<string, string>;
   expandedCardId: string | null;
@@ -48,6 +46,7 @@ export interface TrackerKanbanBoardProps {
   handleDragOver: (e: React.DragEvent) => void;
   handleDrop: (e: React.DragEvent, status: TrackerStage) => void;
   openRequestDetail: (id: string) => void;
+  onAddRequest: () => void;
 }
 
 export interface TrackerDeadlinesProps {

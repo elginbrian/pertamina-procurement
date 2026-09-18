@@ -4,7 +4,7 @@ import React, { createContext, useContext, useReducer, useCallback } from "react
 import type { ProcurementState, ProcurementStage, ProcurementStep, ProcurementRequest, ProcurementOperationalStatus, DocumentItem, GuaranteeItem, ProcurementAttachment, ActionItem, NotificationItem, DeadlineItem } from "@/types";
 import { initialProcurementState } from "@/lib/mockData";
 import { ProcurementAction } from "./types";
-import { procurementReducer } from "./reducer";
+import { procurementReducer, actionForGuarantee, actionForDeadline, actionForDocument } from "./reducer";
 
 // ─── CONTEXT ────────────────────────────────────────────────────────────────
 
@@ -36,6 +36,34 @@ const ProcurementContext = createContext<ProcurementContextValue | null>(null);
 export function ProcurementProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(procurementReducer, initialProcurementState);
 
+  // Compute derived actions dynamically
+  const derivedState = React.useMemo(() => {
+    const computedActions: ActionItem[] = [];
+
+    // 1. Actions from Guarantees (Mendekati Expiry / Expired)
+    state.guarantees.forEach(guarantee => {
+      const act = actionForGuarantee(guarantee);
+      if (act) computedActions.push(act);
+    });
+
+    // 2. Actions from Deadlines (At Risk / Overdue)
+    state.deadlines.forEach(deadline => {
+      const act = actionForDeadline(deadline);
+      if (act) computedActions.push(act);
+    });
+
+    // 3. Actions from Documents (Catatan Procurement / Tindak Lanjut FPP)
+    state.documents.forEach(doc => {
+      const act = actionForDocument(doc);
+      if (act) computedActions.push(act);
+    });
+
+    return {
+      ...state,
+      actions: computedActions
+    };
+  }, [state]);
+
   const addRequest = useCallback((request: ProcurementRequest) => dispatch({ type: "ADD_REQUEST", request }), []);
   const moveRequest = useCallback((id: string, stage: ProcurementStage) => dispatch({ type: "MOVE_REQUEST", id, stage }), []);
   const updateRequestOperationalStatus = useCallback((id: string, status: ProcurementOperationalStatus, reason?: string) => dispatch({ type: "UPDATE_REQUEST_OPERATIONAL_STATUS", id, status, reason }), []);
@@ -55,7 +83,7 @@ export function ProcurementProvider({ children }: { children: React.ReactNode })
 
   return (
     <ProcurementContext.Provider value={{
-      state, dispatch,
+      state: derivedState, dispatch,
       addRequest, moveRequest, updateRequestOperationalStatus, moveRequestStep, addDocument, updateDocumentStatus,
       addGuarantee, updateGuarantee, addAttachment, addDeadline, updateDeadline, updateDeadlineStatus, updateActionStatus,
       markNotificationRead, markAllRead, updateSettings,
