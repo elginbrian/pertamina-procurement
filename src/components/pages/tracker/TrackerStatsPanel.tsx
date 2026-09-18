@@ -64,7 +64,7 @@ export function TrackerStatsPanel({
             <p className="text-[12px] font-semibold leading-snug">
               Daftarkan pekerjaan baru ke sistem
             </p>
-            <p className="mt-1 text-[10px] leading-relaxed text-blue-100">
+            <p className="mt-1 text-[11px] leading-relaxed text-blue-100">
               Buat request dan pantau progresnya dari sini.
             </p>
             <button

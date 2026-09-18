@@ -1,9 +1,20 @@
 import { Eye } from "lucide-react";
+import { useMemo, useState } from "react";
+import { TablePagination } from "@/components/widgets/TablePagination";
 import { TrackerItem } from "./types";
 
 import { TrackerListProps } from "./types";
 
 export function TrackerList({ filteredItems, timeStatusMap, openRequestDetail }: TrackerListProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedItems = useMemo(() => {
+    const start = (safePage - 1) * itemsPerPage;
+    return filteredItems.slice(start, start + itemsPerPage);
+  }, [filteredItems, itemsPerPage, safePage]);
+
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
@@ -27,7 +38,7 @@ export function TrackerList({ filteredItems, timeStatusMap, openRequestDetail }:
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {filteredItems.map(item => (
+            {paginatedItems.map(item => (
               <tr key={item.id} className="hover:bg-slate-50/70">
                 <td className="px-5 py-3">
                   <div className="text-xs text-slate-400">{item.id}</div>
@@ -51,6 +62,15 @@ export function TrackerList({ filteredItems, timeStatusMap, openRequestDetail }:
             ))}
           </tbody>
         </table>
+        <TablePagination
+          currentPage={safePage}
+          totalPages={totalPages}
+          totalItems={filteredItems.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+          itemName="pekerjaan"
+        />
       </div>
     </section>
   );

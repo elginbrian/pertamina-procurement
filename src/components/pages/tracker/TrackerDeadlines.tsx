@@ -1,8 +1,18 @@
-import { ProcurementRequest, DeadlineItem } from "@/types";
+import { useMemo, useState } from "react";
+import { TablePagination } from "@/components/widgets/TablePagination";
 
 import { TrackerDeadlinesProps } from "./types";
 
 export function TrackerDeadlines({ deadlines, requests, openRequestDetail, setEditingDeadlineId }: TrackerDeadlinesProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const totalPages = Math.max(1, Math.ceil(deadlines.length / itemsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedDeadlines = useMemo(() => {
+    const start = (safePage - 1) * itemsPerPage;
+    return deadlines.slice(start, start + itemsPerPage);
+  }, [deadlines, itemsPerPage, safePage]);
+
   return (
     <section className="rounded-xl border border-slate-200 bg-white shadow-sm">
       <div className="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -24,7 +34,7 @@ export function TrackerDeadlines({ deadlines, requests, openRequestDetail, setEd
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {deadlines.map(deadline => {
+            {paginatedDeadlines.map(deadline => {
               const request = requests.find(item => item.id === deadline.requestId);
               return (
                 <tr key={deadline.id} className="hover:bg-slate-50/70">
@@ -54,6 +64,15 @@ export function TrackerDeadlines({ deadlines, requests, openRequestDetail, setEd
             })}
           </tbody>
         </table>
+        <TablePagination
+          currentPage={safePage}
+          totalPages={totalPages}
+          totalItems={deadlines.length}
+          itemsPerPage={itemsPerPage}
+          onPageChange={setCurrentPage}
+          onItemsPerPageChange={setItemsPerPage}
+          itemName="SLA"
+        />
       </div>
     </section>
   );

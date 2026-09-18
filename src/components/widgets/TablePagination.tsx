@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
 import { TablePaginationProps } from "./types";
@@ -110,7 +110,7 @@ export function TablePagination({
           </div>
           
           <button
-            onClick={() => onPageChange(Math.max(totalPages, currentPage + 1))}
+            onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
             disabled={currentPage === totalPages}
             className="flex items-center gap-1 px-3 py-2 border border-slate-200 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50 disabled:opacity-50 disabled:pointer-events-none transition-colors"
           >
