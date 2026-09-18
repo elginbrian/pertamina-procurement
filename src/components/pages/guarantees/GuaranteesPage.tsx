@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { FileText, Inbox, XCircle } from "lucide-react";
+import { FileText, Inbox, X } from "lucide-react";
 import { GuaranteeItem, GuaranteeStatus } from "@/types";
 import { GuaranteeFilterBar } from "@/components/widgets/guarantees/GuaranteeFilterBar";
 import { GuaranteeStats } from "@/components/widgets/stats/GuaranteeStats";
@@ -33,6 +33,13 @@ export default function GuaranteesPage() {
     setPrevFilters({ searchQuery, statusFilter, typeFilter });
     setCurrentPage(1);
   }
+
+  useEffect(() => {
+    if (!editingGuarantee) return;
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') setEditingGuarantee(null); };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [editingGuarantee]);
 
   const filteredGuarantees = useMemo(() => {
     return guarantees.filter((item) => {
@@ -145,7 +152,60 @@ export default function GuaranteesPage() {
           return <div key={attachment.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex min-w-0 items-center gap-3"><FileText size={18} className="shrink-0 text-[#0a4d8c]" /><div className="min-w-0"><div className="truncate text-sm font-semibold text-slate-800">{attachment.fileUrl ? attachment.fileUrl.split('/').pop() : "File belum tersedia"}</div><div className="mt-1 text-xs text-slate-500">{request?.title ?? attachment.requestId} · {attachment.type} · {attachment.uploadedAt}</div></div></div><span className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600">Tanpa ekstraksi</span></div>;
         })}</div> : <div className="px-5 py-10 text-center text-sm text-slate-500">Belum ada dokumen pendukung yang disimpan.</div>}
       </section>
-      {editingGuarantee && createPortal(<div className="fixed inset-0 z-[100] flex min-h-dvh items-center justify-center overflow-y-auto bg-slate-950/50 p-4" onClick={() => setEditingGuarantee(null)}><form className="w-full max-w-2xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl" onClick={event => event.stopPropagation()} onSubmit={event => { event.preventDefault(); const formData = new FormData(event.currentTarget); updateGuarantee(editingGuarantee.id, { issuerType: formData.get("issuerType") as GuaranteeItem["issuerType"], issuer: String(formData.get("issuer")), referenceNo: String(formData.get("referenceNo")), beneficiary: String(formData.get("beneficiary")), vendor: { id: "VND-EDIT", name: String(formData.get("vendor")) }, value: Number(String(formData.get("value")).replace(/\D/g, "")), issueDate: String(formData.get("issueDate")), expiryDate: String(formData.get("expiryDate")) }); setEditingGuarantee(null); }}><div className="flex items-center justify-between bg-[#0a4d8c] px-5 py-4 text-white"><div><h2 className="text-sm font-bold">Koreksi Data Ekstraksi</h2><p className="mt-1 text-xs text-blue-100">Periksa dan ubah hasil baca OCR sebelum digunakan.</p></div><button type="button" onClick={() => setEditingGuarantee(null)} className="text-blue-100 hover:text-white"><XCircle size={20} /></button></div><div className="grid gap-4 p-5 sm:grid-cols-2"><label><span className="mb-1 block text-xs font-semibold text-slate-700">Jenis penerbit</span><select name="issuerType" defaultValue={editingGuarantee.issuerType ?? "Bank"} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"><option>Bank</option><option>Asuransi</option><option>Lainnya</option></select></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Nama penerbit</span><input required name="issuer" defaultValue={editingGuarantee.issuer} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Nomor jaminan</span><input required name="referenceNo" defaultValue={editingGuarantee.referenceNo} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Penerima jaminan</span><input name="beneficiary" defaultValue={editingGuarantee.beneficiary ?? ""} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Vendor</span><input required name="vendor" defaultValue={editingGuarantee.vendor.name} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Nilai jaminan</span><input required name="value" defaultValue={editingGuarantee.value} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Tanggal terbit</span><input required type="date" name="issueDate" defaultValue={editingGuarantee.issueDate} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Expiry date</span><input required type="date" name="expiryDate" defaultValue={editingGuarantee.expiryDate} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label></div><div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-5 py-4"><button type="button" onClick={() => setEditingGuarantee(null)} className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200">Batal</button><button type="submit" className="rounded-lg bg-[#0a4d8c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#093e6f]">Simpan Koreksi</button></div></form></div>, document.body)}
+      {editingGuarantee && createPortal(
+        <div className="fixed inset-0 z-[100] flex min-h-dvh items-center justify-center overflow-y-auto bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300" onClick={() => setEditingGuarantee(null)}>
+          <form className="w-full max-w-2xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-300 ease-out" onClick={event => event.stopPropagation()} onSubmit={event => { event.preventDefault(); const formData = new FormData(event.currentTarget); updateGuarantee(editingGuarantee.id, { issuerType: formData.get("issuerType") as GuaranteeItem["issuerType"], issuer: String(formData.get("issuer")), referenceNo: String(formData.get("referenceNo")), beneficiary: String(formData.get("beneficiary")), vendor: { id: "VND-EDIT", name: String(formData.get("vendor")) }, value: Number(String(formData.get("value")).replace(/\D/g, "")), issueDate: String(formData.get("issueDate")), expiryDate: String(formData.get("expiryDate")) }); setEditingGuarantee(null); }}>
+            <div className="flex items-center justify-between border-b border-slate-100 bg-white px-6 py-5 sm:px-8">
+              <div>
+                <h2 className="text-base font-bold text-slate-800">Koreksi Data Ekstraksi</h2>
+                <p className="mt-1 text-xs text-slate-500">Periksa dan ubah hasil baca OCR sebelum digunakan.</p>
+              </div>
+              <button type="button" onClick={() => setEditingGuarantee(null)} className="rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700">
+                <X size={20} />
+              </button>
+            </div>
+            <div className="grid gap-5 p-6 sm:grid-cols-2">
+              <label>
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Jenis penerbit</span>
+                <select name="issuerType" defaultValue={editingGuarantee.issuerType ?? "Bank"} className="w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition-all focus:border-[#0a4d8c] focus:outline-none focus:ring-4 focus:ring-blue-100/50">
+                  <option>Bank</option><option>Asuransi</option><option>Lainnya</option>
+                </select>
+              </label>
+              <label>
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Nama penerbit</span>
+                <input required name="issuer" defaultValue={editingGuarantee.issuer} className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition-all focus:border-[#0a4d8c] focus:outline-none focus:ring-4 focus:ring-blue-100/50" />
+              </label>
+              <label>
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Nomor jaminan</span>
+                <input required name="referenceNo" defaultValue={editingGuarantee.referenceNo} className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition-all focus:border-[#0a4d8c] focus:outline-none focus:ring-4 focus:ring-blue-100/50" />
+              </label>
+              <label>
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Penerima jaminan</span>
+                <input name="beneficiary" defaultValue={editingGuarantee.beneficiary ?? ""} className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition-all focus:border-[#0a4d8c] focus:outline-none focus:ring-4 focus:ring-blue-100/50" />
+              </label>
+              <label>
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Vendor</span>
+                <input required name="vendor" defaultValue={editingGuarantee.vendor.name} className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition-all focus:border-[#0a4d8c] focus:outline-none focus:ring-4 focus:ring-blue-100/50" />
+              </label>
+              <label>
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Nilai jaminan</span>
+                <input required name="value" defaultValue={editingGuarantee.value} className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition-all focus:border-[#0a4d8c] focus:outline-none focus:ring-4 focus:ring-blue-100/50" />
+              </label>
+              <label>
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Tanggal terbit</span>
+                <input required type="date" name="issueDate" defaultValue={editingGuarantee.issueDate} className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition-all focus:border-[#0a4d8c] focus:outline-none focus:ring-4 focus:ring-blue-100/50" />
+              </label>
+              <label>
+                <span className="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Expiry date</span>
+                <input required type="date" name="expiryDate" defaultValue={editingGuarantee.expiryDate} className="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-700 transition-all focus:border-[#0a4d8c] focus:outline-none focus:ring-4 focus:ring-blue-100/50" />
+              </label>
+            </div>
+            <div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50/80 p-6">
+              <button type="button" onClick={() => setEditingGuarantee(null)} className="rounded-lg px-5 py-2.5 text-sm font-bold text-slate-600 transition-colors hover:bg-slate-200/50">Batal</button>
+              <button type="submit" className="rounded-lg bg-[#0a4d8c] px-6 py-2.5 text-sm font-bold text-white shadow-sm transition-all hover:bg-[#093e6f] hover:shadow">Simpan Koreksi</button>
+            </div>
+          </form>
+        </div>, document.body)}
     </div>
   );
 }

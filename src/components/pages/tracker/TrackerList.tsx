@@ -31,7 +31,7 @@ export function TrackerList({ filteredItems, timeStatusMap, openRequestDetail }:
               <tr key={item.id} className="hover:bg-slate-50/70">
                 <td className="px-5 py-3">
                   <div className="text-xs text-slate-400">{item.id}</div>
-                  <div className="mt-1 text-sm font-semibold text-slate-800">{item.title}</div>
+                  <div className="mt-1 text-sm font-medium text-slate-800">{item.title}</div>
                 </td>
                 <td className="px-4 py-3">
                   <span className={`rounded-full border px-2.5 py-1 text-[11px] font-semibold ${item.operationalStatus === "On Going" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : item.operationalStatus === "On Hold" ? "border-amber-200 bg-amber-50 text-amber-700" : "border-red-200 bg-red-50 text-red-700"}`}>

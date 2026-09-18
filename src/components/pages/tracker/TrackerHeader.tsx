@@ -23,7 +23,7 @@ export function TrackerHeader({
         />
       </div>
       <div className="flex items-center gap-3 w-full sm:w-auto">
-        <div className="relative flex items-center w-full sm:w-auto">
+        <div className="relative flex items-center gap-2 w-full sm:w-auto">
           <Filter className="absolute left-3 text-slate-400 pointer-events-none" size={16} />
           <select
             value={departmentFilter}

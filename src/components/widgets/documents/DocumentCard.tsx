@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { FileText, AlertCircle, CheckCircle2, XCircle, Sparkles, FileSearch, Eye, ChevronDown, ChevronUp } from "lucide-react";
 import { DocumentItem, DocumentStatus } from "@/types";
 import { useRouter } from "next/navigation";
@@ -7,9 +8,14 @@ import { useProcurement } from "@/context/ProcurementContext";
 export function DocumentCard({ doc }: { doc: DocumentItem }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showAiDraft, setShowAiDraft] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { updateDocumentStatus } = useProcurement();
   const hasIssues = doc.issues && doc.issues.length > 0;
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
   
   const getStatusColor = (status: DocumentStatus) => {
     switch (status) {
@@ -158,8 +164,8 @@ export function DocumentCard({ doc }: { doc: DocumentItem }) {
       )}
 
       {/* AI Draft Modal */}
-      {showAiDraft && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-transparent pointer-events-none">
+      {mounted && showAiDraft && createPortal(
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm pointer-events-auto transition-all" onClick={() => setShowAiDraft(false)}>
           <div className="bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-200 w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh] pointer-events-auto animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between p-4 border-b border-slate-100 bg-slate-50">
               <div className="flex items-center gap-2">
@@ -198,7 +204,7 @@ export function DocumentCard({ doc }: { doc: DocumentItem }) {
               </button>
             </div>
           </div>
-        </div>
+        </div>, document.body
       )}
     </div>
   );

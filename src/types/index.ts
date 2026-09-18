@@ -1,4 +1,5 @@
 export * from "./core";
+export * from "./user";
 export * from "./procurement";
 export * from "./guarantee";
 export * from "./action";
@@ -12,6 +13,7 @@ import {
 import { GuaranteeItem } from "./guarantee";
 import { ActionItem } from "./action";
 import { SystemSettings, NotificationItem, HistoryItem } from "./core";
+import { User } from "./user";
 
 export interface DeadlineItem {
   id: string;
@@ -39,4 +41,6 @@ export interface ProcurementState {
   history: HistoryItem[];
   milestones: ProcurementMilestone[];
   settings: SystemSettings;
+  users: User[];
+  currentUser: User;
 }

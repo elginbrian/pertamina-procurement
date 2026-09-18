@@ -5,12 +5,16 @@ export function DashboardHeader({
   title,
   subtitle,
   userLabel,
+  userName,
+  userRole,
   onOpenSidebar,
   onCloseSidebar,
 }: {
   title: string;
   subtitle: string;
   userLabel: string;
+  userName: string;
+  userRole: string;
   onOpenSidebar?: () => void;
   onCloseSidebar?: () => void;
 }) {
@@ -79,8 +83,8 @@ export function DashboardHeader({
                   {userLabel}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-slate-800">Ari Rahman</p>
-                  <p className="text-xs text-slate-500">Admin Procurement</p>
+                  <p className="truncate text-sm font-semibold text-slate-800">{userName}</p>
+                  <p className="text-xs text-slate-500">{userRole}</p>
                 </div>
               </div>
             </div>

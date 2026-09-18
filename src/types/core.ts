@@ -13,6 +13,11 @@ export interface SystemSettings {
   whatsappNotifications: boolean;
   slaWarningDays: number;
   autoEscalation: boolean;
+  autoEscalateDays: number;
+  escalationManagerId: string;
+  approvalThreshold: number;
+  departmentReviewers: Record<string, string>;
+  milestoneDurations: Record<string, number>;
   aiSensitivity: "Low" | "Medium" | "High";
   theme: "Light" | "Dark" | "System";
 }

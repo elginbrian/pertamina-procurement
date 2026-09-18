@@ -21,6 +21,7 @@ import type {
   ActionItem,
   NotificationItem,
   HistoryItem,
+  User,
 } from "@/types";
 
 import mockRequestsRaw from "../data/mock/requests.json";
@@ -29,6 +30,7 @@ import mockGuaranteesRaw from "../data/mock/guarantees.json";
 import mockDeadlinesRaw from "../data/mock/deadlines.json";
 import mockActionsRaw from "../data/mock/actions.json";
 import mockNotificationsRaw from "../data/mock/notifications.json";
+import mockUsersRaw from "../data/mock/users.json";
 
 // Type assertions for JSON imports to match our strict types
 const mockRequests = mockRequestsRaw as ProcurementRequest[];
@@ -37,6 +39,7 @@ const mockGuarantees = mockGuaranteesRaw as GuaranteeItem[];
 const mockDeadlines = mockDeadlinesRaw as DeadlineItem[];
 const mockActions = mockActionsRaw as ActionItem[];
 const mockNotifications = mockNotificationsRaw as NotificationItem[];
+const mockUsers = mockUsersRaw as User[];
 
 const procurementSteps: ProcurementStep[] = [
   "Rapat Pra-Tender",
@@ -85,7 +88,24 @@ export const initialProcurementState: ProcurementState = {
     whatsappNotifications: false,
     slaWarningDays: 3,
     autoEscalation: true,
+    autoEscalateDays: 3,
+    escalationManagerId: "USR-002",
+    approvalThreshold: 1000000000,
+    departmentReviewers: {
+      "DEPT-IT": "USR-006",
+      "DEPT-OPS": "USR-002",
+      "DEPT-HR": "USR-003",
+      "DEPT-GA": "USR-004"
+    },
+    milestoneDurations: {
+      "Evaluasi Teknis": 5,
+      "Prakualifikasi": 10,
+      "Contracting": 14,
+      "Tender / Sourcing": 20
+    },
     aiSensitivity: "High",
     theme: "Light",
-  }
+  },
+  users: mockUsers,
+  currentUser: mockUsers[0], // Budi Santoso
 };

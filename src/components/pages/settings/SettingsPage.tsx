@@ -31,52 +31,45 @@ export default function SettingsPage() {
   const tabs = [
     { id: "umum", label: "Profil & Akun", icon: User },
     { id: "notifikasi", label: "Notifikasi", icon: Bell },
-    { id: "sistem", label: "Pengaturan Sistem (SLA, AI, Tema)", icon: Settings },
+    { id: "sistem", label: "Pengaturan Sistem", icon: Settings },
   ];
 
   return (
     <div className="space-y-6 pb-12">
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         
-        {/* Settings Header */}
-        <div className="p-6 md:p-8 border-b border-slate-200 bg-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm border border-slate-200 text-[#0a4d8c]">
-              <Settings size={24} />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold text-slate-800">Pengaturan Sistem</h1>
-              <p className="text-sm text-slate-500 mt-1">Konfigurasi preferensi Pertamina Procurement Dashboard.</p>
-            </div>
-          </div>
-          <button 
-            onClick={handleSave}
-            disabled={isSaving}
-            className="w-full md:w-auto flex items-center justify-center gap-2 bg-[#0a4d8c] hover:bg-[#093e6f] text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
-          </button>
-        </div>
-
-        <div className="flex flex-col lg:flex-row">
-          {/* Sidebar Tabs */}
-          <div className="w-full lg:w-64 bg-slate-50 border-r border-slate-200 flex lg:flex-col overflow-x-auto">
+        <div className="flex flex-col">
+          {/* Top Tabs */}
+          <div className="flex w-full overflow-x-auto bg-white border-b border-slate-200 px-2 sm:px-6 scrollbar-none">
             {tabs.map(tab => (
               <button 
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-3 px-6 py-4 text-sm font-medium text-left transition-colors whitespace-nowrap ${activeTab === tab.id ? 'bg-white text-[#0a4d8c] border-b-2 lg:border-b-0 lg:border-r-2 border-[#0a4d8c]' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 border-b-2 lg:border-b-0 border-transparent'}`}
+                className={`flex items-center justify-center gap-2 px-6 py-4 text-sm font-bold transition-all whitespace-nowrap ${activeTab === tab.id ? 'border-b-2 border-[#0a4d8c] text-[#0a4d8c]' : 'border-b-2 border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50/50'}`}
               >
-                <tab.icon size={18} /> {tab.label}
+                <tab.icon size={18} className="shrink-0" /> 
+                <span>{tab.label}</span>
               </button>
             ))}
           </div>
 
           {/* Form Content */}
-          <div className="flex-1 p-6 md:p-8 bg-white">
-            {activeTab === "umum" && <ProfileTab />}
-            {activeTab === "notifikasi" && <NotificationTab formData={formData} handleChange={handleChange} />}
-            {activeTab === "sistem" && <SystemTab formData={formData} handleChange={handleChange} />}
+          <div className="bg-white p-6 sm:p-8 lg:p-10 flex flex-col min-w-0 w-full">
+            <div className="flex-1 w-full">
+              {activeTab === "umum" && <ProfileTab />}
+              {activeTab === "notifikasi" && <NotificationTab formData={formData} handleChange={handleChange} users={state.users} />}
+              {activeTab === "sistem" && <SystemTab formData={formData} handleChange={handleChange} users={state.users} />}
+            </div>
+            
+            <div className="mt-12 flex justify-end border-t border-slate-100 pt-6 sm:pt-8 w-full">
+              <button 
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#0a4d8c] px-12 py-3 text-sm font-bold tracking-wide text-white shadow-sm transition-all hover:bg-[#093e6f] hover:shadow disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+              >
+                {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+              </button>
+            </div>
           </div>
         </div>
       </div>

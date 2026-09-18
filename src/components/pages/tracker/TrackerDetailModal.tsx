@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { createPortal } from "react-dom";
-import { LayoutList, XCircle, CheckCircle2, FileText, ChevronRight, ChevronDown, ShieldCheck, CalendarClock } from "lucide-react";
+import { LayoutList, X, CheckCircle2, FileText, ChevronRight, ChevronDown, ShieldCheck, CalendarClock } from "lucide-react";
 import { ProcurementRequest, ProcurementOperationalStatus, ProcurementStep, DeadlineItem, DocumentItem, GuaranteeItem, HistoryItem, ProcurementMilestone } from "@/types";
 
 import { TrackerDetailModalProps } from "./types";
@@ -25,6 +26,12 @@ export function TrackerDetailModal({
   moveRequestStep, updateRequestOperationalStatus, expandedRelatedId, setExpandedRelatedId,
   router, setAddingDeadlineRequestId, setEditingDeadlineId
 }: TrackerDetailModalProps) {
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedRequestId(null); };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [setSelectedRequestId]);
+
   if (typeof document === 'undefined') return null;
 
   const currentMilestoneIndex = milestones.findIndex(m => m.status === "In Progress");
@@ -35,26 +42,26 @@ export function TrackerDetailModal({
   const hasHiddenMilestones = !showFullTimeline && milestones.length > visibleMilestones.length;
 
   return createPortal(
-    <div className="fixed inset-0 z-[100] flex min-h-dvh items-center justify-center overflow-y-auto bg-slate-950/50 p-4" onClick={() => setSelectedRequestId(null)}>
-      <div role="dialog" aria-modal="true" aria-labelledby="tracker-detail-title" className="flex max-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in zoom-in-95 duration-200" onClick={e => e.stopPropagation()}>
-        <div className="flex items-start justify-between gap-4 bg-[#0a4d8c] px-5 py-4 sm:px-7">
+    <div className="fixed inset-0 z-[100] flex min-h-dvh items-center justify-center overflow-y-auto bg-slate-900/60 backdrop-blur-sm p-4 animate-in fade-in duration-300" onClick={() => setSelectedRequestId(null)}>
+      <div role="dialog" aria-modal="true" aria-labelledby="tracker-detail-title" className="flex max-h-[calc(100dvh-2rem)] w-full max-w-5xl flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-300 ease-out" onClick={e => e.stopPropagation()}>
+        <div className="flex items-start justify-between gap-4 border-b border-slate-100 bg-white px-6 py-5 sm:px-8">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-blue-100">
+            <div className="flex items-center gap-2 text-slate-500">
               <LayoutList size={18} />
               <span className="text-[11px] font-bold uppercase tracking-[0.16em]">Ringkasan Pekerjaan</span>
             </div>
-            <h3 id="tracker-detail-title" className="mt-2 truncate text-base font-bold text-white">{request?.title ?? selectedRequestId}</h3>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-blue-100">
+            <h3 id="tracker-detail-title" className="mt-2 truncate text-lg font-bold text-slate-800">{request?.title ?? selectedRequestId}</h3>
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-medium text-slate-500">
               <span>{selectedRequestId}</span>
               {request && <span>PIC: {request.pic.name}</span>}
               {request && <span>{request.amount}</span>}
             </div>
           </div>
-          <button aria-label="Tutup detail request" onClick={() => setSelectedRequestId(null)} className="shrink-0 rounded-lg p-1 text-blue-200 transition hover:bg-white/10 hover:text-white">
-            <XCircle size={20} />
+          <button aria-label="Tutup detail request" onClick={() => setSelectedRequestId(null)} className="shrink-0 rounded-full p-2 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700">
+            <X size={20} />
           </button>
         </div>
-        <div className="flex-1 space-y-7 overflow-y-auto p-5 sm:p-7">
+        <div className="flex-1 space-y-8 overflow-y-auto p-6 sm:p-8">
           {request && (
             <div className="rounded-xl border border-blue-100 bg-blue-50/60 p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
