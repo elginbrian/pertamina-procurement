@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Bell, CheckCircle2, AlertCircle, FileText, Clock, Settings, Search, CheckSquare } from "lucide-react";
 import { useProcurement } from "@/context/ProcurementContext";
-import type { NotificationType, NotificationItem } from "@/lib/types";
+import type { NotificationType, NotificationItem } from "@/types";
 
 export default function NotificationsPage() {
   const { state, markNotificationRead, markAllRead } = useProcurement();

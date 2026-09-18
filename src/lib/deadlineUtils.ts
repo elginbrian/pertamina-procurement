@@ -1,4 +1,4 @@
-import type { DeadlineItem, DeadlineStatus } from "./types";
+import { DeadlineItem, DeadlineStatus, ProcurementState } from "@/types";
 
 export function getDeadlineTiming(targetDate: string, warningDays: number, currentStatus?: DeadlineStatus) {
   const targetTime = new Date(`${targetDate}T23:59:59`).getTime();

@@ -1,9 +1,6 @@
 "use client";
 
-type TrendChartPanelProps = {
-  months: string[];
-  demandBars: number[];
-};
+import type { TrendChartPanelProps } from "./types";
 
 export function TrendChartPanel({ months, demandBars }: TrendChartPanelProps) {
   const maxValue = Math.max(...demandBars, 100);

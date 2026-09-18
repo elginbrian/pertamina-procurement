@@ -1,14 +1,7 @@
 import { Search, Filter } from "lucide-react";
-import { GuaranteeStatus } from "@/lib/types";
+import { GuaranteeStatus } from "@/types";
 
-interface GuaranteeFilterBarProps {
-  searchQuery: string;
-  setSearchQuery: (val: string) => void;
-  statusFilter: GuaranteeStatus | "All";
-  setStatusFilter: (val: GuaranteeStatus | "All") => void;
-  typeFilter: string;
-  setTypeFilter: (val: string) => void;
-}
+import { GuaranteeFilterBarProps } from "./types";
 
 export function GuaranteeFilterBar({ searchQuery, setSearchQuery, statusFilter, setStatusFilter, typeFilter, setTypeFilter }: GuaranteeFilterBarProps) {
   return (

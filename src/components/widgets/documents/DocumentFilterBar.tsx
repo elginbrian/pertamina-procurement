@@ -1,16 +1,7 @@
 import { Search, Filter } from "lucide-react";
-import { DocumentStatus, ProcurementOperationalStatus } from "@/lib/types";
+import { DocumentStatus, ProcurementOperationalStatus } from "@/types";
 
-interface DocumentFilterBarProps {
-  searchQuery: string;
-  setSearchQuery: (val: string) => void;
-  statusFilter: DocumentStatus | "All";
-  setStatusFilter: (val: DocumentStatus | "All") => void;
-  typeFilter: string;
-  setTypeFilter: (val: string) => void;
-  workStatusFilter: ProcurementOperationalStatus | "All";
-  setWorkStatusFilter: (val: ProcurementOperationalStatus | "All") => void;
-}
+import { DocumentFilterBarProps } from "./types";
 
 export function DocumentFilterBar({ searchQuery, setSearchQuery, statusFilter, setStatusFilter, typeFilter, setTypeFilter, workStatusFilter, setWorkStatusFilter }: DocumentFilterBarProps) {
   return (

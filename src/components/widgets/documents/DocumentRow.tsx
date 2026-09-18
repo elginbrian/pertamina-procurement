@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { AlertCircle, CheckCircle2, XCircle, Sparkles, Eye, ChevronDown, ChevronUp } from "lucide-react";
-import { DocumentItem, DocumentStatus } from "@/lib/types";
+import { DocumentItem, DocumentStatus } from "@/types";
 import { useRouter } from "next/navigation";
 
 export function DocumentRow({ doc }: { doc: DocumentItem }) {
@@ -38,7 +38,7 @@ export function DocumentRow({ doc }: { doc: DocumentItem }) {
           {doc.type}
         </td>
         <td className="px-4 py-3 text-[13px] text-slate-600">
-          {doc.pic}
+          {doc.pic.name}
         </td>
         <td className="px-4 py-3 text-[13px] text-slate-600">
           {doc.uploadDate}

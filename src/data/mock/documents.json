@@ -1,0 +1,173 @@
+[
+  {
+    "id": "DOC-2026-001",
+    "requestId": "REQ-2026-101",
+    "name": "RKS & Spesifikasi Teknis Server",
+    "type": "Wajib",
+    "status": "Lulus Verifikasi",
+    "uploadDate": "2026-08-10",
+    "pic": {
+      "id": "USR-AW-157",
+      "name": "Andi Wijaya"
+    },
+    "issues": [],
+    "fileUrl": "https://storage.pertamina.com/mock/RKS_Server_Rack_42U.pdf",
+    "mimeType": "application/pdf"
+  },
+  {
+    "id": "DOC-2026-002",
+    "requestId": "REQ-2026-101",
+    "name": "HPS / OE Pengadaan Server",
+    "type": "Wajib",
+    "status": "Catatan Procurement",
+    "uploadDate": "2026-08-11",
+    "pic": {
+      "id": "USR-AW-157",
+      "name": "Andi Wijaya"
+    },
+    "issues": [
+      "Nilai HPS (Rp 118 jt) lebih rendah dari nilai PR (Rp 120 jt). Wajib ada justifikasi dari Pejabat Berwenang (ref: Fase II.5 PPT Checklist).",
+      "Referensi harga pembanding hanya 1 sumber. Minimal diperlukan 2 referensi pasar yang valid."
+    ],
+    "nextAction": "Minta FPP (Andi Wijaya) untuk melengkapi justifikasi nilai HPS dan menambahkan referensi harga pasar sebelum Rapat Pra-Tender.",
+    "canGenerateAiDraft": true,
+    "fileUrl": "https://storage.pertamina.com/mock/HPS_Server_Rack.xlsx",
+    "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  },
+  {
+    "id": "DOC-2026-003",
+    "requestId": "REQ-2026-101",
+    "name": "Surat Penunjukan Tim Teknis",
+    "type": "Wajib",
+    "status": "Tindak Lanjut FPP",
+    "uploadDate": "2026-08-12",
+    "pic": {
+      "id": "USR-AW-157",
+      "name": "Andi Wijaya"
+    },
+    "issues": [
+      "Dokumen belum ditandatangani oleh VP IT Infrastructure.",
+      "Format surat tidak sesuai template standar Pertamina (versi terbaru)."
+    ],
+    "nextAction": "Kembalikan ke FPP untuk dilengkapi tanda tangan VP dan perbaikan format sebelum dapat dilanjutkan.",
+    "fileUrl": "https://storage.pertamina.com/mock/Tim_Teknis_Server.docx",
+    "mimeType": "application/octet-stream"
+  },
+  {
+    "id": "DOC-2026-004",
+    "requestId": "REQ-2026-102",
+    "name": "Form TKDN & Sertifikat Kemenperin",
+    "type": "Kondisional",
+    "status": "Catatan Procurement",
+    "uploadDate": "2026-08-09",
+    "pic": {
+      "id": "USR-DP-747",
+      "name": "Diana Putri"
+    },
+    "issues": [
+      "Sertifikat TKDN untuk produk software belum dilampirkan.",
+      "Nilai TKDN yang tertulis (30%) tidak didukung dokumen valid dari Kemenperin."
+    ],
+    "nextAction": "Koordinasikan dengan vendor untuk melampirkan sertifikat TKDN yang valid atau ajukan pengecualian jika produk impor.",
+    "canGenerateAiDraft": true,
+    "fileUrl": "https://storage.pertamina.com/mock/Form_TKDN_Software.pdf",
+    "mimeType": "application/pdf"
+  },
+  {
+    "id": "DOC-2026-005",
+    "requestId": "REQ-2026-102",
+    "name": "Pakta Integritas Vendor",
+    "type": "Wajib",
+    "status": "Tindak Lanjut FPP",
+    "uploadDate": "2026-08-10",
+    "pic": {
+      "id": "USR-DP-747",
+      "name": "Diana Putri"
+    },
+    "issues": [
+      "Pakta Integritas belum ditandatangani vendor (PT Soft Creative)."
+    ],
+    "nextAction": "Segera follow up vendor PT Soft Creative untuk menandatangani dan mengembalikan Pakta Integritas.",
+    "fileUrl": "https://storage.pertamina.com/mock/Pakta_Integritas_Software.pdf",
+    "mimeType": "application/pdf"
+  },
+  {
+    "id": "DOC-2026-006",
+    "requestId": "REQ-2026-103",
+    "name": "RAB & Bill of Quantity Renovasi",
+    "type": "Wajib",
+    "status": "Lulus Verifikasi",
+    "uploadDate": "2026-07-30",
+    "pic": {
+      "id": "USR-CD-651",
+      "name": "Citra Dewi"
+    },
+    "issues": [],
+    "fileUrl": "https://storage.pertamina.com/mock/RAB_Renovasi_LT4.xlsx",
+    "mimeType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  },
+  {
+    "id": "DOC-2026-007",
+    "requestId": "REQ-2026-103",
+    "name": "Notulen Rapat Pra-Tender",
+    "type": "Dokumentasi",
+    "status": "Lulus Verifikasi",
+    "uploadDate": "2026-08-05",
+    "pic": {
+      "id": "USR-CD-651",
+      "name": "Citra Dewi"
+    },
+    "issues": [],
+    "fileUrl": "https://storage.pertamina.com/mock/Notulen_Pra_Tender_REQ103.pdf",
+    "mimeType": "application/pdf"
+  },
+  {
+    "id": "DOC-2026-008",
+    "requestId": "REQ-2026-104",
+    "name": "Dokumen Penawaran Vendor A (PT Teknologi Prima)",
+    "type": "Wajib",
+    "status": "Lulus Verifikasi",
+    "uploadDate": "2026-08-05",
+    "pic": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "issues": [],
+    "fileUrl": "https://storage.pertamina.com/mock/Penawaran_TeknologiPrima.pdf",
+    "mimeType": "application/pdf"
+  },
+  {
+    "id": "DOC-2026-009",
+    "requestId": "REQ-2026-104",
+    "name": "Dokumen Penawaran Vendor B (CV Infra Digital)",
+    "type": "Wajib",
+    "status": "Catatan Procurement",
+    "uploadDate": "2026-08-06",
+    "pic": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "issues": [
+      "Harga satuan laptop pada penawaran tidak konsisten antara halaman 2 dan lampiran BoQ."
+    ],
+    "nextAction": "Kirim surat klarifikasi ke CV Infra Digital untuk memperbaiki inkonsistensi harga penawaran.",
+    "canGenerateAiDraft": true,
+    "fileUrl": "https://storage.pertamina.com/mock/Penawaran_InfraDigital.pdf",
+    "mimeType": "application/pdf"
+  },
+  {
+    "id": "DOC-2026-010",
+    "requestId": "REQ-2026-107",
+    "name": "Kontrak Pengadaan Seragam 2026",
+    "type": "Dokumentasi",
+    "status": "Lulus Verifikasi",
+    "uploadDate": "2026-07-01",
+    "pic": {
+      "id": "USR-CD-651",
+      "name": "Citra Dewi"
+    },
+    "issues": [],
+    "fileUrl": "https://storage.pertamina.com/mock/Kontrak_Seragam_2026.pdf",
+    "mimeType": "application/pdf"
+  }
+]

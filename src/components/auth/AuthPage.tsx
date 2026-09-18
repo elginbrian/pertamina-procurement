@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Eye, EyeOff, LockKeyhole, Mail, UserRound } from "lucide-react";
 import { FormEvent, useState } from "react";
 
-type AuthMode = "login" | "register";
+import { AuthMode } from "./types";
 
 const copy = {
   login: {

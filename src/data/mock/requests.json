@@ -1,0 +1,189 @@
+[
+  {
+    "id": "REQ-2026-101",
+    "title": "Pengadaan Server Rack 42U & UPS",
+    "pic": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "fpp": {
+      "id": "USR-AW-157",
+      "name": "Andi Wijaya"
+    },
+    "amount": 120000000,
+    "stage": "Persiapan",
+    "operationalStatus": "On Going",
+    "currentStep": "Rapat Pra-Tender",
+    "department": {
+      "id": "DEPT-II-200",
+      "name": "IT Infrastructure"
+    },
+    "createdAt": "2026-08-10",
+    "updatedAt": "2026-08-20",
+    "stageStartedAt": "2026-09-16T02:09:42.163Z"
+  },
+  {
+    "id": "REQ-2026-102",
+    "title": "Lisensi Software Design Suite 1 Tahun",
+    "pic": {
+      "id": "USR-AW-157",
+      "name": "Andi Wijaya"
+    },
+    "fpp": {
+      "id": "USR-DP-747",
+      "name": "Diana Putri"
+    },
+    "amount": 45000000,
+    "stage": "Persiapan",
+    "operationalStatus": "On Hold",
+    "currentStep": "Rapat Pra-Tender",
+    "department": {
+      "id": "DEPT-C-882",
+      "name": "Creative"
+    },
+    "isUrgent": true,
+    "createdAt": "2026-08-08",
+    "updatedAt": "2026-08-19",
+    "stageStartedAt": "2026-09-13T02:09:42.164Z"
+  },
+  {
+    "id": "REQ-2026-103",
+    "title": "Renovasi Ruang Meeting Lantai 4",
+    "pic": {
+      "id": "USR-CD-651",
+      "name": "Citra Dewi"
+    },
+    "fpp": {
+      "id": "USR-CD-651",
+      "name": "Citra Dewi"
+    },
+    "amount": 85500000,
+    "stage": "Sourcing",
+    "operationalStatus": "On Going",
+    "currentStep": "Prebid Meeting",
+    "department": {
+      "id": "DEPT-GA-387",
+      "name": "General Affairs"
+    },
+    "isUrgent": true,
+    "createdAt": "2026-07-28",
+    "updatedAt": "2026-08-18",
+    "stageStartedAt": "2026-09-06T02:09:42.164Z"
+  },
+  {
+    "id": "REQ-2026-104",
+    "title": "Pengadaan Laptop Karyawan Baru (10 Unit)",
+    "pic": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "fpp": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "amount": 150000000,
+    "stage": "Evaluasi",
+    "operationalStatus": "On Going",
+    "currentStep": "Evaluasi Dokumen Penawaran",
+    "department": {
+      "id": "DEPT-II-200",
+      "name": "IT Infrastructure"
+    },
+    "createdAt": "2026-08-01",
+    "updatedAt": "2026-08-17",
+    "stageStartedAt": "2026-09-14T02:09:42.164Z"
+  },
+  {
+    "id": "REQ-2026-105",
+    "title": "Catering Event Tahunan Pertamina",
+    "pic": {
+      "id": "USR-DP-747",
+      "name": "Diana Putri"
+    },
+    "fpp": {
+      "id": "USR-DP-747",
+      "name": "Diana Putri"
+    },
+    "amount": 35000000,
+    "stage": "Contracting",
+    "operationalStatus": "On Going",
+    "currentStep": "Penunjukan Pemenang",
+    "department": {
+      "id": "DEPT-H-952",
+      "name": "HR"
+    },
+    "createdAt": "2026-07-15",
+    "updatedAt": "2026-08-20",
+    "stageStartedAt": "2026-09-17T02:09:42.164Z"
+  },
+  {
+    "id": "REQ-2026-106",
+    "title": "Kendaraan Operasional Cabang Balikpapan",
+    "pic": {
+      "id": "USR-AW-157",
+      "name": "Andi Wijaya"
+    },
+    "fpp": {
+      "id": "USR-EP-967",
+      "name": "Eko Prasetyo"
+    },
+    "amount": 320000000,
+    "stage": "Contracting",
+    "operationalStatus": "On Hold",
+    "currentStep": "Negosiasi Manual",
+    "department": {
+      "id": "DEPT-O-263",
+      "name": "Operations"
+    },
+    "isUrgent": true,
+    "createdAt": "2026-07-10",
+    "updatedAt": "2026-08-19",
+    "stageStartedAt": "2026-09-11T02:09:42.164Z"
+  },
+  {
+    "id": "REQ-2026-107",
+    "title": "Seragam Karyawan 2026 (All Dept.)",
+    "pic": {
+      "id": "USR-CD-651",
+      "name": "Citra Dewi"
+    },
+    "fpp": {
+      "id": "USR-EP-967",
+      "name": "Eko Prasetyo"
+    },
+    "amount": 65000000,
+    "stage": "Selesai",
+    "operationalStatus": "On Going",
+    "currentStep": "Penunjukan Pemenang",
+    "department": {
+      "id": "DEPT-H-952",
+      "name": "HR"
+    },
+    "createdAt": "2026-06-01",
+    "updatedAt": "2026-08-10",
+    "stageStartedAt": "2026-08-29T02:09:42.164Z"
+  },
+  {
+    "id": "REQ-2026-108",
+    "title": "Upgrade Bandwidth Internet Head Office",
+    "pic": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "fpp": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "amount": 15000000,
+    "stage": "Persiapan",
+    "operationalStatus": "Batal",
+    "currentStep": "Rapat Pra-Tender",
+    "department": {
+      "id": "DEPT-II-200",
+      "name": "IT Infrastructure"
+    },
+    "createdAt": "2026-08-19",
+    "updatedAt": "2026-08-20",
+    "stageStartedAt": "2026-09-17T02:09:42.164Z"
+  }
+]

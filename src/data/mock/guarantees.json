@@ -1,0 +1,99 @@
+[
+  {
+    "id": "GUAR-001",
+    "requestId": "REQ-2026-105",
+    "referenceNo": "BG-2026-089912",
+    "type": "Jaminan Pelaksanaan",
+    "value": 150000000,
+    "issuer": "Bank Mandiri",
+    "vendor": {
+      "id": "USR-PMKN-399",
+      "name": "PT Mitra Kuliner Nusantara"
+    },
+    "issueDate": "2026-01-10",
+    "expiryDate": "2026-12-31",
+    "pic": {
+      "id": "USR-DP-747",
+      "name": "Diana Putri"
+    },
+    "status": "Aktif"
+  },
+  {
+    "id": "GUAR-002",
+    "requestId": "REQ-2026-103",
+    "referenceNo": "BG-2026-078122",
+    "type": "Jaminan Masa Pemeliharaan",
+    "value": 45000000,
+    "issuer": "Asuransi Astra Buana",
+    "vendor": {
+      "id": "USR-CGR-335",
+      "name": "CV Graha Renovasi"
+    },
+    "issueDate": "2025-08-20",
+    "expiryDate": "2026-08-25",
+    "pic": {
+      "id": "USR-CD-651",
+      "name": "Citra Dewi"
+    },
+    "status": "Mendekati Expiry",
+    "nextAction": "Jaminan Masa Pemeliharaan akan berakhir dalam 6 hari. Koordinasikan perpanjangan atau pencairan dengan vendor CV Graha Renovasi."
+  },
+  {
+    "id": "GUAR-003",
+    "requestId": "REQ-2026-106",
+    "referenceNo": "BG-2025-011234",
+    "type": "Jaminan Uang Muka",
+    "value": 300000000,
+    "issuer": "Bank BNI",
+    "vendor": {
+      "id": "USR-PAT-392",
+      "name": "PT Armada Transport"
+    },
+    "issueDate": "2025-02-15",
+    "expiryDate": "2026-08-15",
+    "pic": {
+      "id": "USR-AW-157",
+      "name": "Andi Wijaya"
+    },
+    "status": "Expired",
+    "nextAction": "Jaminan Uang Muka telah kedaluwarsa. Segera hubungi Bank BNI dan PT Armada Transport untuk tindak lanjut."
+  },
+  {
+    "id": "GUAR-004",
+    "requestId": "REQ-2026-107",
+    "referenceNo": "BG-2026-055501",
+    "type": "Jaminan Pelaksanaan",
+    "value": 65000000,
+    "issuer": "Bank BRI",
+    "vendor": {
+      "id": "USR-CGN-801",
+      "name": "CV Garmen Nusantara"
+    },
+    "issueDate": "2026-06-05",
+    "expiryDate": "2027-06-04",
+    "pic": {
+      "id": "USR-CD-651",
+      "name": "Citra Dewi"
+    },
+    "status": "Aktif"
+  },
+  {
+    "id": "GUAR-005",
+    "requestId": "REQ-2026-104",
+    "referenceNo": "BG-2026-099001",
+    "type": "Jaminan Pelaksanaan",
+    "value": 75000000,
+    "issuer": "Bank Mandiri",
+    "vendor": {
+      "id": "USR-PTP-379",
+      "name": "PT Teknologi Prima"
+    },
+    "issueDate": "2026-08-01",
+    "expiryDate": "2027-02-01",
+    "pic": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "status": "Aktif"
+  }
+]

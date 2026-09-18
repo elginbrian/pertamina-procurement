@@ -1,16 +1,7 @@
 import { useState, useEffect } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 
-interface TablePaginationProps {
-  currentPage: number;
-  totalPages: number;
-  totalItems: number;
-  itemsPerPage: number;
-  onPageChange: (page: number) => void;
-  onItemsPerPageChange?: (size: number) => void;
-  itemsPerPageOptions?: number[];
-  itemName?: string;
-}
+import { TablePaginationProps } from "./types";
 
 export function TablePagination({
   currentPage,
@@ -27,9 +18,11 @@ export function TablePagination({
   
   const [inputPage, setInputPage] = useState(currentPage.toString());
 
-  useEffect(() => {
+  const [prevPage, setPrevPage] = useState(currentPage);
+  if (currentPage !== prevPage) {
+    setPrevPage(currentPage);
     setInputPage(currentPage.toString());
-  }, [currentPage]);
+  }
 
   const handleInputSubmit = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {

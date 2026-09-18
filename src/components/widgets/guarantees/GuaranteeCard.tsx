@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Shield, AlertTriangle, ShieldCheck, ShieldAlert, Clock, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
-import { GuaranteeItem, GuaranteeStatus } from "@/lib/types";
+import { GuaranteeItem, GuaranteeStatus } from "@/types";
+import { calculateDaysRemaining } from "@/lib/utils";
 
 export function GuaranteeCard({ guarantee }: { guarantee: GuaranteeItem }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -41,12 +42,12 @@ export function GuaranteeCard({ guarantee }: { guarantee: GuaranteeItem }) {
               <span className="w-1 h-1 rounded-full bg-slate-300"></span>
               <span className="font-semibold text-slate-700">{guarantee.value}</span>
               <span className="hidden sm:block w-1 h-1 rounded-full bg-slate-300"></span>
-              <span className="hidden sm:inline">PIC: {guarantee.pic}</span>
+              <span className="hidden sm:inline">PIC: {guarantee.pic.name}</span>
             </div>
             
             {/* Mobile Only Meta */}
             <div className="sm:hidden flex items-center gap-2 mt-1 text-[11px] text-slate-500">
-              <span>PIC: {guarantee.pic}</span>
+              <span>PIC: {guarantee.pic.name}</span>
             </div>
           </div>
         </div>
@@ -63,7 +64,7 @@ export function GuaranteeCard({ guarantee }: { guarantee: GuaranteeItem }) {
               guarantee.status === 'Expired' ? 'text-red-600' : 
               guarantee.status === 'Mendekati Expiry' ? 'text-amber-600' : 'text-emerald-600'
             }`}>
-              {guarantee.remainingDays < 0 ? `Terlewat ${Math.abs(guarantee.remainingDays)} hari` : `${guarantee.remainingDays} hari lagi`}
+              {calculateDaysRemaining(guarantee.expiryDate) < 0 ? `Terlewat ${Math.abs(calculateDaysRemaining(guarantee.expiryDate))} hari` : `${calculateDaysRemaining(guarantee.expiryDate)} hari lagi`}
             </div>
           </div>
         </div>

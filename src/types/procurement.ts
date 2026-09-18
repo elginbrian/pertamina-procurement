@@ -1,0 +1,107 @@
+import { BaseUser, Department } from "./core";
+
+export type ProcurementStage =
+  | "Persiapan"
+  | "Sourcing"
+  | "Evaluasi"
+  | "Contracting"
+  | "Selesai";
+
+export type ProcurementOperationalStatus = "On Going" | "On Hold" | "Batal";
+
+export type ProcurementStep =
+  | "Rapat Pra-Tender"
+  | "Pengumuman Pengadaan"
+  | "Prebid Meeting"
+  | "Pemasukan Dokumen Penawaran"
+  | "Pembukaan Penawaran"
+  | "Evaluasi Dokumen Penawaran"
+  | "Sosialisasi e-Auction"
+  | "Negosiasi e-Auction"
+  | "Negosiasi Manual"
+  | "Laporan Hasil Pemilihan"
+  | "Pengumuman Pemenang"
+  | "Penunjukan Pemenang";
+
+export type ProcurementMilestoneStatus = "Pending" | "In Progress" | "Done";
+
+export interface ProcurementMilestone {
+  id: string;
+  requestId: string;
+  step: ProcurementStep;
+  status: ProcurementMilestoneStatus;
+  documentId?: string;
+  date?: string;
+  pic?: BaseUser;
+  notes?: string;
+}
+
+export interface ProcurementRequest {
+  id: string;
+  title: string;
+  pic: BaseUser;
+  fpp: BaseUser;
+  amount: number;
+  stage: ProcurementStage;
+  operationalStatus: ProcurementOperationalStatus;
+  operationalStatusReason?: string;
+  currentStep: ProcurementStep;
+  department: Department;
+  stageStartedAt: string;
+  isUrgent?: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type DocumentStatus =
+  | "Lulus Verifikasi"
+  | "Catatan Procurement"
+  | "Tindak Lanjut FPP";
+
+export type DocumentType =
+  | "Wajib"
+  | "Kondisional"
+  | "Best Practice"
+  | "Dokumentasi";
+
+export type DocumentKind = "Surat Penawaran" | "Surat Pengajuan" | "RKS" | "Pakta Integritas" | "TKDN" | "Lainnya";
+
+export interface DocumentExtractedData {
+  workName?: string;
+  tenderNumber?: string;
+  documentDate?: string;
+}
+
+export interface DocumentItem {
+  id: string;
+  requestId: string;
+  name: string;
+  type: DocumentType;
+  documentKind?: DocumentKind;
+  status: DocumentStatus;
+  uploadDate: string;
+  pic: BaseUser;
+  issues: string[];
+  nextAction?: string;
+  procurementStep?: ProcurementStep;
+  documentDate?: string;
+  documentNumber?: string;
+  canGenerateAiDraft?: boolean;
+  fileUrl?: string;
+  mimeType?: string;
+  extractedData?: DocumentExtractedData;
+}
+
+export type ProcurementAttachmentType = "Dokumen Jaminan" | "TKDN" | "Dokumen Pendukung Lain";
+
+export interface ProcurementAttachment {
+  id: string;
+  requestId: string;
+  type: ProcurementAttachmentType;
+  name: string;
+  uploadedAt: string;
+  uploadedBy: BaseUser;
+  fileUrl: string;
+  mimeType?: string;
+  notes?: string;
+}

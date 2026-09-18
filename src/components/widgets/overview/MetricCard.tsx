@@ -1,14 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
-
-type MetricCardProps = {
-  title: string;
-  value: string;
-  subtext: string;
-  tone: "primary" | "success" | "info" | "warning";
-  icon: ReactNode;
-};
+import type { MetricCardProps } from "./types";
 
 export function MetricCard({ title, value, subtext, tone, icon }: MetricCardProps) {
   const toneClasses = {

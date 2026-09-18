@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { AlertTriangle, ShieldCheck, ShieldAlert, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
-import { GuaranteeItem, GuaranteeStatus } from "@/lib/types";
+import { GuaranteeItem, GuaranteeStatus } from "@/types";
+import { calculateDaysRemaining } from "@/lib/utils";
 
 export function GuaranteeRow({ guarantee }: { guarantee: GuaranteeItem }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -33,7 +34,7 @@ export function GuaranteeRow({ guarantee }: { guarantee: GuaranteeItem }) {
           {guarantee.value}
         </td>
         <td className="px-4 py-3 text-[13px] text-slate-600">
-          {guarantee.pic}
+          {guarantee.pic.name}
         </td>
         <td className="px-4 py-3">
           <div className="text-[13px] font-medium text-slate-700">{guarantee.expiryDate}</div>
@@ -41,7 +42,7 @@ export function GuaranteeRow({ guarantee }: { guarantee: GuaranteeItem }) {
             guarantee.status === 'Expired' ? 'text-red-600' : 
             guarantee.status === 'Mendekati Expiry' ? 'text-[#0a4d8c]' : 'text-emerald-600'
           }`}>
-            {guarantee.remainingDays < 0 ? `Terlewat ${Math.abs(guarantee.remainingDays)} hari` : `${guarantee.remainingDays} hari lagi`}
+            {calculateDaysRemaining(guarantee.expiryDate) < 0 ? `Terlewat ${Math.abs(calculateDaysRemaining(guarantee.expiryDate))} hari` : `${calculateDaysRemaining(guarantee.expiryDate)} hari lagi`}
           </div>
         </td>
         <td className="px-4 py-3">

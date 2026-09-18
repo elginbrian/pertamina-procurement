@@ -3,8 +3,9 @@
 import { useState, useMemo, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { FileText, Inbox, XCircle } from "lucide-react";
-import { GuaranteeItem, GuaranteeStatus } from "@/lib/types";
+import { GuaranteeItem, GuaranteeStatus } from "@/types";
 import { GuaranteeFilterBar } from "@/components/widgets/guarantees/GuaranteeFilterBar";
+import { GuaranteeStats } from "@/components/widgets/stats/GuaranteeStats";
 import { GuaranteeGroupRow } from "@/components/widgets/guarantees/GuaranteeGroupRow";
 import { TablePagination } from "@/components/widgets/TablePagination";
 import { useProcurement } from "@/context/ProcurementContext";
@@ -27,16 +28,17 @@ export default function GuaranteesPage() {
   const aktifPct = totalCount ? (aktifCount / totalCount) * 100 : 0;
   const mendekatiPct = totalCount ? (mendekatiCount / totalCount) * 100 : 0;
 
-  // Reset pagination on filter change
-  useEffect(() => {
+  const [prevFilters, setPrevFilters] = useState({ searchQuery, statusFilter, typeFilter });
+  if (searchQuery !== prevFilters.searchQuery || statusFilter !== prevFilters.statusFilter || typeFilter !== prevFilters.typeFilter) {
+    setPrevFilters({ searchQuery, statusFilter, typeFilter });
     setCurrentPage(1);
-  }, [searchQuery, statusFilter, typeFilter]);
+  }
 
   const filteredGuarantees = useMemo(() => {
     return guarantees.filter((item) => {
       const request = state.requests.find(requestItem => requestItem.id === item.requestId);
       const matchesSearch = item.referenceNo.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                            item.pic.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                            item.pic.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             item.type.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             item.requestId.toLowerCase().includes(searchQuery.toLowerCase()) ||
                             request?.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -53,7 +55,7 @@ export default function GuaranteesPage() {
       guarantees: filteredGuarantees.filter(guarantee => guarantee.requestId === request.id),
     }))
     .filter(group => {
-      const requestMatchesSearch = !searchQuery || [group.request.id, group.request.title, group.request.pic]
+      const requestMatchesSearch = !searchQuery || [group.request.id, group.request.title, group.request.pic.name]
         .some(value => value.toLowerCase().includes(searchQuery.toLowerCase()));
       const hasActiveFilters = statusFilter !== "All" || typeFilter !== "All";
       return hasActiveFilters ? group.guarantees.length > 0 : requestMatchesSearch || group.guarantees.length > 0;
@@ -68,73 +70,14 @@ export default function GuaranteesPage() {
 
   return (
     <div className="space-y-6 pb-12">
-      {/* Statistics Header */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-slate-100">
-        {/* Total Guarantees */}
-        <div className="p-5 flex-1 flex items-center justify-between">
-          <div>
-            <div className="text-[13px] font-medium text-slate-500 mb-1 uppercase tracking-wider">Total Jaminan</div>
-            <div className="text-3xl font-black text-[#0a4d8c]">{totalCount}</div>
-            <div className="text-[11px] text-slate-400 mt-1 font-medium">Tercatat dalam sistem</div>
-          </div>
-          <div className="w-14 h-14 rounded-full relative shadow-[inset_0_2px_8px_rgba(0,0,0,0.06)]" style={{
-            background: `conic-gradient(#10b981 0% ${aktifPct}%, #0a4d8c ${aktifPct}% ${aktifPct + mendekatiPct}%, #ef4444 ${aktifPct + mendekatiPct}% 100%)`
-          }}>
-            <div className="absolute inset-2 bg-white rounded-full"></div>
-          </div>
-        </div>
-
-        {/* Aktif */}
-        <div className="p-5 flex-1">
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="text-[13px] font-medium text-slate-500 mb-1 flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                Aktif
-              </div>
-              <div className="text-2xl font-bold text-slate-800 mt-2">{aktifCount}</div>
-            </div>
-            <div className="bg-emerald-50 text-emerald-700 text-xs font-medium px-2.5 py-0.5 rounded-full border border-emerald-100">
-              {aktifPct.toFixed(0)}%
-            </div>
-          </div>
-          <div className="text-[11px] text-slate-400 mt-1 font-medium">Masa berlaku masih panjang</div>
-        </div>
-
-        {/* Mendekati Expiry */}
-        <div className="p-5 flex-1">
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="text-[13px] font-medium text-slate-500 mb-1 flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-[#0a4d8c]"></div>
-                Mendekati Expiry
-              </div>
-              <div className="text-2xl font-bold text-slate-800 mt-2">{mendekatiCount}</div>
-            </div>
-            <div className="bg-blue-50 text-[#0a4d8c] text-xs font-medium px-2.5 py-0.5 rounded-full border border-blue-100">
-              {mendekatiPct.toFixed(0)}%
-            </div>
-          </div>
-          <div className="text-[11px] text-slate-400 mt-1 font-medium">Kurang dari 30 hari</div>
-        </div>
-
-        {/* Expired */}
-        <div className="p-5 flex-1">
-          <div className="flex justify-between items-start">
-            <div>
-              <div className="text-[13px] font-medium text-slate-500 mb-1 flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500"></div>
-                Expired
-              </div>
-              <div className="text-2xl font-bold text-slate-800 mt-2">{expiredCount}</div>
-            </div>
-            <div className="bg-red-50 text-red-700 text-xs font-medium px-2.5 py-0.5 rounded-full border border-red-100">
-              {(100 - aktifPct - mendekatiPct).toFixed(0)}%
-            </div>
-          </div>
-          <div className="text-[11px] text-slate-400 mt-1 font-medium">Masa berlaku habis</div>
-        </div>
-      </div>
+      <GuaranteeStats 
+        totalCount={totalCount}
+        aktifCount={aktifCount}
+        mendekatiCount={mendekatiCount}
+        expiredCount={expiredCount}
+        aktifPct={aktifPct}
+        mendekatiPct={mendekatiPct}
+      />
 
       {/* Search and Filter */}
       <GuaranteeFilterBar 
@@ -199,10 +142,10 @@ export default function GuaranteesPage() {
         </div>
         {state.attachments.length > 0 ? <div className="divide-y divide-slate-100">{state.attachments.map(attachment => {
           const request = state.requests.find(item => item.id === attachment.requestId);
-          return <div key={attachment.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex min-w-0 items-center gap-3"><FileText size={18} className="shrink-0 text-[#0a4d8c]" /><div className="min-w-0"><div className="truncate text-sm font-semibold text-slate-800">{attachment.fileName}</div><div className="mt-1 text-xs text-slate-500">{request?.title ?? attachment.requestId} · {attachment.type} · {attachment.uploadedAt}</div></div></div><span className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600">Tanpa ekstraksi</span></div>;
+          return <div key={attachment.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between"><div className="flex min-w-0 items-center gap-3"><FileText size={18} className="shrink-0 text-[#0a4d8c]" /><div className="min-w-0"><div className="truncate text-sm font-semibold text-slate-800">{attachment.fileUrl ? attachment.fileUrl.split('/').pop() : "File belum tersedia"}</div><div className="mt-1 text-xs text-slate-500">{request?.title ?? attachment.requestId} · {attachment.type} · {attachment.uploadedAt}</div></div></div><span className="shrink-0 rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-[11px] font-semibold text-slate-600">Tanpa ekstraksi</span></div>;
         })}</div> : <div className="px-5 py-10 text-center text-sm text-slate-500">Belum ada dokumen pendukung yang disimpan.</div>}
       </section>
-      {editingGuarantee && createPortal(<div className="fixed inset-0 z-[100] flex min-h-dvh items-center justify-center overflow-y-auto bg-slate-950/50 p-4" onClick={() => setEditingGuarantee(null)}><form className="w-full max-w-2xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl" onClick={event => event.stopPropagation()} onSubmit={event => { event.preventDefault(); const formData = new FormData(event.currentTarget); updateGuarantee(editingGuarantee.id, { issuerType: formData.get("issuerType") as GuaranteeItem["issuerType"], issuer: String(formData.get("issuer")), referenceNo: String(formData.get("referenceNo")), beneficiary: String(formData.get("beneficiary")), vendor: String(formData.get("vendor")), value: String(formData.get("value")), issueDate: String(formData.get("issueDate")), expiryDate: String(formData.get("expiryDate")) }); setEditingGuarantee(null); }}><div className="flex items-center justify-between bg-[#0a4d8c] px-5 py-4 text-white"><div><h2 className="text-sm font-bold">Koreksi Data Ekstraksi</h2><p className="mt-1 text-xs text-blue-100">Periksa dan ubah hasil baca OCR sebelum digunakan.</p></div><button type="button" onClick={() => setEditingGuarantee(null)} className="text-blue-100 hover:text-white"><XCircle size={20} /></button></div><div className="grid gap-4 p-5 sm:grid-cols-2"><label><span className="mb-1 block text-xs font-semibold text-slate-700">Jenis penerbit</span><select name="issuerType" defaultValue={editingGuarantee.issuerType ?? "Bank"} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"><option>Bank</option><option>Asuransi</option><option>Lainnya</option></select></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Nama penerbit</span><input required name="issuer" defaultValue={editingGuarantee.issuer} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Nomor jaminan</span><input required name="referenceNo" defaultValue={editingGuarantee.referenceNo} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Penerima jaminan</span><input name="beneficiary" defaultValue={editingGuarantee.beneficiary ?? ""} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Vendor</span><input required name="vendor" defaultValue={editingGuarantee.vendor} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Nilai jaminan</span><input required name="value" defaultValue={editingGuarantee.value} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Tanggal terbit</span><input required type="date" name="issueDate" defaultValue={editingGuarantee.issueDate} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Expiry date</span><input required type="date" name="expiryDate" defaultValue={editingGuarantee.expiryDate} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label></div><div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-5 py-4"><button type="button" onClick={() => setEditingGuarantee(null)} className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200">Batal</button><button type="submit" className="rounded-lg bg-[#0a4d8c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#093e6f]">Simpan Koreksi</button></div></form></div>, document.body)}
+      {editingGuarantee && createPortal(<div className="fixed inset-0 z-[100] flex min-h-dvh items-center justify-center overflow-y-auto bg-slate-950/50 p-4" onClick={() => setEditingGuarantee(null)}><form className="w-full max-w-2xl overflow-hidden rounded-xl border border-slate-200 bg-white shadow-2xl" onClick={event => event.stopPropagation()} onSubmit={event => { event.preventDefault(); const formData = new FormData(event.currentTarget); updateGuarantee(editingGuarantee.id, { issuerType: formData.get("issuerType") as GuaranteeItem["issuerType"], issuer: String(formData.get("issuer")), referenceNo: String(formData.get("referenceNo")), beneficiary: String(formData.get("beneficiary")), vendor: { id: "VND-EDIT", name: String(formData.get("vendor")) }, value: Number(String(formData.get("value")).replace(/\D/g, "")), issueDate: String(formData.get("issueDate")), expiryDate: String(formData.get("expiryDate")) }); setEditingGuarantee(null); }}><div className="flex items-center justify-between bg-[#0a4d8c] px-5 py-4 text-white"><div><h2 className="text-sm font-bold">Koreksi Data Ekstraksi</h2><p className="mt-1 text-xs text-blue-100">Periksa dan ubah hasil baca OCR sebelum digunakan.</p></div><button type="button" onClick={() => setEditingGuarantee(null)} className="text-blue-100 hover:text-white"><XCircle size={20} /></button></div><div className="grid gap-4 p-5 sm:grid-cols-2"><label><span className="mb-1 block text-xs font-semibold text-slate-700">Jenis penerbit</span><select name="issuerType" defaultValue={editingGuarantee.issuerType ?? "Bank"} className="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"><option>Bank</option><option>Asuransi</option><option>Lainnya</option></select></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Nama penerbit</span><input required name="issuer" defaultValue={editingGuarantee.issuer} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Nomor jaminan</span><input required name="referenceNo" defaultValue={editingGuarantee.referenceNo} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Penerima jaminan</span><input name="beneficiary" defaultValue={editingGuarantee.beneficiary ?? ""} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Vendor</span><input required name="vendor" defaultValue={editingGuarantee.vendor.name} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Nilai jaminan</span><input required name="value" defaultValue={editingGuarantee.value} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Tanggal terbit</span><input required type="date" name="issueDate" defaultValue={editingGuarantee.issueDate} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label><label><span className="mb-1 block text-xs font-semibold text-slate-700">Expiry date</span><input required type="date" name="expiryDate" defaultValue={editingGuarantee.expiryDate} className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm" /></label></div><div className="flex justify-end gap-3 border-t border-slate-100 bg-slate-50 px-5 py-4"><button type="button" onClick={() => setEditingGuarantee(null)} className="rounded-lg px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-200">Batal</button><button type="submit" className="rounded-lg bg-[#0a4d8c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#093e6f]">Simpan Koreksi</button></div></form></div>, document.body)}
     </div>
   );
 }

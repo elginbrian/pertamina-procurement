@@ -1,0 +1,62 @@
+[
+  {
+    "id": "NOTIF-1",
+    "requestId": "REQ-2026-101",
+    "title": "Dokumen Lulus Verifikasi: RKS Server Rack",
+    "description": "RKS & Spesifikasi Teknis Server (DOC-2026-001) untuk REQ-2026-101 telah berhasil divalidasi.",
+    "time": "10 menit yang lalu",
+    "isRead": false,
+    "type": "success",
+    "category": "Hari Ini"
+  },
+  {
+    "id": "NOTIF-2",
+    "requestId": "REQ-2026-103",
+    "title": "SLA Hampir Habis: Persetujuan RAB Renovasi",
+    "description": "Tugas 'Persetujuan RAB' untuk REQ-2026-103 (Renovasi Lt. 4) akan jatuh tempo besok.",
+    "time": "2 jam yang lalu",
+    "isRead": false,
+    "type": "alert",
+    "category": "Hari Ini"
+  },
+  {
+    "id": "NOTIF-3",
+    "requestId": "REQ-2026-103",
+    "title": "Jaminan Mendekati Kedaluwarsa: Renovasi Lt. 4",
+    "description": "Jaminan Masa Pemeliharaan (BG-2026-078122) untuk REQ-2026-103 akan berakhir dalam 6 hari.",
+    "time": "4 jam yang lalu",
+    "isRead": true,
+    "type": "deadline",
+    "category": "Hari Ini"
+  },
+  {
+    "id": "NOTIF-4",
+    "requestId": "REQ-2026-102",
+    "title": "Tindak Lanjut Diperlukan: Pakta Integritas",
+    "description": "Pakta Integritas vendor PT Soft Creative (DOC-2026-005) belum ditandatangani dan dikembalikan.",
+    "time": "Kemarin, 14:30",
+    "isRead": true,
+    "type": "document",
+    "category": "Kemarin"
+  },
+  {
+    "id": "NOTIF-5",
+    "requestId": "REQ-2026-106",
+    "title": "Jaminan Expired: Kendaraan Operasional",
+    "description": "Jaminan Uang Muka (BG-2025-011234) untuk REQ-2026-106 telah kedaluwarsa. Segera tindak lanjuti.",
+    "time": "Kemarin, 09:00",
+    "isRead": false,
+    "type": "alert",
+    "category": "Kemarin"
+  },
+  {
+    "id": "NOTIF-6",
+    "requestId": "REQ-2026-107",
+    "title": "Kontrak Selesai: Seragam Karyawan 2026",
+    "description": "Proses pengadaan REQ-2026-107 (Seragam Karyawan) telah selesai. Kontrak dan PO telah diterbitkan.",
+    "time": "18 Agustus, 11:20",
+    "isRead": true,
+    "type": "success",
+    "category": "Lebih Lama"
+  }
+]

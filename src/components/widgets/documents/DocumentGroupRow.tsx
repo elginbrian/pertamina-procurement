@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight, FileText, Folder } from "lucide-react";
 import { useRouter } from "next/navigation";
-import type { DocumentItem, ProcurementRequest } from "@/lib/types";
+import type { DocumentItem, ProcurementRequest } from "@/types";
 
-interface DocumentGroupRowProps {
-  request: ProcurementRequest;
-  documents: DocumentItem[];
-}
+import { DocumentGroupRowProps } from "./types";
 
 function statusClass(status: DocumentItem["status"]) {
   if (status === "Lulus Verifikasi") return "bg-emerald-50 text-emerald-700 border-emerald-200";
@@ -34,12 +31,12 @@ export function DocumentGroupRow({ request, documents }: DocumentGroupRowProps) 
             </div>
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2 text-[13px] font-medium text-slate-800"><span>{request.title}</span><span className={`rounded-full border px-1.5 py-0.5 text-[10px] font-semibold ${request.operationalStatus === "On Going" ? "border-emerald-200 bg-emerald-50 text-emerald-700" : request.operationalStatus === "On Hold" ? "border-amber-200 bg-amber-50 text-amber-700" : "border-red-200 bg-red-50 text-red-700"}`}>{request.operationalStatus}</span></div>
-              <div className="mt-1 text-[11px] text-slate-500">{request.id} · {request.department} · {request.currentStep}</div>
+              <div className="mt-1 text-[11px] text-slate-500">{request.id} · {request.department.name} · {request.currentStep}</div>
             </div>
           </div>
         </td>
         <td className="px-4 py-4 text-sm font-semibold text-slate-700">{documents.length} dokumen</td>
-        <td className="px-4 py-4 text-sm text-slate-600">{request.pic}</td>
+        <td className="px-4 py-4 text-sm text-slate-600">{request.pic.name}</td>
         <td className="px-4 py-4">
           <div className="flex flex-wrap gap-1.5">
             <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">{readyCount} lulus</span>
@@ -61,7 +58,7 @@ export function DocumentGroupRow({ request, documents }: DocumentGroupRowProps) 
                     <FileText className="shrink-0 text-slate-400" size={17} />
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-[12px] font-medium text-slate-800">{document.name}</div>
-                      <div className="mt-1 truncate text-[11px] text-slate-500">{document.type} · {document.fileName || "File belum tersedia"} · {document.uploadDate}</div>
+                      <div className="mt-1 truncate text-[11px] text-slate-500">{document.type} · {(document.fileUrl ? document.fileUrl.split('/').pop() : "File belum tersedia")} · {document.uploadDate}</div>
                     </div>
                     <span className={`shrink-0 rounded-full border px-2 py-0.5 text-[10px] font-semibold ${statusClass(document.status)}`}>{document.status}</span>
                     {expandedDocumentId === document.id ? <ChevronDown className="shrink-0 text-slate-400" size={16} /> : <ChevronRight className="shrink-0 text-slate-400" size={16} />}

@@ -1,15 +1,7 @@
 import { Search, Filter, CheckSquare } from "lucide-react";
-import { ActionPriority, ActionSource } from "@/lib/types";
+import { ActionPriority, ActionSource } from "@/types";
 
-interface ActionFilterBarProps {
-  searchQuery: string;
-  setSearchQuery: (val: string) => void;
-  sourceFilter: ActionSource | "All";
-  setSourceFilter: (val: ActionSource | "All") => void;
-  priorityFilter: ActionPriority | "All";
-  setPriorityFilter: (val: ActionPriority | "All") => void;
-  onMarkAllDone: () => void;
-}
+import { ActionFilterBarProps } from "./types";
 
 export function ActionFilterBar({ 
   searchQuery, 

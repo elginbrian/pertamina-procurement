@@ -12,7 +12,9 @@ import {
 import { useSidebar } from "@/context/SidebarContext";
 import { useProcurement } from "@/context/ProcurementContext";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { cn } from "@/lib/utils";
 
 const navItems: any[] = [
   { key: "documents", label: "Dokumen", icon: FileSearch },
@@ -23,9 +25,10 @@ const navItems: any[] = [
   { key: "settings", label: "Pengaturan", icon: Settings },
 ];
 
-export function SidebarNav({ activeKey }: { activeKey: string }) {
+export function SidebarNav() {
   const { collapsed, toggleCollapsed, mobileOpen, setMobileOpen } = useSidebar();
   const { state } = useProcurement();
+  const pathname = usePathname();
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   
   const unreadCount = state.notifications.filter(n => !n.isRead).length;
@@ -46,34 +49,28 @@ export function SidebarNav({ activeKey }: { activeKey: string }) {
 
   const effectiveCollapsed = isMobileViewport ? false : collapsed;
 
-  const containerClasses = [
+  const containerClasses = cn(
     "fixed left-0 top-0 h-screen bg-white border-r border-slate-200 z-40 transition-all duration-300 ease-in-out flex flex-col",
     effectiveCollapsed ? "lg:w-20" : "lg:w-52",
     "w-[280px]",
     mobileOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full",
-    "lg:translate-x-0 lg:static lg:shadow-none",
-  ]
-    .filter(Boolean)
-    .join(" ");
+    "lg:translate-x-0 lg:static lg:shadow-none"
+  );
 
   const navItemClasses = (active: boolean) =>
-    [
+    cn(
       "flex w-full items-center gap-3 rounded-[12px] border-none px-3 py-3 text-left text-sm font-medium transition-all duration-200",
       active
         ? "bg-[#eaf3ff] text-[#0a4d8c] shadow-sm"
         : "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-      effectiveCollapsed ? "lg:justify-center lg:px-2" : "lg:justify-start lg:px-4",
-    ]
-      .filter(Boolean)
-      .join(" "); 
+      effectiveCollapsed ? "lg:justify-center lg:px-2" : "lg:justify-start lg:px-4"
+    );
 
   const childItemClasses = () =>
-    [
+    cn(
       "flex w-full items-center gap-2 rounded-[12px] px-3 py-2 text-sm text-slate-700 hover:bg-slate-100",
-      effectiveCollapsed ? "justify-center px-2" : "pl-8",
-    ]
-      .filter(Boolean)
-      .join(" ");
+      effectiveCollapsed ? "justify-center px-2" : "pl-8"
+    );
 
   return (
     <aside className={containerClasses}>
@@ -108,22 +105,22 @@ export function SidebarNav({ activeKey }: { activeKey: string }) {
       </div>
 
       <nav
-        className={`flex flex-1 flex-col gap-2 py-4 overflow-y-auto ${effectiveCollapsed ? 'px-2 hide-scrollbar' : 'px-3'}`}
+        className={cn(
+          "flex flex-1 flex-col gap-2 py-4 overflow-y-auto",
+          effectiveCollapsed ? 'px-2 hide-scrollbar' : 'px-3'
+        )}
         aria-label="Sidebar navigation"
       >
         {navItems.map((item) => {
           const Icon = item.icon ?? LayoutDashboard;
-          const isActive = item.key === activeKey;
+          const isActive = pathname?.startsWith(`/dashboard/${item.key}`);
 
           return (
             <div key={item.key}>
               <Link
                 href={`/dashboard/${item.key}`}
-                className={navItemClasses(isActive)}
-                onClick={() => {
-                  // close mobile overlay; do not mutate external selectedKey here — URL is source of truth
-                  setMobileOpen(false);
-                }}
+                className={navItemClasses(isActive || false)}
+                onClick={() => setMobileOpen(false)}
                 aria-expanded={item.children ? false : undefined}
                 aria-current={isActive ? "page" : undefined}
                 title={effectiveCollapsed ? item.label : undefined}
@@ -169,7 +166,10 @@ export function SidebarNav({ activeKey }: { activeKey: string }) {
       <div className="mt-auto border-t border-slate-200 px-3 py-4">
         <Link
           href="/login"
-          className={`flex w-full items-center justify-center gap-2 rounded-[12px] border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600 ${effectiveCollapsed ? "" : "justify-start"}`}
+          className={cn(
+            "flex w-full items-center justify-center gap-2 rounded-[12px] border border-slate-200 bg-white px-3 py-3 text-sm font-semibold text-slate-700 transition hover:border-red-200 hover:bg-red-50 hover:text-red-600",
+            !effectiveCollapsed && "justify-start"
+          )}
           onClick={() => setMobileOpen(false)}
         >
           <LogOut size={16} />

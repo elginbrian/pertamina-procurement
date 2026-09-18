@@ -1,0 +1,110 @@
+[
+  {
+    "id": "DL-001",
+    "requestId": "REQ-2026-101",
+    "taskName": "Klarifikasi Teknis Vendor Server",
+    "pic": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "department": {
+      "id": "DEPT-II-200",
+      "name": "IT Infrastructure"
+    },
+    "targetDate": "2026-08-25",
+    "status": "On Track",
+    "urgencyLevel": "Low",
+    "milestone": "Evaluasi Dokumen Penawaran",
+    "nextAction": "Hubungi vendor untuk memastikan kelengkapan dokumen teknis server rack 42U."
+  },
+  {
+    "id": "DL-002",
+    "requestId": "REQ-2026-103",
+    "taskName": "Persetujuan RAB Renovasi Lt. 4",
+    "pic": {
+      "id": "USR-CD-651",
+      "name": "Citra Dewi"
+    },
+    "department": {
+      "id": "DEPT-GA-387",
+      "name": "General Affairs"
+    },
+    "targetDate": "2026-08-21",
+    "status": "At Risk",
+    "urgencyLevel": "High",
+    "milestone": "Rapat Pra-Tender",
+    "nextAction": "SLA persetujuan hampir habis. Segera minta approval dari VP General Affairs."
+  },
+  {
+    "id": "DL-003",
+    "requestId": "REQ-2026-102",
+    "taskName": "Negosiasi Harga Software Suite",
+    "pic": {
+      "id": "USR-AW-157",
+      "name": "Andi Wijaya"
+    },
+    "department": {
+      "id": "DEPT-C-882",
+      "name": "Creative"
+    },
+    "targetDate": "2026-08-15",
+    "status": "Overdue",
+    "urgencyLevel": "Critical",
+    "milestone": "Negosiasi Manual",
+    "nextAction": "Negosiasi melewati batas SLA 5 hari. Eskalasi ke Manager Procurement atau jadwal ulang meeting secepatnya."
+  },
+  {
+    "id": "DL-004",
+    "requestId": "REQ-2026-104",
+    "taskName": "Evaluasi Teknis Penawaran Laptop",
+    "pic": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "department": {
+      "id": "DEPT-II-200",
+      "name": "IT Infrastructure"
+    },
+    "targetDate": "2026-08-28",
+    "status": "On Track",
+    "urgencyLevel": "Medium",
+    "milestone": "Evaluasi Dokumen Penawaran",
+    "nextAction": "Lanjutkan evaluasi dan siapkan Berita Acara Evaluasi Teknis."
+  },
+  {
+    "id": "DL-005",
+    "requestId": "REQ-2026-106",
+    "taskName": "Penandatanganan Kontrak Kendaraan",
+    "pic": {
+      "id": "USR-AW-157",
+      "name": "Andi Wijaya"
+    },
+    "department": {
+      "id": "DEPT-O-263",
+      "name": "Operations"
+    },
+    "targetDate": "2026-08-22",
+    "status": "At Risk",
+    "urgencyLevel": "High",
+    "milestone": "Penunjukan Pemenang",
+    "nextAction": "Koordinasikan jadwal penandatanganan kontrak dengan PT Armada Transport secepatnya."
+  },
+  {
+    "id": "DL-006",
+    "requestId": "REQ-2026-105",
+    "taskName": "Penerbitan Purchase Order Catering",
+    "pic": {
+      "id": "USR-DP-747",
+      "name": "Diana Putri"
+    },
+    "department": {
+      "id": "DEPT-H-952",
+      "name": "HR"
+    },
+    "targetDate": "2026-09-01",
+    "status": "On Track",
+    "urgencyLevel": "Low",
+    "milestone": "Penunjukan Pemenang",
+    "nextAction": "Proses penerbitan PO sesuai jadwal."
+  }
+]

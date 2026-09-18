@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp, AlertCircle, ArrowRight, CheckCircle2, ExternalLink } from "lucide-react";
-import { ActionItem } from "@/lib/types";
+import { ActionItem } from "@/types";
 import { useProcurement } from "@/context/ProcurementContext";
 import { useRouter } from "next/navigation";
 
-interface ActionRowProps {
-  item: ActionItem;
-}
+import { ActionRowProps } from "./types";
 
 export function ActionRow({ item }: ActionRowProps) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -70,7 +68,7 @@ export function ActionRow({ item }: ActionRowProps) {
           <div className="text-[11px] text-slate-500 mt-0.5">{item.actionType}</div>
         </td>
         <td className="px-4 py-3 whitespace-nowrap">
-          <div className="text-[13px] text-slate-600">{item.assignee}</div>
+          <div className="text-[13px] text-slate-600">{item.assignee.name}</div>
         </td>
         <td className="px-4 py-3 whitespace-nowrap">
           <div className="text-[13px] text-slate-600">{item.dueDate}</div>

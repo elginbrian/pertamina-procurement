@@ -1,0 +1,104 @@
+[
+  {
+    "id": "ACT-001",
+    "requestId": "REQ-2026-103",
+    "referenceId": "DL-002",
+    "title": "Kejar Persetujuan RAB Renovasi Lt. 4",
+    "source": "Deadline",
+    "priority": "High",
+    "dateAdded": "2026-08-18",
+    "dueDate": "2026-08-21",
+    "description": "SLA persetujuan RAB hampir habis (sisa 1 hari). Segera request approval VP General Affairs untuk REQ-2026-103.",
+    "assignee": {
+      "id": "USR-CD-651",
+      "name": "Citra Dewi"
+    },
+    "status": "In Progress",
+    "actionType": "Approval"
+  },
+  {
+    "id": "ACT-002",
+    "requestId": "REQ-2026-102",
+    "referenceId": "DOC-2026-005",
+    "title": "Tindak Lanjut Pakta Integritas Vendor Software",
+    "source": "Dokumen",
+    "priority": "High",
+    "dateAdded": "2026-08-19",
+    "dueDate": "2026-08-21",
+    "description": "PT Soft Creative belum mengembalikan Pakta Integritas yang ditandatangani. Follow up segera agar proses REQ-2026-102 tidak terhenti.",
+    "assignee": {
+      "id": "USR-DP-747",
+      "name": "Diana Putri"
+    },
+    "status": "Pending",
+    "actionType": "Follow Up"
+  },
+  {
+    "id": "ACT-003",
+    "requestId": "REQ-2026-103",
+    "referenceId": "GUAR-002",
+    "title": "Perpanjangan Jaminan Masa Pemeliharaan Renovasi",
+    "source": "Jaminan",
+    "priority": "Medium",
+    "dateAdded": "2026-08-15",
+    "dueDate": "2026-08-25",
+    "description": "Jaminan BG-2026-078122 akan berakhir dalam 6 hari. Koordinasikan perpanjangan ke Asuransi Astra Buana.",
+    "assignee": {
+      "id": "USR-CD-651",
+      "name": "Citra Dewi"
+    },
+    "status": "Pending",
+    "actionType": "Follow Up"
+  },
+  {
+    "id": "ACT-004",
+    "requestId": "REQ-2026-101",
+    "referenceId": "DOC-2026-002",
+    "title": "Review & Justifikasi Nilai HPS Server Rack",
+    "source": "Dokumen",
+    "priority": "High",
+    "dateAdded": "2026-08-11",
+    "dueDate": "2026-08-20",
+    "description": "HPS dokumen REQ-2026-101 lebih rendah dari nilai PR. FPP wajib menyertakan justifikasi dari Pejabat Berwenang sebelum Rapat Pra-Tender.",
+    "assignee": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "status": "Pending",
+    "actionType": "Review"
+  },
+  {
+    "id": "ACT-005",
+    "requestId": "REQ-2026-106",
+    "referenceId": "GUAR-003",
+    "title": "Eskalasi Jaminan Uang Muka Kendaraan Expired",
+    "source": "Jaminan",
+    "priority": "High",
+    "dateAdded": "2026-08-16",
+    "dueDate": "2026-08-20",
+    "description": "Jaminan Uang Muka BG-2025-011234 telah kedaluwarsa sejak 4 hari lalu. Segera eskalasi ke pimpinan dan hubungi Bank BNI.",
+    "assignee": {
+      "id": "USR-AW-157",
+      "name": "Andi Wijaya"
+    },
+    "status": "In Progress",
+    "actionType": "Eskalasi"
+  },
+  {
+    "id": "ACT-006",
+    "requestId": "REQ-2026-104",
+    "referenceId": "DOC-2026-009",
+    "title": "Klarifikasi Harga Penawaran CV Infra Digital",
+    "source": "Dokumen",
+    "priority": "Medium",
+    "dateAdded": "2026-08-06",
+    "dueDate": "2026-08-22",
+    "description": "Inkonsistensi harga satuan laptop ditemukan pada penawaran CV Infra Digital. Kirim surat klarifikasi resmi ke vendor.",
+    "assignee": {
+      "id": "USR-BS-288",
+      "name": "Budi Santoso"
+    },
+    "status": "Pending",
+    "actionType": "Follow Up"
+  }
+]

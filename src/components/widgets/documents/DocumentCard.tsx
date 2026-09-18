@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { FileText, AlertCircle, CheckCircle2, XCircle, Sparkles, FileSearch, Eye, ChevronDown, ChevronUp } from "lucide-react";
-import { DocumentItem, DocumentStatus } from "@/lib/types";
+import { DocumentItem, DocumentStatus } from "@/types";
 import { useRouter } from "next/navigation";
 import { useProcurement } from "@/context/ProcurementContext";
 
@@ -51,14 +51,14 @@ export function DocumentCard({ doc }: { doc: DocumentItem }) {
               <span className="hidden sm:block w-1 h-1 rounded-full bg-slate-300"></span>
               <span className="hidden sm:inline">Diunggah: {doc.uploadDate}</span>
               <span className="hidden sm:block w-1 h-1 rounded-full bg-slate-300"></span>
-              <span className="hidden sm:inline">PIC: {doc.pic}</span>
+              <span className="hidden sm:inline">PIC: {doc.pic.name}</span>
             </div>
             
             {/* Mobile Only Meta */}
             <div className="sm:hidden flex items-center gap-2 mt-1 text-[11px] text-slate-500">
               <span>{doc.uploadDate}</span>
               <span className="w-1 h-1 rounded-full bg-slate-300"></span>
-              <span>{doc.pic}</span>
+              <span>{doc.pic.name}</span>
             </div>
           </div>
         </div>

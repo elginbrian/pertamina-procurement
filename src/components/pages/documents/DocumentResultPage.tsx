@@ -49,7 +49,7 @@ export default function DocumentResultPage() {
           <div className="flex-1 border-2 border-slate-200 rounded-xl flex flex-col bg-white overflow-hidden shadow-sm">
             {/* Mock PDF Viewer Header */}
             <div className="bg-slate-100 border-b border-slate-200 px-4 py-2 flex items-center justify-between shrink-0">
-              <span className="text-xs font-semibold text-slate-600 truncate mr-4">{selectedDocument?.fileName || "Dokumen_Evaluasi_Terbaru.pdf"}</span>
+              <span className="text-xs font-semibold text-slate-600 truncate mr-4">{(selectedDocument?.fileUrl ? selectedDocument.fileUrl.split('/').pop() : "Dokumen_Evaluasi_Terbaru.pdf")}</span>
               <span className="text-xs text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-200">1 / 15</span>
             </div>
             {/* Mock PDF Content */}
@@ -96,7 +96,7 @@ export default function DocumentResultPage() {
                   <FileText size={20} />
                 </div>
                 <div>
-                  <div className="font-semibold text-slate-800 text-sm">{selectedDocument?.fileName || "Dokumen_Evaluasi_Terbaru.pdf"}</div>
+                  <div className="font-semibold text-slate-800 text-sm">{(selectedDocument?.fileUrl ? selectedDocument.fileUrl.split('/').pop() : "Dokumen_Evaluasi_Terbaru.pdf")}</div>
                   <div className="text-[11px] text-slate-500 mt-0.5">Diupload hari ini • 2.4 MB</div>
                 </div>
               </div>
